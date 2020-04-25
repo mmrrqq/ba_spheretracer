@@ -8,7 +8,7 @@
       "name": "make build and debug active file",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/Spheremarcher",
+      "program": "${workspaceFolder}/build/bin/Spheremarcher",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
