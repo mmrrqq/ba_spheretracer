@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/Window.h"
+#include "utils/Shader.h"
 
 class Spheremarcher : public Window
 {
@@ -9,6 +10,7 @@ public:
     ~Spheremarcher();
 
 private:
+    Shader marchingShader_;
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 

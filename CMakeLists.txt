@@ -30,10 +30,12 @@ include_directories(src/)
 include_directories(src/utils/)
 include_directories(dependency/glfw/include)
 include_directories(dependency/glew)
+include_directories(dependency/glm)
 
 add_subdirectory(dependency/glew/build/cmake)
 add_subdirectory(dependency/glfw)
+add_subdirectory(dependency/glm)
 
 add_executable(Spheremarcher ${app_src} ${utils_src})
 
-target_link_libraries(Spheremarcher glew glfw OpenGL::GL)
+target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL)
