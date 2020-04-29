@@ -12,6 +12,12 @@ Spheremarcher::~Spheremarcher()
 void Spheremarcher::initialize()
 {
     marchingShader_.Load("res/shaders/marching.vertex", "res/shaders/marching.fragment");
+
+    marchingShader_.Bind();
+    marchingShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
+    marchingShader_.SetUniform("UNormalEpsilon", 0.003f);
+    marchingShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
+    marchingShader_.Unbind();
 }
 
 void Spheremarcher::resize(int width, int height)

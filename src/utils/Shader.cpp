@@ -171,6 +171,11 @@ void Shader::SetUniform(const char *name, int value)
     glUniform1i(getUniformLocation(name), value);
 }
 
+void Shader::SetUniform(const char *name, const glm::vec2 &vec)
+{
+    glUniform2f(getUniformLocation(name), vec[0], vec[1]);
+}
+
 //-----------------------------------------------------------------------------
 
 void Shader::SetUniform(const char *name, const glm::vec3 &vec)

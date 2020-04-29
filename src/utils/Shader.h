@@ -49,6 +49,10 @@ public:
     /// \param name string of the uniform name
     /// \param value the value for the uniform
     void SetUniform(const char *name, int value);
+    /// upload vec2 uniform
+    /// \param name string of the uniform name
+    /// \param vec the value for the uniform
+    void SetUniform(const char *name, const glm::vec2 &vec);    
     /// upload vec3 uniform
     /// \param name string of the uniform name
     /// \param vec the value for the uniform
