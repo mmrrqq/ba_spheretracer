@@ -204,12 +204,34 @@ void Shader::SetUniform(const char *name, const glm::mat4 &mat)
     glUniformMatrix4fv(getUniformLocation(name), 1, false, &mat[0][0]);
 }
 
-int Shader::getUniformLocation(const char *name)
+void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
+{
+    glUniform1i(getUniformLocation(name + ".numSpheres"), scene.NumSpheres);
+    glUniform1i(getUniformLocation(name + ".numTori"), scene.NumTori);
+
+    for (int i = 0; i < scene.NumSpheres; i++)
+    {
+        Sphere currentSphere = scene.Spheres[i];
+        glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), currentSphere.radius);
+        glUniform3f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"), currentSphere.position[0], currentSphere.position[1], currentSphere.position[2]);
+    }
+
+    for (int i = 0; i < scene.NumTori; i++)
+    {
+        Torus currentTorus = scene.Tori[i];
+        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].radius"), currentTorus.radius);
+        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].tubeRadius"), currentTorus.tubeRadius);
+        glUniform3f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].position"), currentTorus.position[0], currentTorus.position[1], currentTorus.position[2]);
+    }
+}
+
+int Shader::getUniformLocation(const std::string name)
 {
     if (!pid_)
         return -1;
 
-    int location = glGetUniformLocation(pid_, (const GLchar *)name);
+    // TODO: location caching
+    int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());
     if (location == -1)
     {
         std::cout << "warning: uniform " << name << " not found" << std::endl;

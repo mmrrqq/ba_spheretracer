@@ -11,12 +11,22 @@ Spheremarcher::~Spheremarcher()
 
 void Spheremarcher::initialize()
 {
+    Sphere testSphere;
+    testSphere.position = glm::vec3(1.0, 1.0, -5.0);
+    testSphere.radius = 1.0f;
+    Torus testTorus;
+    testTorus.position = glm::vec3(-2.0, 0.1, -5.0);
+    testTorus.radius = 2.0f;
+    testTorus.tubeRadius = 0.5f;
+    scene_.AddSphere(testSphere);
+    scene_.AddTorus(testTorus);
     marchingShader_.Load("res/shaders/marching.vertex", "res/shaders/marching.fragment");
 
     marchingShader_.Bind();
     marchingShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
     marchingShader_.SetUniform("UNormalEpsilon", 0.003f);
     marchingShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
+    marchingShader_.SetUniform("UScene", scene_);
     marchingShader_.Unbind();
 }
 

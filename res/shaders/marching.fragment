@@ -1,27 +1,77 @@
 #version 410 core
+#define MAX_OBJECTS 128
+struct Sphere 
+{
+    vec3 position;
+    float radius;
+};
+
+struct Torus
+{
+    vec3 position;
+    float radius;
+    float tubeRadius;
+};
+
+struct PrimitiveScene 
+{
+    Sphere spheres[MAX_OBJECTS];
+    Torus tori[MAX_OBJECTS];
+    int numSpheres;
+    int numTori;
+};
 
 vec3 eyePosition = vec3(0.0, 0.0, 3.0);
 float distEpsilon = 0.001;
-int maxMarchingSteps = 100;
+int maxMarchingSteps = 128;
+float maxDrawDistance = 50.0;
 bool ortho = false;
+bool showStepCount = true;
 
 uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
 uniform vec3 ULightDirection;
 
+uniform PrimitiveScene UScene;
+
 in vec2 TexCoords;
 out vec4 color;
+
+float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
+{
+	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
+}
 
 float distanceToSphere(vec3 spherePosition, float sphereRadius, vec3 position)
 {
     return length(position - spherePosition) - sphereRadius;
 }
 
+float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 position)
+{
+    vec3 torusToPosition = position - torusPosition;
+    vec2 q = vec2(length(torusToPosition.xz)-radius,torusToPosition.y);
+    return length(q)-tubeRadius;
+}
+
 float distanceToScene(vec3 position) 
 {
-    float minDistance;
-    // scene defined here
-    minDistance = distanceToSphere(vec3(0.0, 0.0, -5.0), 1.0, position);
+    float minDistance = 10000;
+    float currentDistance;
+    
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        minDistance = min(minDistance, distanceToSphere(sphere.position, sphere.radius, position));
+    }    
+
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];
+        minDistance = min(minDistance, distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position));
+    }
+
+    // minDistance = min(minDistance, distanceToGroundPlane(vec3(0.0, -2.0, 0.0), normalize(vec4(0.0, 1.0, 0.0, 0.0)), position));
 
     return minDistance;
 }
@@ -80,10 +130,25 @@ void main()
         dist = distanceToScene(position);
         if (dist < distEpsilon)
         {
-            color = vec4(getPhongColor(position, getNormal(position)), 1.0);
+            if (showStepCount)
+            {
+                float steps = i/float(maxMarchingSteps);
+                color = vec4(steps, 0.0, 1.0 - steps, 1.0);
+            }
+            else
+            {
+                color = vec4(getPhongColor(position, getNormal(position)), 1.0);
+            }
             return;
-        }           
+        }                   
+
         depth += dist;
+
+        if (depth > maxDrawDistance) 
+        {
+            color = vec4(0.1, 0.1, 0.1, 1.0);
+            return;
+        }
     }    
     color = vec4(0.1, 0.1, 0.1, 1.0);
 }

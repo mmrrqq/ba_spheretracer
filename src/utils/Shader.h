@@ -9,9 +9,12 @@
 #pragma once
 //=============================================================================
 
+#include "PrimitiveScene.h"
+
 #include <GL/glew.h>
 #include "glm/glm.hpp"
 #include <vector>
+#include <string>
 
 //=============================================================================
 
@@ -52,7 +55,7 @@ public:
     /// upload vec2 uniform
     /// \param name string of the uniform name
     /// \param vec the value for the uniform
-    void SetUniform(const char *name, const glm::vec2 &vec);    
+    void SetUniform(const char *name, const glm::vec2 &vec);
     /// upload vec3 uniform
     /// \param name string of the uniform name
     /// \param vec the value for the uniform
@@ -69,6 +72,10 @@ public:
     /// \param name string of the uniform name
     /// \param mat the value for the uniform
     void SetUniform(const char *name, const glm::mat4 &mat);
+    /// upload PrimitiveScene uniform
+    /// \param name string of the uniform name
+    /// \param mat the value for the uniform
+    void SetUniform(const std::string, const PrimitiveScene &scene);
 
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it
@@ -76,7 +83,7 @@ private:
     /// \param type the type of the shader (vertex, geometry, fragment)
     unsigned int loadAndCompile(const char *filename, GLenum type);
 
-    int getUniformLocation(const char *name);
+    int getUniformLocation(std::string name);
 
 private:
     /// id of the linked shader program

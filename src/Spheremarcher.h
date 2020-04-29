@@ -2,6 +2,7 @@
 
 #include "utils/Window.h"
 #include "utils/Shader.h"
+#include "utils/PrimitiveScene.h"
 
 class Spheremarcher : public Window
 {
@@ -11,6 +12,7 @@ public:
 
 private:
     Shader marchingShader_;
+    PrimitiveScene scene_;
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 
