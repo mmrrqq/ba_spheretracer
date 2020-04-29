@@ -13,7 +13,7 @@ void Spheremarcher::initialize()
 {
     Sphere testSphere;
     testSphere.position = glm::vec3(1.0, 1.0, -5.0);
-    testSphere.radius = 3.0f;
+    testSphere.radius = 1.0f;
     Torus testTorus;
     testTorus.position = glm::vec3(-2.0, 0.1, -5.0);
     testTorus.radius = 2.0f;
