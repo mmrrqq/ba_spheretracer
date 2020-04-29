@@ -19,6 +19,8 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 find_package(OpenGL)
 file(GLOB app_src "src/*.cpp")
 file(GLOB utils_src "src/utils/*.cpp")
+file(GLOB imgui_src "dependency/imgui/*.cpp")
+
 
 # not included in glew cmake process, but required to succeed..
 execute_process(
@@ -31,11 +33,12 @@ include_directories(src/utils/)
 include_directories(dependency/glfw/include)
 include_directories(dependency/glew)
 include_directories(dependency/glm)
+include_directories(dependency/imgui)
 
 add_subdirectory(dependency/glew/build/cmake)
 add_subdirectory(dependency/glfw)
 add_subdirectory(dependency/glm)
 
-add_executable(Spheremarcher ${app_src} ${utils_src})
+add_executable(Spheremarcher ${app_src} ${utils_src} ${imgui_src})
 
 target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL)
