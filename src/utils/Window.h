@@ -35,7 +35,12 @@ public: //------------------------------------------------------ public methods
     /// main window loop
     int run();
 
-private: //----------------------------- static wrapper functions for callbacks
+    inline int GetWidth() { return width_; }
+    inline int GetHeight() { return height_; }
+
+private:
+    int width_, height_;
+    //----------------------------- static wrapper functions for callbacks
     static void APIENTRY error__(GLenum source, GLenum type, GLuint id, GLenum severity,
                                  GLsizei length, const GLchar *message, const void *userParam);
     static void keyboard__(GLFWwindow *window, int key, int scancode, int action, int mods);

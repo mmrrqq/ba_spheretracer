@@ -12,7 +12,7 @@
 
 //-----------------------------------------------------------------------------
 
-Window::Window(const char *_title, int _width, int _height)
+Window::Window(const char *title, int width, int height) : width_(width), height_(height)
 {
     // initialize glfw window
     if (!glfwInit())
@@ -30,7 +30,7 @@ Window::Window(const char *_title, int _width, int _height)
     // TODO: am I allowed to request 4.3? error callback got introduced there..
 
     // try to create window
-    window_ = glfwCreateWindow(_width, _height, _title, NULL, NULL);
+    window_ = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window_)
     {
         glfwTerminate();
