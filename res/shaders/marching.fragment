@@ -26,7 +26,7 @@ float distEpsilon = 0.001;
 int maxMarchingSteps = 128;
 float maxDrawDistance = 50.0;
 bool ortho = false;
-bool showStepCount = true;
+bool showStepCount = false;
 
 uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
@@ -116,7 +116,7 @@ void main()
     vec3 rayDirection = getRayDirection();
     float dist = 0;
     float depth = 0;
-    vec3 position;    
+    vec3 position;
 
     if (ortho)
     {
