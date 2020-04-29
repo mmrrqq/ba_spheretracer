@@ -130,7 +130,7 @@ void Window::error__(GLenum source, GLenum type, GLuint id, GLenum severity,
                      GLsizei length, const GLchar *message, const void *userParam)
 {
     // TODO: refine error message handling
-    fputs(message, stderr);
+    std::cout << message << std::endl;
 }
 
 void Window::keyboard__(GLFWwindow *window, int key, int scancode, int action, int mods)

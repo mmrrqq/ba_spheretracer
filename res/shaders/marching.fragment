@@ -12,16 +12,33 @@ uniform vec3 ULightDirection;
 in vec2 TexCoords;
 out vec4 color;
 
+float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
+{
+	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
+}
+
 float distanceToSphere(vec3 spherePosition, float sphereRadius, vec3 position)
 {
     return length(position - spherePosition) - sphereRadius;
 }
 
+float distanceToTorus(vec3 torusPosition, float p1, float p2, vec3 position)
+{
+    vec3 torusToPosition = position - torusPosition;
+    vec2 q = vec2(length(torusToPosition.xz)-p1,torusToPosition.y);
+    return length(q)-p2;
+}
+
 float distanceToScene(vec3 position) 
 {
     float minDistance;
+    float currentDistance;
     // scene defined here
     minDistance = distanceToSphere(vec3(0.0, 0.0, -5.0), 1.0, position);
+
+    minDistance = min(minDistance, distanceToTorus(vec3(-2.0, 0.0, -5.0), 0.3, 0.2, position));
+
+    minDistance = min(minDistance, distanceToGroundPlane(vec3(0.0, -2.0, 0.0), normalize(vec4(0.0, 1.0, 0.0, 0.0)), position));
 
     return minDistance;
 }
