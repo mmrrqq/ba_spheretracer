@@ -154,17 +154,21 @@ vec3 getNormal(vec3 position)
     );
 }
 
-vec3 getPhongColor(vec3 position, vec3 normal, int materialId)
+vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec3 rayDir)
 {    
     Material material = UMaterials[materialId];
     // TODO: move to light struct
     vec3 lightColor = vec3(1.0, 0.9, 0.9);
         
     float diffuseContribution = dot(normal, - ULightDirection);
+    
+    vec3 reflected = reflect(-ULightDirection, normal);
+    float specularContribution = pow(max(dot(rayDir, reflected), 0.0), 32);
 
-    // TODO: add specular
-    return material.ambientColor * lightColor 
-        + diffuseContribution * material.diffuseColor * lightColor;
+    
+    return material.ambientColor * lightColor     
+        + diffuseContribution * material.diffuseColor * lightColor
+        + specularContribution * material.specularColor * lightColor;
 }
 
 void main()
@@ -194,7 +198,7 @@ void main()
             }
             else
             {
-                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y)), 1.0);
+                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y), rayDirection), 1.0);
             }
             return;
         }                   
