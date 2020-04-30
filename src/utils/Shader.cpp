@@ -211,17 +211,41 @@ void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
 
     for (int i = 0; i < scene.NumSpheres; i++)
     {
-        Sphere currentSphere = scene.Spheres[i];
-        glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), currentSphere.radius);
-        glUniform3f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"), currentSphere.position[0], currentSphere.position[1], currentSphere.position[2]);
+        Sphere sphere = scene.Spheres[i];
+        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].materialId"), sphere.materialId);
+        glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), sphere.radius);
+        glUniform3f(
+            getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"),
+            sphere.position[0], sphere.position[1], sphere.position[2]);
     }
 
     for (int i = 0; i < scene.NumTori; i++)
     {
-        Torus currentTorus = scene.Tori[i];
-        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].radius"), currentTorus.radius);
-        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].tubeRadius"), currentTorus.tubeRadius);
-        glUniform3f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].position"), currentTorus.position[0], currentTorus.position[1], currentTorus.position[2]);
+        Torus torus = scene.Tori[i];
+        glUniform1i(getUniformLocation(name + ".tori[" + std::to_string(i) + "].materialId"), torus.materialId);
+        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].radius"), torus.radius);
+        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].tubeRadius"), torus.tubeRadius);
+        glUniform3f(
+            getUniformLocation(name + ".tori[" + std::to_string(i) + "].position"),
+            torus.position[0], torus.position[1], torus.position[2]);
+    }
+}
+
+void Shader::SetUniform(const std::string name, const std::vector<Material> &materials)
+{
+    for (int i = 0; i < materials.size(); i++)
+    {
+        Material material = materials[i];
+        glUniform1f(getUniformLocation(name + "[" + std::to_string(i) + "].shininess"), material.Shininess);
+        glUniform3f(
+            getUniformLocation(name + "[" + std::to_string(i) + "].ambientColor"),
+            material.AmbientColor[0], material.AmbientColor[1], material.AmbientColor[2]);
+        glUniform3f(
+            getUniformLocation(name + "[" + std::to_string(i) + "].diffuseColor"),
+            material.DiffuseColor[0], material.DiffuseColor[1], material.DiffuseColor[2]);
+        glUniform3f(
+            getUniformLocation(name + "[" + std::to_string(i) + "].specularColor"),
+            material.SpecularColor[0], material.SpecularColor[1], material.SpecularColor[2]);
     }
 }
 

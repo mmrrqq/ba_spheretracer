@@ -1,22 +1,33 @@
 #version 410 core
 #define MAX_OBJECTS 128
+#define MAX_MATERIALS 128
 struct Sphere 
 {
+    int materialId;
     vec3 position;
     float radius;
 };
 
 struct Torus
 {
+    int materialId;
     vec3 position;
     float radius;
     float tubeRadius;
 };
 
+struct Material
+{
+    vec3 ambientColor;    
+    vec3 diffuseColor;
+    vec3 specularColor;
+    float shininess;
+};
+
 struct PrimitiveScene 
 {
     Sphere spheres[MAX_OBJECTS];
-    Torus tori[MAX_OBJECTS];
+    Torus tori[MAX_OBJECTS];    
     int numSpheres;
     int numTori;
 };
@@ -33,6 +44,7 @@ uniform float UNormalEpsilon;
 uniform vec3 ULightDirection;
 
 uniform PrimitiveScene UScene;
+uniform Material UMaterials[MAX_MATERIALS];
 
 in vec2 TexCoords;
 out vec4 color;
@@ -54,26 +66,37 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
     return length(q)-tubeRadius;
 }
 
-float distanceToScene(vec3 position) 
+// -> vec2(distance, materialId)
+vec2 distanceToScene(vec3 position) 
 {
-    float minDistance = 10000;
-    float currentDistance;
+    float minDistance = 10000;    
+    int materialId = -1;
     
     for (int i = 0; i < UScene.numSpheres; i++)
     {
         Sphere sphere = UScene.spheres[i];
-        minDistance = min(minDistance, distanceToSphere(sphere.position, sphere.radius, position));
+        float d = distanceToSphere(sphere.position, sphere.radius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = sphere.materialId;
+        }        
     }    
 
     for (int i = 0; i < UScene.numTori; i++)
     {
         Torus torus = UScene.tori[i];
-        minDistance = min(minDistance, distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position));
+        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = torus.materialId;
+        }        
     }
 
     // minDistance = min(minDistance, distanceToGroundPlane(vec3(0.0, -2.0, 0.0), normalize(vec4(0.0, 1.0, 0.0, 0.0)), position));
 
-    return minDistance;
+    return vec2(minDistance, materialId);
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
@@ -90,25 +113,24 @@ vec3 getNormal(vec3 position)
 
     return normalize(
         vec3(
-            distanceToScene(position + epsilon.xyy) - distanceToScene(position - epsilon.xyy),
-            distanceToScene(position + epsilon.yxy) - distanceToScene(position - epsilon.yxy),
-            distanceToScene(position + epsilon.yyx) - distanceToScene(position - epsilon.yyx)
+            distanceToScene(position + epsilon.xyy).x - distanceToScene(position - epsilon.xyy).x,
+            distanceToScene(position + epsilon.yxy).x - distanceToScene(position - epsilon.yxy).x,
+            distanceToScene(position + epsilon.yyx).x - distanceToScene(position - epsilon.yyx).x
         )
     );
 }
 
-vec3 getPhongColor(vec3 position, vec3 normal)
-{
-    // TODO: move to material struct
-    float materialDiffuse = 0.7;
-    float materialAmbient = 0.2;
+vec3 getPhongColor(vec3 position, vec3 normal, int materialId)
+{    
+    Material material = UMaterials[materialId];
     // TODO: move to light struct
     vec3 lightColor = vec3(1.0, 0.9, 0.9);
         
     float diffuseContribution = dot(normal, - ULightDirection);
 
     // TODO: add specular
-    return materialAmbient * lightColor + diffuseContribution * materialDiffuse * lightColor;
+    return material.ambientColor * lightColor 
+        + diffuseContribution * material.diffuseColor * lightColor;
 }
 
 void main()
@@ -116,7 +138,7 @@ void main()
     vec3 rayDirection = getRayDirection();
     float dist = 0;
     float depth = 0;
-    vec3 position;
+    vec3 position;    
 
     if (ortho)
     {
@@ -127,7 +149,8 @@ void main()
     for(int i = 0; i < maxMarchingSteps; i++)
     {                
         position = eyePosition + depth * rayDirection;        
-        dist = distanceToScene(position);
+        vec2 dist_mat = distanceToScene(position);
+        dist = dist_mat.x;
         if (dist < distEpsilon)
         {
             if (showStepCount)
@@ -137,18 +160,26 @@ void main()
             }
             else
             {
-                color = vec4(getPhongColor(position, getNormal(position)), 1.0);
+                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y)), 1.0);
             }
             return;
         }                   
 
         depth += dist;
 
-        if (depth > maxDrawDistance) 
+        if (depth > maxDrawDistance)
         {
             color = vec4(0.1, 0.1, 0.1, 1.0);
             return;
         }
+
+        // this creates a cool looking effect!
+        // if (depth > maxDrawDistance - 10.0) 
+        // {
+        //     float factor = depth / maxDrawDistance;
+        //     color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
+        //     return;
+        // }
     }    
     color = vec4(0.1, 0.1, 0.1, 1.0);
 }

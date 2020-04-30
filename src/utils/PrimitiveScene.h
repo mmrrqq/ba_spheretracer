@@ -5,12 +5,14 @@
 
 struct Sphere
 {
+    int materialId;
     float radius;
     glm::vec3 position;
 };
 
 struct Torus
 {
+    int materialId;
     glm::vec3 position;
     float radius;
     float tubeRadius;

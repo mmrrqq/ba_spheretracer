@@ -11,13 +11,32 @@ Spheremarcher::~Spheremarcher()
 
 void Spheremarcher::initialize()
 {
+    std::vector<Material> materials;
+    materials.push_back(
+        Material(
+            glm::vec3(0.2, 0.0, 0.0),
+            glm::vec3(0.7, 0.7, 0.0),
+            glm::vec3(0.7, 0.7, 0.7),
+            10.0f));
+
+    materials.push_back(
+        Material(
+            glm::vec3(0.0, 0.0, 0.2),
+            glm::vec3(0.7, 0.0, 0.7),
+            glm::vec3(0.7, 0.7, 0.7),
+            10.0f));
+
     Sphere testSphere;
     testSphere.position = glm::vec3(1.0, 1.0, -5.0);
     testSphere.radius = 1.0f;
+    testSphere.materialId = 1;
+
     Torus testTorus;
     testTorus.position = glm::vec3(-2.0, 0.1, -5.0);
     testTorus.radius = 2.0f;
     testTorus.tubeRadius = 0.5f;
+    testTorus.materialId = 0;
+
     scene_.AddSphere(testSphere);
     scene_.AddTorus(testTorus);
     marchingShader_.Load("res/shaders/marching.vertex", "res/shaders/marching.fragment");
@@ -27,6 +46,7 @@ void Spheremarcher::initialize()
     marchingShader_.SetUniform("UNormalEpsilon", 0.003f);
     marchingShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
     marchingShader_.SetUniform("UScene", scene_);
+    marchingShader_.SetUniform("UMaterials", materials);
     marchingShader_.Unbind();
 
     IMGUI_CHECKVERSION();
