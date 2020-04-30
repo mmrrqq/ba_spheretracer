@@ -1,13 +1,13 @@
-if(NOT EXISTS "/home/markus/dev/opengl/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: /home/markus/dev/opengl/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
-endif(NOT EXISTS "/home/markus/dev/opengl/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
+if(NOT EXISTS "/home/markus/dev/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: /home/markus/dev/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
+endif(NOT EXISTS "/home/markus/dev/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt")
 
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
   set (CMAKE_INSTALL_PREFIX "/usr/local")
 endif ()
  message(${CMAKE_INSTALL_PREFIX})
 
-file(READ "/home/markus/dev/opengl/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt" files)
+file(READ "/home/markus/dev/ba_spheremarcher/dependency/glew/build/cmake/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach(file ${files})
   message(STATUS "Uninstalling $ENV{DESTDIR}${file}")

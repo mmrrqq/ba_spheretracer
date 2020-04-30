@@ -68,10 +68,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/markus/dev/opengl/ba_spheremarcher
+CMAKE_SOURCE_DIR = /home/markus/dev/ba_spheremarcher
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/markus/dev/opengl/ba_spheremarcher
+CMAKE_BINARY_DIR = /home/markus/dev/ba_spheremarcher
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -146,9 +146,9 @@ install/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/opengl/ba_spheremarcher/CMakeFiles /home/markus/dev/opengl/ba_spheremarcher/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/ba_spheremarcher/CMakeFiles /home/markus/dev/ba_spheremarcher/CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/opengl/ba_spheremarcher/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/ba_spheremarcher/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
