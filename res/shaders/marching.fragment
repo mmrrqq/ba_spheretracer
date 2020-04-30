@@ -49,6 +49,34 @@ uniform Material UMaterials[MAX_MATERIALS];
 in vec2 TexCoords;
 out vec4 color;
 
+//http://blog.hvidtfeldts.net/index.php/2011/09/distance-estimated-3d-fractals-v-the-mandelbulb-different-de-approximations/
+float distanceToMandelbrot(vec3 pos) 
+{
+	vec3 z = pos;
+    float power = 10;
+	float dr = 1.0;
+	float r = 0.0;
+	for (int i = 0; i < 15 ; i++) {
+		r = length(z);
+		if (r>2) break;
+		
+		// convert to polar coordinates
+		float theta = acos(z.z/r);
+		float phi = atan(z.y,z.x);
+		dr =  pow( r, power-1.0)*power*dr + 1.0;
+		
+		// scale and rotate the point
+		float zr = pow( r,power);
+		theta = theta*power;
+		phi = phi*power;
+		
+		// convert back to cartesian coordinates
+		z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+		z+=pos;
+	}
+	return 0.5*log(r)*r/dr;
+}
+
 float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
 {
 	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
@@ -94,7 +122,12 @@ vec2 distanceToScene(vec3 position)
         }        
     }
 
-    // minDistance = min(minDistance, distanceToGroundPlane(vec3(0.0, -2.0, 0.0), normalize(vec4(0.0, 1.0, 0.0, 0.0)), position));
+    float fractalDistance = distanceToMandelbrot(position);
+    if (fractalDistance < minDistance)
+    {
+        minDistance = fractalDistance;
+        materialId = 1;
+    }    
 
     return vec2(minDistance, materialId);
 }
