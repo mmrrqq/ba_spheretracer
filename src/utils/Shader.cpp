@@ -254,12 +254,16 @@ int Shader::getUniformLocation(const std::string name)
     if (!pid_)
         return -1;
 
-    // TODO: location caching
+    auto cachedLocation = locations.find(name);
+    if (cachedLocation != locations.end())
+        return cachedLocation->second;
+
     int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());
     if (location == -1)
     {
         std::cout << "warning: uniform " << name << " not found" << std::endl;
     }
+    locations[name] = location;
     return location;
 }
 

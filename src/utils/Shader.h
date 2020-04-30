@@ -16,6 +16,7 @@
 #include <GL/glew.h>
 #include <vector>
 #include <string>
+#include <map>
 
 //=============================================================================
 
@@ -97,4 +98,6 @@ private:
     unsigned int vid_;
     /// id of the fragment shader
     unsigned int fid_;
+
+    std::map<std::string, int> locations;
 };
