@@ -37,6 +37,8 @@ public: //------------------------------------------------------ public methods
 
     inline int GetWidth() { return width_; }
     inline int GetHeight() { return height_; }
+    inline void SetWidth(int width) { width_ = width; }
+    inline void SetHeight(int height) { height_ = height; }
 
 private:
     int width_, height_;
