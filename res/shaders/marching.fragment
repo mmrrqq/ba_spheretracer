@@ -1,6 +1,6 @@
 #version 410 core
-#define MAX_OBJECTS 128
-#define MAX_MATERIALS 128
+#define MAX_OBJECTS 10
+#define MAX_MATERIALS 5
 struct Sphere 
 {
     int materialId;
@@ -45,6 +45,7 @@ uniform vec3 ULightDirection;
 
 uniform PrimitiveScene UScene;
 uniform Material UMaterials[MAX_MATERIALS];
+uniform mat4 UInvView;
 
 in vec2 TexCoords;
 out vec4 color;
@@ -168,7 +169,7 @@ vec3 getPhongColor(vec3 position, vec3 normal, int materialId)
 
 void main()
 {
-    vec3 rayDirection = getRayDirection();
+    vec3 rayDirection = (vec4(getRayDirection(), 0.0) * UInvView).xyz;
     float dist = 0;
     float depth = 0;
     vec3 position;    
@@ -206,7 +207,7 @@ void main()
             return;
         }
 
-        // this creates a cool looking effect!
+        // this creates a cool looking effect! but no distant fog as it was intended for :)
         // if (depth > maxDrawDistance - 10.0) 
         // {
         //     float factor = depth / maxDrawDistance;

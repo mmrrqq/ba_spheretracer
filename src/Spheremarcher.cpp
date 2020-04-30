@@ -1,7 +1,7 @@
 #include "Spheremarcher.h"
 
 Spheremarcher::Spheremarcher(int width, int height)
-    : Window("Spheremarcher", width, height), marchingShader_()
+    : Window("Spheremarcher", width, height), marchingShader_(), mouseDown_(false)
 {
 }
 
@@ -47,6 +47,7 @@ void Spheremarcher::initialize()
     marchingShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
     marchingShader_.SetUniform("UScene", scene_);
     marchingShader_.SetUniform("UMaterials", materials);
+    marchingShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     marchingShader_.Unbind();
 
     IMGUI_CHECKVERSION();
@@ -67,6 +68,41 @@ void Spheremarcher::initialize()
 
 void Spheremarcher::resize(int width, int height)
 {
+    glViewport(0, 0, width, height);
+    SetHeight(height);
+    SetWidth(width);
+
+    marchingShader_.Bind();
+    marchingShader_.SetUniform("UImageDim", glm::vec2(width, height));
+    marchingShader_.Unbind();
+}
+
+void Spheremarcher::mouse(int button, int action, int mods)
+{
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureMouse)
+    {
+        // mouse is above imgui window..
+    }
+    else
+    {
+        if (button == GLFW_MOUSE_BUTTON_1)
+        {
+            if (action == GLFW_PRESS)
+                mouseDown_ = true;
+            else if (action == GLFW_RELEASE)
+            {
+                mouseDown_ = false;
+                camera_.Reset();
+            }
+        }
+    }
+}
+
+void Spheremarcher::motion(double xpos, double ypos)
+{
+    if (mouseDown_)
+        camera_.Rotate(xpos, ypos, GetWidth(), GetHeight());
 }
 
 void Spheremarcher::draw()
@@ -103,6 +139,7 @@ void Spheremarcher::draw()
 
     marchingShader_.Bind();
     marchingShader_.SetUniform("UScene", scene_);
+    marchingShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     // this enables to draw the screen filling triangle in the vertex shader
     glDrawArrays(GL_TRIANGLES, 0, 3);
     marchingShader_.Unbind();
