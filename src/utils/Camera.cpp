@@ -4,7 +4,7 @@ Camera::Camera()
     : lastX_(-1),
       lastY_(-1),
       pitch_(0),
-      yaw_(0),
+      yaw_(180),
       lookAt_(0.0, 0.0, -5.0),
       up_(0.0, 1.0, 0.0),
       eye_(0.0, 0.0, 0.0){};
@@ -20,7 +20,7 @@ void Camera::Rotate(const double posX, const double posY, const int width, const
     }
 
     yaw_ += (posX - lastX_) / (float)height * 100.0;
-    pitch_ += (lastY_ - posY) / (float)width * 100.0;
+    pitch_ -= (posY - lastY_) / (float)width * 100.0;
 
     // learnopengl.com - camera
     lookAt_.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
