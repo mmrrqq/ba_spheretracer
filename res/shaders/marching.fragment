@@ -167,12 +167,19 @@ void main()
 
         depth += dist;
 
-        if (depth > maxDrawDistance - 10.0) 
+        if (depth > maxDrawDistance)
         {
-            float factor = depth / maxDrawDistance;
-            color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
+            color = vec4(0.1, 0.1, 0.1, 1.0);
             return;
         }
+
+        // this creates a cool looking effect!
+        // if (depth > maxDrawDistance - 10.0) 
+        // {
+        //     float factor = depth / maxDrawDistance;
+        //     color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
+        //     return;
+        // }
     }    
     color = vec4(0.1, 0.1, 0.1, 1.0);
 }
