@@ -10,9 +10,10 @@
 //=============================================================================
 
 #include "PrimitiveScene.h"
+#include "Material.h"
 
-#include <GL/glew.h>
 #include "glm/glm.hpp"
+#include <GL/glew.h>
 #include <vector>
 #include <string>
 
@@ -76,6 +77,10 @@ public:
     /// \param name string of the uniform name
     /// \param mat the value for the uniform
     void SetUniform(const std::string, const PrimitiveScene &scene);
+    /// upload Materials vector uniform
+    /// \param name string of the uniform name
+    /// \param mat the value for the uniform
+    void SetUniform(const std::string, const std::vector<Material> &materials);
 
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it
