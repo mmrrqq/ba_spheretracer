@@ -32,7 +32,6 @@ struct PrimitiveScene
     int numTori;
 };
 
-vec3 eyePosition = vec3(0.0, 0.0, 3.0);
 float distEpsilon = 0.001;
 int maxMarchingSteps = 128;
 float maxDrawDistance = 50.0;
@@ -42,6 +41,7 @@ bool showStepCount = false;
 uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
 uniform vec3 ULightDirection;
+uniform vec4 UEyePosition;
 
 uniform PrimitiveScene UScene;
 uniform Material UMaterials[MAX_MATERIALS];
@@ -154,7 +154,7 @@ vec3 getNormal(vec3 position)
     );
 }
 
-vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec3 rayDir)
+vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec4 rayDir)
 {    
     Material material = UMaterials[materialId];
     // TODO: move to light struct
@@ -163,8 +163,7 @@ vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec3 rayDir)
     float diffuseContribution = dot(normal, - ULightDirection);
     
     vec3 reflected = reflect(-ULightDirection, normal);
-    float specularContribution = pow(max(dot(rayDir, reflected), 0.0), 32);
-
+    float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
     
     return material.ambientColor * lightColor     
         + diffuseContribution * material.diffuseColor * lightColor
@@ -173,20 +172,21 @@ vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec3 rayDir)
 
 void main()
 {
-    vec3 rayDirection = (vec4(getRayDirection(), 0.0) * UInvView).xyz;
+    vec4 rayDirection = UInvView * vec4(getRayDirection(), 0.0);
     float dist = 0;
     float depth = 0;
-    vec3 position;    
+    vec3 position;
+    vec4 eyePosition = UEyePosition;
 
-    if (ortho)
-    {
-        eyePosition += vec3(((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y, 0.0);
-        rayDirection = vec3(0,0,-1);
-    }
+    // if (ortho)
+    // {
+    //     eyePosition += vec4(((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y, 0.0);
+    //     rayDirection = vec3(0,0,-1);
+    // }
 
     for(int i = 0; i < maxMarchingSteps; i++)
     {                
-        position = eyePosition + depth * rayDirection;        
+        position = vec3(eyePosition + depth * rayDirection);        
         vec2 dist_mat = distanceToScene(position);
         dist = dist_mat.x;
         if (dist < distEpsilon)

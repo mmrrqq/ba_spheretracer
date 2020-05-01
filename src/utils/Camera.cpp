@@ -1,13 +1,15 @@
 #include "Camera.h"
+#include <iostream>
 
 Camera::Camera()
     : lastX_(-1),
       lastY_(-1),
-      pitch_(0),
-      yaw_(180),
-      lookAt_(0.0, 0.0, -5.0),
-      up_(0.0, 1.0, 0.0),
-      eye_(0.0, 0.0, 0.0){};
+      lookAt_(0, 0, 0, 1),
+      up_(0, 1, 0, 0),
+      eye_(1.5, 1, 4, 1),
+      yaw_(0),
+      camHeight_(eyeRoot_.y),
+      eyeRoot_(1.5, 1, 4, 1){};
 Camera::~Camera(){};
 
 void Camera::Rotate(const double posX, const double posY, const int width, const int height)
@@ -19,21 +21,25 @@ void Camera::Rotate(const double posX, const double posY, const int width, const
         return;
     }
 
-    yaw_ += (posX - lastX_) / (float)height * 100.0;
-    pitch_ -= (posY - lastY_) / (float)width * 100.0;
+    yaw_ += (posX - lastX_) / (float)height * 5.0;
+    camHeight_ += (posY - lastY_) / (float)width * 5.0;
 
-    // learnopengl.com - camera
-    lookAt_.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
-    lookAt_.y = sin(glm::radians(pitch_));
-    lookAt_.z = sin(glm::radians(yaw_)) * cos(glm::radians(pitch_));
-    lookAt_ = glm::normalize(lookAt_);
+    eye_ = glm::translate(glm::vec3(glm::vec3(0, camHeight_, 0))) * glm::translate(glm::vec3(lookAt_)) * glm::rotate(yaw_, glm::vec3(0, 1, 0)) * glm::translate(glm::vec3(-lookAt_)) * eyeRoot_;
+    // up_ = glm::rotate(-deltaPitch, glm::vec3(1, 0, 0)) * up_
+    // eye_ = glm::translate(glm::vec3(lookAt_)) * glm::rotate(glm::rotate(-deltaYaw, glm::vec3(0, 1, 0)), deltaPitch, glm::vec3(1, 0, 0)) * glm::translate(glm::vec3(-lookAt_)) * eye_;
+    // up_ = glm::rotate(-deltaPitch, glm::vec3(1, 0, 0)) * up_;
 
     lastX_ = posX;
     lastY_ = posY;
 }
 
-void Camera::Move(const glm::vec3 direction)
+void Camera::Move(glm::vec2 direction)
 {
+    // vec2(x > 0 ? w : s, y > 0 ? d : a)
+    glm::mat4 translation = glm::translate(direction.x * glm::normalize(glm::vec3(lookAt_ - eye_)));
+    eyeRoot_ = translation * eyeRoot_;
+    eye_ = translation * eye_;
+    lookAt_ = translation * lookAt_;
 }
 
 void Camera::Reset()

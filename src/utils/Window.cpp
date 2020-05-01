@@ -87,7 +87,6 @@ Window::Window(const char *title, int width, int height) : width_(width), height
 
 Window::~Window()
 {
-    glfwTerminate();
 }
 
 //-----------------------------------------------------------------------------
@@ -120,6 +119,7 @@ int Window::run()
     }
 
     glfwDestroyWindow(window_);
+    glfwTerminate();
 
     return EXIT_SUCCESS;
 }

@@ -7,4 +7,6 @@ int main(void)
     Application app((char *)"Spheremarcher", &marcher);
 
     app.run();
+
+    exit(EXIT_SUCCESS);
 }
