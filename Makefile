@@ -537,6 +537,33 @@ src/utils/Camera.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Camera.cpp.s
 .PHONY : src/utils/Camera.cpp.s
 
+src/utils/FrameBuffer.o: src/utils/FrameBuffer.cpp.o
+
+.PHONY : src/utils/FrameBuffer.o
+
+# target to build an object file
+src/utils/FrameBuffer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/FrameBuffer.cpp.o
+.PHONY : src/utils/FrameBuffer.cpp.o
+
+src/utils/FrameBuffer.i: src/utils/FrameBuffer.cpp.i
+
+.PHONY : src/utils/FrameBuffer.i
+
+# target to preprocess a source file
+src/utils/FrameBuffer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/FrameBuffer.cpp.i
+.PHONY : src/utils/FrameBuffer.cpp.i
+
+src/utils/FrameBuffer.s: src/utils/FrameBuffer.cpp.s
+
+.PHONY : src/utils/FrameBuffer.s
+
+# target to generate assembly for a file
+src/utils/FrameBuffer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/FrameBuffer.cpp.s
+.PHONY : src/utils/FrameBuffer.cpp.s
+
 src/utils/Material.o: src/utils/Material.cpp.o
 
 .PHONY : src/utils/Material.o
@@ -618,6 +645,33 @@ src/utils/Shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Shader.cpp.s
 .PHONY : src/utils/Shader.cpp.s
 
+src/utils/TextureSampler.o: src/utils/TextureSampler.cpp.o
+
+.PHONY : src/utils/TextureSampler.o
+
+# target to build an object file
+src/utils/TextureSampler.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/TextureSampler.cpp.o
+.PHONY : src/utils/TextureSampler.cpp.o
+
+src/utils/TextureSampler.i: src/utils/TextureSampler.cpp.i
+
+.PHONY : src/utils/TextureSampler.i
+
+# target to preprocess a source file
+src/utils/TextureSampler.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/TextureSampler.cpp.i
+.PHONY : src/utils/TextureSampler.cpp.i
+
+src/utils/TextureSampler.s: src/utils/TextureSampler.cpp.s
+
+.PHONY : src/utils/TextureSampler.s
+
+# target to generate assembly for a file
+src/utils/TextureSampler.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/TextureSampler.cpp.s
+.PHONY : src/utils/TextureSampler.cpp.s
+
 src/utils/Window.o: src/utils/Window.cpp.o
 
 .PHONY : src/utils/Window.o
@@ -694,6 +748,9 @@ help:
 	@echo "... src/utils/Camera.o"
 	@echo "... src/utils/Camera.i"
 	@echo "... src/utils/Camera.s"
+	@echo "... src/utils/FrameBuffer.o"
+	@echo "... src/utils/FrameBuffer.i"
+	@echo "... src/utils/FrameBuffer.s"
 	@echo "... src/utils/Material.o"
 	@echo "... src/utils/Material.i"
 	@echo "... src/utils/Material.s"
@@ -703,6 +760,9 @@ help:
 	@echo "... src/utils/Shader.o"
 	@echo "... src/utils/Shader.i"
 	@echo "... src/utils/Shader.s"
+	@echo "... src/utils/TextureSampler.o"
+	@echo "... src/utils/TextureSampler.i"
+	@echo "... src/utils/TextureSampler.s"
 	@echo "... src/utils/Window.o"
 	@echo "... src/utils/Window.i"
 	@echo "... src/utils/Window.s"

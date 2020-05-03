@@ -12,8 +12,8 @@
 #include "PrimitiveScene.h"
 #include "Material.h"
 
+#include "GLUtils.h"
 #include "glm/glm.hpp"
-#include <GL/glew.h>
 #include <vector>
 #include <string>
 #include <map>
