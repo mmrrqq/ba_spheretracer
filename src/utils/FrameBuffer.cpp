@@ -20,9 +20,9 @@ void FrameBuffer::Unbind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::AttachTexture(TextureSampler texture)
+void FrameBuffer::AttachTexture(TextureSampler &texture)
 {
-    glFramebufferTexture2D(GL_FRAMEBUFFER, texture.AttachmentType, GL_TEXTURE_2D, texture.Id, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, texture.GetAttachmentType(), GL_TEXTURE_2D, texture.GetID(), 0);
 }
 
 unsigned int FrameBuffer::CheckStatus()

@@ -4,6 +4,7 @@
 #include "utils/Camera.h"
 #include "utils/Shader.h"
 #include "utils/PrimitiveScene.h"
+#include "FrameBuffer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -15,11 +16,13 @@ public:
     ~Spheremarcher();
 
 private:
-    Shader marchingShader_;
+    FrameBuffer offScreenBuffer_;
+    TextureSampler colorTexture_, depthTexture_;
+    Shader offScreenShader_, screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
-    bool mouseDown_;
-    bool moving_;
+    bool mouseDown_, moving_;
+    unsigned int vao_, ibo_;
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 

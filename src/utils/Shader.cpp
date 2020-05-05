@@ -250,6 +250,12 @@ void Shader::SetUniform(const std::string name, const std::vector<Material> &mat
     }
 }
 
+void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
+{
+    texture.Bind(slot);
+    glUniform1i(getUniformLocation(name), slot);
+}
+
 int Shader::getUniformLocation(const std::string name)
 {
     if (!pid_)
