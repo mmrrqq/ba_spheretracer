@@ -6,7 +6,9 @@
 Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
       mouseDown_(false),
-      moving_(false)
+      moving_(false),
+      firstPassBuffer_(GetWidth() / 4, GetHeight() / 4),
+      secondPassBuffer_(GetWidth() / 2, GetHeight() / 2)
 {
 }
 
@@ -60,29 +62,30 @@ void Spheremarcher::initialize()
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    // framebuffer setup
-    colorTexture_ = TextureSampler(GetWidth(), GetHeight(), GL_COLOR_ATTACHMENT0);
-    depthTexture_ = TextureSampler(GetWidth(), GetHeight(), GL_DEPTH_ATTACHMENT);
-
-    offScreenBuffer_.Bind();
-    colorTexture_.Bind();
-    offScreenBuffer_.AttachTexture(colorTexture_);
-    depthTexture_.Bind();
-    offScreenBuffer_.AttachTexture(depthTexture_);
-    offScreenBuffer_.CheckStatus();
-    offScreenBuffer_.Unbind();
-
+    firstPassShader_.Load("res/shaders/marching.vertex", "res/shaders/firstPassShader.fragment");
     offScreenShader_.Load("res/shaders/marching.vertex", "res/shaders/offScreenShader.fragment");
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
 
+    firstPassShader_.Bind();
+    firstPassShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
+    firstPassShader_.SetUniform("UScene", scene_);
+    firstPassShader_.SetUniform("UInvView", camera_.GetView());
+    firstPassShader_.Unbind();
+
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
-    offScreenShader_.SetUniform("UNormalEpsilon", 0.003f);
-    offScreenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
     offScreenShader_.SetUniform("UScene", scene_);
-    offScreenShader_.SetUniform("UMaterials", materials);
     offScreenShader_.SetUniform("UInvView", camera_.GetView());
     offScreenShader_.Unbind();
+
+    screenShader_.Bind();
+    screenShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
+    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
+    screenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
+    screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetUniform("UMaterials", materials);
+    screenShader_.SetUniform("UInvView", camera_.GetView());
+    screenShader_.Unbind();
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -173,33 +176,50 @@ void Spheremarcher::draw()
     }
     ImGui::Render();
 
-    // FIRST RENDER PASS TO FRAMEBUFFER
+    glBindVertexArray(vao_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    // // FIRST RENDER PASS TO FRAMEBUFFER
+    firstPassBuffer_.Bind();
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 4, 1080 / 4);
+    firstPassShader_.Bind();
+    firstPassShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
+    firstPassShader_.SetUniform("UEyePosition", camera_.GetEye());
+    firstPassShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
 
-    offScreenBuffer_.Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    firstPassBuffer_.Unbind();
+    firstPassShader_.Unbind();
+
+    // SECOND RENDER PASS TO FRAMEBUFFER
+    secondPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 2, 1080 / 2);
     offScreenShader_.Bind();
-
-    glBindVertexArray(vao_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-
     offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    // this enables to draw the screen filling triangle in the vertex shader
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
+    offScreenShader_.SetUniform("UColorTexture", firstPassBuffer_.GetColorTexture(), 0U);
+    offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 1U);
+
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    offScreenBuffer_.Unbind();
+    secondPassBuffer_.Unbind();
     offScreenShader_.Unbind();
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920, 1080);
     // DRAW TO SCREEN
     screenShader_.Bind();
-
-    glBindVertexArray(vao_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-
-    screenShader_.SetUniform("UColorTexture", colorTexture_, 0U);
-    screenShader_.SetUniform("UDepthTexture", depthTexture_, 1U);
+    screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
+    screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
+    screenShader_.SetUniform("UEyePosition", camera_.GetEye());
+    screenShader_.SetUniform("UColorTexture", secondPassBuffer_.GetColorTexture(), 0U);
+    screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();
+
+    glfwSwapBuffers(window_);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

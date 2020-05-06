@@ -263,7 +263,11 @@ int Shader::getUniformLocation(const std::string name)
 
     auto cachedLocation = locations.find(name);
     if (cachedLocation != locations.end())
-        return cachedLocation->second;
+    {
+        auto location = cachedLocation->second;
+        if (location != -1)
+            return location;
+    }
 
     int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());
     if (location == -1)

@@ -1,6 +1,6 @@
 #version 410 core
 #define MAX_OBJECTS 10
-#define MAX_MATERIALS 5
+
 struct Sphere 
 {
     int materialId;
@@ -24,6 +24,7 @@ struct PrimitiveScene
     int numTori;
 };
 
+float distEpsilon = 0.001;
 int maxMarchingSteps = 128;
 float maxDrawDistance = 50.0;
 
@@ -32,9 +33,6 @@ uniform vec4 UEyePosition;
 
 uniform PrimitiveScene UScene;
 uniform mat4 UInvView;
-
-uniform sampler2D UColorTexture;
-uniform sampler2D UDepthTexture;
 
 in vec2 TexCoords;
 out vec4 color;
@@ -151,24 +149,16 @@ float getConeOpeningAngle(vec3 rayDir)
 }
 
 void main()
-{    
-    vec3 cameraRayDireciton = getRayDirection();
-    vec4 rayDirection = UInvView * vec4(cameraRayDireciton, 0.0);
-    float coneAngle = getConeOpeningAngle(cameraRayDireciton);
+{
+    vec3 cameraRayDirection = getRayDirection();
+    vec4 rayDirection = UInvView * vec4(cameraRayDirection, 0.0);
+    float coneAngle = getConeOpeningAngle(cameraRayDirection);
 
     float dist = 0;
-    vec3 position;
-    vec4 eyePosition = UEyePosition;    
+    float depth = 0;
 
-    float depth = texture(UDepthTexture, TexCoords.xy).r * maxDrawDistance;    
-    vec4 fragColor = texture(UColorTexture, TexCoords.xy);
-        
-    if (depth > maxDrawDistance)
-    {
-        color = fragColor;
-        gl_FragDepth = depth / maxDrawDistance;
-        return;
-    }     
+    vec3 position;
+    vec4 eyePosition = UEyePosition;        
 
     for(int i = 0; i < maxMarchingSteps; i++)
     {                
@@ -176,7 +166,7 @@ void main()
         vec2 dist_mat = distanceToScene(position);
         dist = dist_mat.x;
         if (dist < depth * tan(coneAngle))
-        {            
+        {
             gl_FragDepth = depth / maxDrawDistance;
             return;
         }
@@ -185,7 +175,7 @@ void main()
 
         if (depth > maxDrawDistance)
         {
-            color = vec4(0.1, 0.1, 0.1, 1.0);
+            color = vec4(0.3, 0.1, 0.1, 1.0);
             gl_FragDepth = depth / maxDrawDistance;
             return;
         }       

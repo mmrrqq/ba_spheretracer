@@ -2,6 +2,7 @@
 
 #include "GLUtils.h"
 
+// TODO: this is more a framebuffer texture class..
 // mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture class
 class TextureSampler
 {

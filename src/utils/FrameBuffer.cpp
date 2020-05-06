@@ -5,6 +5,21 @@ FrameBuffer::FrameBuffer()
     glGenFramebuffers(1, &id_);
 }
 
+FrameBuffer::FrameBuffer(int width, int height)
+    : colorTexture_(width, height, GL_COLOR_ATTACHMENT0),
+      depthTexture_(width, height, GL_DEPTH_ATTACHMENT)
+{
+    glGenFramebuffers(1, &id_);
+    Bind();
+    colorTexture_.Bind();
+    AttachTexture(colorTexture_);
+    depthTexture_.Bind();
+    AttachTexture(depthTexture_);
+
+    CheckStatus();
+    Unbind();
+}
+
 FrameBuffer::~FrameBuffer()
 {
     glDeleteFramebuffers(1, &id_);

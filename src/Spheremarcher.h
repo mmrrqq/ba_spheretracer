@@ -16,13 +16,14 @@ public:
     ~Spheremarcher();
 
 private:
-    FrameBuffer offScreenBuffer_;
-    TextureSampler colorTexture_, depthTexture_;
-    Shader offScreenShader_, screenShader_;
+    FrameBuffer firstPassBuffer_, secondPassBuffer_;
+    Shader firstPassShader_, offScreenShader_, screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
     bool mouseDown_, moving_;
     unsigned int vao_, ibo_;
+
+    void initializeFramebuffers();
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 

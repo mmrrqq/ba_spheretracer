@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    Spheremarcher marcher(1920, 600);
+    Spheremarcher marcher(1920, 1080);
     Application app((char *)"Spheremarcher", &marcher);
 
     app.run();
