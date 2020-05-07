@@ -17,7 +17,6 @@ FrameBuffer::FrameBuffer(int width, int height)
     AttachTexture(depthTexture_);
 
     CheckStatus();
-    Unbind();
 }
 
 FrameBuffer::~FrameBuffer()

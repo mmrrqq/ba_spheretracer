@@ -256,6 +256,7 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
+    float depth = 0.0;
 
     // if (ortho)
     // {

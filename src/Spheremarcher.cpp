@@ -7,8 +7,10 @@ Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
       mouseDown_(false),
       moving_(false),
-      firstPassBuffer_(GetWidth() / 4, GetHeight() / 4),
-      secondPassBuffer_(GetWidth() / 2, GetHeight() / 2)
+      firstPassBuffer_(GetWidth() / 8, GetHeight() / 8),
+      secondPassBuffer_(GetWidth() / 4, GetHeight() / 4),
+      thirdPassBuffer_(GetWidth() / 2, GetHeight() / 2),
+      fovy_(90.0f)
 {
 }
 
@@ -44,8 +46,8 @@ void Spheremarcher::initialize()
             10.0f));
 
     Sphere testSphere;
-    testSphere.position = glm::vec3(0.0, 0.0, 0.0);
-    testSphere.radius = 1.0f;
+    testSphere.position = glm::vec3(1.0, 0.0, -1.0);
+    testSphere.radius = 0.7f;
     testSphere.materialId = 1;
     scene_.AddSphere(testSphere);
     /////// END SCENE TEST SETUP
@@ -70,12 +72,14 @@ void Spheremarcher::initialize()
     firstPassShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
     firstPassShader_.SetUniform("UScene", scene_);
     firstPassShader_.SetUniform("UInvView", camera_.GetView());
+    firstPassShader_.SetUniform("UFovY", fovy_);
     firstPassShader_.Unbind();
 
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
     offScreenShader_.SetUniform("UScene", scene_);
     offScreenShader_.SetUniform("UInvView", camera_.GetView());
+    offScreenShader_.SetUniform("UFovY", fovy_);
     offScreenShader_.Unbind();
 
     screenShader_.Bind();
@@ -85,6 +89,7 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UInvView", camera_.GetView());
+    screenShader_.SetUniform("UFovY", fovy_);
     screenShader_.Unbind();
 }
 
@@ -158,68 +163,66 @@ void Spheremarcher::draw()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
     {
-        static float f = 0.0f;
-        static int counter = 0;
+        ImGui::Begin("debug");
+        ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
 
-        ImGui::Begin("debug"); // Create a window called "Hello, world!" and append into it.
-
-        ImGui::SliderFloat3("sphere position", &scene_.Spheres[0].position[0], -10.0f, 10.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-        // ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("fram time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
     ImGui::Render();
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     // // FIRST RENDER PASS TO FRAMEBUFFER
     firstPassBuffer_.Bind();
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1920 / 4, 1080 / 4);
+    glViewport(0, 0, 1920 / 8, 1080 / 8);
     firstPassShader_.Bind();
+    firstPassShader_.SetUniform("UFovY", fovy_);
     firstPassShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     firstPassShader_.SetUniform("UEyePosition", camera_.GetEye());
-    firstPassShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
-
+    firstPassShader_.SetUniform("UImageDim", glm::vec2(1920 / 8, 1080 / 8));
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    firstPassBuffer_.Unbind();
-    firstPassShader_.Unbind();
 
-    // SECOND RENDER PASS TO FRAMEBUFFER
+    //SECOND RENDER PASS TO FRAMEBUFFER
     secondPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 4, 1080 / 4);
+    offScreenShader_.Bind();
+    offScreenShader_.SetUniform("UFovY", fovy_);
+    offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
+    offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
+    offScreenShader_.SetUniform("UColorTexture", firstPassBuffer_.GetColorTexture(), 0U);
+    offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 1U);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    thirdPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920 / 2, 1080 / 2);
     offScreenShader_.Bind();
-    offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
-    offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
-    offScreenShader_.SetUniform("UColorTexture", firstPassBuffer_.GetColorTexture(), 0U);
-    offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 1U);
-
+    offScreenShader_.SetUniform("UColorTexture", secondPassBuffer_.GetColorTexture(), 0U);
+    offScreenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    secondPassBuffer_.Unbind();
-    offScreenShader_.Unbind();
 
+    // DRAW TO SCREEN
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    screenShader_.Bind();
+    glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
-    // DRAW TO SCREEN
-    screenShader_.Bind();
+    screenShader_.SetUniform("UFovY", fovy_);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    screenShader_.SetUniform("UColorTexture", secondPassBuffer_.GetColorTexture(), 0U);
-    screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 1U);
+    screenShader_.SetUniform("UColorTexture", thirdPassBuffer_.GetColorTexture(), 0U);
+    screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();
-
-    glfwSwapBuffers(window_);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
