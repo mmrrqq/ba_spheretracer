@@ -165,8 +165,7 @@ void main()
         dist = dist_mat.x;
         float coneRadius = depth * tan(coneAngle);
         if (dist < coneRadius)
-        {            
-            color = vec4(0.0, 0.1, 0.1, 1.0);
+        {                        
             gl_FragDepth = (depth - (coneRadius)) / maxDrawDistance;
             return;
         }
@@ -175,11 +174,11 @@ void main()
 
         if (depth > maxDrawDistance)
         {
-            color = vec4(i / 50, 0.1, 0.1, 1.0);
+            color = vec4(0.1, 0.1, 0.1, 1.0);
             gl_FragDepth = depth / maxDrawDistance;
             return;
         }       
     }    
-    color = vec4(0.3, 0.1, 0.0, 1.0);
+    color = vec4(0.1, 0.1, 0.0, 1.0);
     gl_FragDepth = depth / maxDrawDistance;
 }

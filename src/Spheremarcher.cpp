@@ -173,7 +173,7 @@ void Spheremarcher::draw()
     ImGui::Render();
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS);
+    glDepthFunc(GL_LESS);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     // // FIRST RENDER PASS TO FRAMEBUFFER
@@ -219,7 +219,7 @@ void Spheremarcher::draw()
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    screenShader_.SetUniform("UColorTexture", thirdPassBuffer_.GetColorTexture(), 0U);
+    // screenShader_.SetUniform("UColorTexture", thirdPassBuffer_.GetColorTexture(), 0U);
     screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();

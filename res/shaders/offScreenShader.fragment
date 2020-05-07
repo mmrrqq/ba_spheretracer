@@ -185,11 +185,11 @@ void main()
 
         if (depth > maxDrawDistance)
         {
-            color = vec4(0.1, 0.1, 0.7, 1.0);
+            color = vec4(0.1, 0.1, 0.1, 1.0);
             gl_FragDepth = depth / maxDrawDistance;
             return;
         }       
     }    
-    color = vec4(0.8, 0.1, 0.8, 1.0);
+    color = vec4(0.1, 0.1, 0.1, 1.0);
     gl_FragDepth = depth / maxDrawDistance;
 }

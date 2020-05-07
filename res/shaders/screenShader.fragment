@@ -181,8 +181,8 @@ vec4 getRayAndAngle()
 {
     vec2 uvLeft = tan(radians(UFovY)/2) * (TexCoords * UImageDim - 0.5 * UImageDim) / UImageDim.y;    
     vec2 uvRight = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 1) - 0.5 * UImageDim) / UImageDim.y;        
-    vec3 leftRayDir = normalize(vec3(uvLeft, -1));    
-    vec3 rightRayDir = normalize(vec3(uvRight, -1));    
+    vec3 leftRayDir = normalize(vec3(uvLeft, -1));
+    vec3 rightRayDir = normalize(vec3(uvRight, -1));
 
     float angle = acos(dot(leftRayDir, rightRayDir));
 
@@ -262,24 +262,17 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = texture(UDepthTexture, TexCoords.xy - vec2(0.002, 0.0027)).r * maxDrawDistance;
-    // float depth = 0.0;
-    vec4 fragColor = texture(UColorTexture, TexCoords.xy - vec2(0.002, 0.0027));                
+    float depth = texture(UDepthTexture, TexCoords.xy).r * maxDrawDistance;        
+    vec4 fragColor = texture(UColorTexture, TexCoords.xy);
 
     if (depth >= maxDrawDistance)
     {
-        color = fragColor;
+        color = vec4(0.1, 0.1, 0.1, 1.0);
         gl_FragDepth = 1.0;
         return;
     }
 
-    // if (ortho)
-    // {
-    //     eyePosition += vec4(((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y, 0.0);
-    //     rayDirection = vec3(0,0,-1);
-    // }
-
-    for(int i = 0; i < 500; i++)
+    for(int i = 0; i < maxMarchingSteps; i++)
     {                
         position = vec3(eyePosition + depth * rayDirection);        
         vec2 dist_mat = distanceToScene(position);
@@ -302,7 +295,7 @@ void main()
 
         if (depth > maxDrawDistance)
         {
-            color = vec4(0.3, 0.3, 0.3, 0.0);
+            color = vec4(0.1, 0.1, 0.1, 1.0);
             return;
         }
 
@@ -314,5 +307,5 @@ void main()
         //     return;
         // }
     }    
-    color = vec4(0.1, 0.0, 0.7, 1.0);
+    color = vec4(0.1, 0.1, 0.1, 1.0);
 }
