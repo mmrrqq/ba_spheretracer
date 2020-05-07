@@ -33,14 +33,14 @@ void Spheremarcher::initialize()
     std::vector<Material> materials;
     materials.push_back(
         Material(
-            glm::vec3(0.2, 0.0, 0.0),
+            glm::vec3(0.2, 0.2, 0.0),
             glm::vec3(0.7, 0.7, 0.0),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
 
     materials.push_back(
         Material(
-            glm::vec3(0.0, 0.0, 0.2),
+            glm::vec3(0.2, 0.0, 0.2),
             glm::vec3(0.7, 0.0, 0.7),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
@@ -173,7 +173,7 @@ void Spheremarcher::draw()
     ImGui::Render();
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_ALWAYS);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     // // FIRST RENDER PASS TO FRAMEBUFFER
@@ -196,7 +196,7 @@ void Spheremarcher::draw()
     offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
-    offScreenShader_.SetUniform("UColorTexture", firstPassBuffer_.GetColorTexture(), 0U);
+    // offScreenShader_.SetUniform("UColorTexture", firstPassBuffer_.GetColorTexture(), 0U);
     offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -205,7 +205,7 @@ void Spheremarcher::draw()
     glViewport(0, 0, 1920 / 2, 1080 / 2);
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
-    offScreenShader_.SetUniform("UColorTexture", secondPassBuffer_.GetColorTexture(), 0U);
+    // offScreenShader_.SetUniform("UColorTexture", secondPassBuffer_.GetColorTexture(), 0U);
     offScreenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -220,7 +220,7 @@ void Spheremarcher::draw()
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
     // screenShader_.SetUniform("UColorTexture", thirdPassBuffer_.GetColorTexture(), 0U);
-    screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 1U);
+    screenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 1U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();
 

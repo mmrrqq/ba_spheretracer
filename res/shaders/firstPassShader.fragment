@@ -132,25 +132,16 @@ vec2 distanceToScene(vec3 position)
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
-vec4 getRayAndAngle()
+vec3 getRayDir()
 {
-    vec2 uvLeft = tan(radians(UFovY)/2) * (TexCoords * UImageDim - 0.5 * UImageDim) / UImageDim.y;    
-    vec2 uvRight = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 1) - 0.5 * UImageDim) / UImageDim.y;        
-    vec3 leftRayDir = normalize(vec3(uvLeft, -1));    
-    vec3 rightRayDir = normalize(vec3(uvRight, -1));    
-
-    float angle = acos(dot(leftRayDir, rightRayDir));
-
-    vec3 rayDir = normalize(leftRayDir + rightRayDir);
-
-    return vec4(rayDir, angle);
+    vec2 uv = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y;        
+    return  normalize(vec3(uv, -1));                
 }
 
 void main()
 {
-    vec4 rayAndAngle = getRayAndAngle();
-    vec4 rayDirection = UInvView * vec4(rayAndAngle.xyz, 0.0);
-    float coneAngle = rayAndAngle.w / 2;
+    vec3 cameraRayDir = getRayDir();
+    vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);    
 
     float dist = 0;
     float depth = 0;
@@ -158,12 +149,14 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;        
 
+    float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
+
     for(int i = 0; i < maxMarchingSteps; i++)
     {                
         position = vec3(eyePosition + depth * rayDirection);        
         vec2 dist_mat = distanceToScene(position);
         dist = dist_mat.x;
-        float coneRadius = depth * tan(coneAngle);
+        float coneRadius = depth * coneRadiusCoeff;
         if (dist < coneRadius)
         {                        
             gl_FragDepth = (depth - (coneRadius)) / maxDrawDistance;
@@ -173,12 +166,10 @@ void main()
         depth += dist;
 
         if (depth > maxDrawDistance)
-        {
-            color = vec4(0.1, 0.1, 0.1, 1.0);
+        {            
             gl_FragDepth = depth / maxDrawDistance;
             return;
         }       
-    }    
-    color = vec4(0.1, 0.1, 0.0, 1.0);
+    }        
     gl_FragDepth = depth / maxDrawDistance;
 }
