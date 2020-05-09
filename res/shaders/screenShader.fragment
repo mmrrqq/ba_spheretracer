@@ -33,8 +33,6 @@ struct PrimitiveScene
 };
 
 float distEpsilon = 0.01;
-int maxMarchingSteps = 128;
-float maxDrawDistance = 50.0;
 bool ortho = false;
 bool showStepCount = false;
 
@@ -43,8 +41,9 @@ uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
 uniform vec3 ULightDirection;
 uniform vec4 UEyePosition;
+uniform int UMarchingSteps;
+uniform float UMaxDrawDistance;
 
-uniform sampler2D UColorTexture;
 uniform sampler2D UDepthTexture;
 
 uniform PrimitiveScene UScene;
@@ -207,7 +206,7 @@ float getShadowMinDistance(vec3 position)
     // float maxDist = length(rayDir);
     // vec3 dir = normalize(rayDir);
     // vec3 rayPos = lightOrigin;
-    // for(int i = 0; i < maxMarchingSteps; i++)
+    // for(int i = 0; i < UMarchingSteps; i++)
     // {                
     //     rayPos = lightOrigin + depth * dir;        
     //     dist = distanceToScene(rayPos).x;  
@@ -274,10 +273,9 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = texture(UDepthTexture, TexCoords.xy).r * maxDrawDistance;            
-    vec4 fragColor = texture(UColorTexture, TexCoords.xy);
+    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                        
 
-    if (depth >= maxDrawDistance)
+    if (depth > UMaxDrawDistance - 1)
     {
         color = vec4(0.1, 0.1, 0.1, 1.0);
         gl_FragDepth = 1.0;
@@ -288,7 +286,7 @@ void main()
     // Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces, John C. Hart, 1996.
     float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
 
-    for(int i = 0; i < maxMarchingSteps; i++)
+    for(int i = 0; i < UMarchingSteps; i++)
     {                
         position = vec3(eyePosition + depth * rayDirection);        
         vec2 dist_mat = distanceToScene(position);
@@ -298,7 +296,7 @@ void main()
         {
             if (showStepCount)
             {
-                float steps = i/float(maxMarchingSteps);
+                float steps = i/float(UMarchingSteps);
                 color = vec4(steps, 0.0, 1.0 - steps, 1.0);
             }
             else
@@ -310,19 +308,19 @@ void main()
 
         depth += dist;
 
-        if (depth > maxDrawDistance)
+        if (depth > UMaxDrawDistance)
         {
             color = vec4(0.1, 0.1, 0.1, 1.0);
             return;
         }
 
         // this creates a cool looking effect! but no distant fog as it was intended for :)
-        // if (depth > maxDrawDistance - 10.0) 
+        // if (depth > UMaxDrawDistance - 10.0) 
         // {
-        //     float factor = depth / maxDrawDistance;
+        //     float factor = depth / UMaxDrawDistance;
         //     color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
         //     return;
         // }
     }    
-    color = vec4(0.1, 0.1, 0.1, 1.0);
+    color = vec4(0.7, 0.1, 0.1, 1.0);
 }

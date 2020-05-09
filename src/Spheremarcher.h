@@ -16,8 +16,8 @@ public:
     ~Spheremarcher();
 
 private:
-    FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_;
-    Shader firstPassShader_, offScreenShader_, screenShader_;
+    FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_, fourthPassBuffer_;
+    Shader offScreenShader_, screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
     bool mouseDown_, moving_;
