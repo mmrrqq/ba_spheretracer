@@ -250,6 +250,12 @@ void Shader::SetUniform(const std::string name, const std::vector<Material> &mat
     }
 }
 
+void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
+{
+    texture.Bind(slot);
+    glUniform1i(getUniformLocation(name), slot);
+}
+
 int Shader::getUniformLocation(const std::string name)
 {
     if (!pid_)
@@ -257,7 +263,11 @@ int Shader::getUniformLocation(const std::string name)
 
     auto cachedLocation = locations.find(name);
     if (cachedLocation != locations.end())
-        return cachedLocation->second;
+    {
+        auto location = cachedLocation->second;
+        if (location != -1)
+            return location;
+    }
 
     int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());
     if (location == -1)

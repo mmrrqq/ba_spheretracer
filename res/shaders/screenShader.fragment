@@ -32,16 +32,19 @@ struct PrimitiveScene
     int numTori;
 };
 
-float distEpsilon = 0.001;
-int maxMarchingSteps = 128;
-float maxDrawDistance = 50.0;
+float distEpsilon = 0.01;
 bool ortho = false;
 bool showStepCount = false;
 
+uniform float UFovY;
 uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
 uniform vec3 ULightDirection;
 uniform vec4 UEyePosition;
+uniform int UMarchingSteps;
+uniform float UMaxDrawDistance;
+
+uniform sampler2D UDepthTexture;
 
 uniform PrimitiveScene UScene;
 uniform Material UMaterials[MAX_MATERIALS];
@@ -140,27 +143,27 @@ vec2 distanceToScene(vec3 position)
     float minDistance = 10000;    
     int materialId = -1;
     
-    // for (int i = 0; i < UScene.numSpheres; i++)
-    // {
-    //     Sphere sphere = UScene.spheres[i];
-    //     float d = distanceToSphere(sphere.position, sphere.radius, position);
-    //     if (d < minDistance)
-    //     {
-    //         minDistance = d;
-    //         materialId = sphere.materialId;
-    //     }        
-    // }    
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        float d = distanceToSphere(sphere.position, sphere.radius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = sphere.materialId;
+        }        
+    }    
 
-    // for (int i = 0; i < UScene.numTori; i++)
-    // {
-    //     Torus torus = UScene.tori[i];
-    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-    //     if (d < minDistance)
-    //     {
-    //         minDistance = d;
-    //         materialId = torus.materialId;
-    //     }        
-    // }
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];
+        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = torus.materialId;
+        }        
+    }
 
     float fractalDistance = distanceToMandelbrot2(position);
     if (fractalDistance < minDistance)
@@ -173,18 +176,10 @@ vec2 distanceToScene(vec3 position)
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
-vec3 getRayDirection()
-{          
-    vec2 uv = ((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y;    
-    return normalize(vec3(uv, -1));
-}
-
-float getConeOpeningAngle(vec3 rayDir)
+vec3 getRayDir()
 {
-    // TODO: this would be easier to calculate if I would know the fovy :D
-    vec2 uvAngle = ((TexCoords * UImageDim + vec2(1.0, 0.5)) - 0.5 * UImageDim) / UImageDim.y;
-    vec3 angleDir = normalize(vec3(uvAngle, -1));
-    return 2 * acos(dot(rayDir, angleDir));
+    vec2 uv = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y;        
+    return  normalize(vec3(uv, -1));                
 }
 
 // http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/#surface-normals-and-lighting
@@ -203,29 +198,48 @@ vec3 getNormal(vec3 position)
 
 float getShadowMinDistance(vec3 position)
 {
-    vec3 lightOrigin = position + -ULightDirection * 50;
-    float depth = 0.0;
-    float dist = 0.0;    
-    float minDist = 1000;
-    vec3 rayDirection = ULightDirection;
-    for(int i = 0; i < maxMarchingSteps; i++)
-    {                
-        position = vec3(lightOrigin + depth * rayDirection);        
-        dist = distanceToScene(position).x;  
-        if (dist < minDist)
-            minDist = dist;      
-        if (dist < distEpsilon)
-        {                                    
-            return 0.0;
-        }                   
-        depth += dist;
+    vec3 lightPos = position -(ULightDirection * 50);
+    // float depth = 0.0;
+    // float dist = 0.0;    
+    // float minDist = 1000;
+    // vec3 rayDir = position - lightOrigin;
+    // float maxDist = length(rayDir);
+    // vec3 dir = normalize(rayDir);
+    // vec3 rayPos = lightOrigin;
+    // for(int i = 0; i < UMarchingSteps; i++)
+    // {                
+    //     rayPos = lightOrigin + depth * dir;        
+    //     dist = distanceToScene(rayPos).x;  
 
-        if (depth > 50)
-        {            
-            return minDist;
-        }       
-    }    
-    return minDist;
+    //     if (dist < minDist)        
+    //         minDist = dist;              
+    //     if (dist < 0.1)                                  
+    //         return minDist;             
+    //     depth += dist;
+
+    //     if (depth > maxDist)        
+    //         return 1000;        
+    // }    
+    // return 1000;
+    //https://medium.com/@ArmstrongCS/raymarching-2-aesthetics-ed3a5f7d12b1
+    vec3 rayDir=lightPos-position;
+    vec3 dir=normalize(rayDir);
+    float maxLength=length(rayDir);//anything past the light we don't care about
+    int maxIters=100;
+    float finalDist=1000.0;
+    vec3 rayPos=position;
+    float totalDist=0.1;rayPos+=dir*totalDist;
+    
+    float res=1.0;
+    
+    for(int i=0;i<maxIters&&totalDist<maxLength;i++){
+        if(finalDist<0.0001)return 0.0;
+        finalDist=distanceToScene(rayPos).x;
+        totalDist+=finalDist;
+        res=min(res,30.0*finalDist/totalDist);
+        rayPos+=finalDist*dir;
+    }
+    return res;
 }
 
 vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec4 rayDir)
@@ -234,12 +248,14 @@ vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec4 rayDir)
     // TODO: move to light struct
     vec3 lightColor = vec3(1.0, 0.9, 0.9);
 
+    float diffuseContribution = dot(normal, - ULightDirection);    
     float shadowDist = getShadowMinDistance(position);
 
-    if (shadowDist < 0.01)
+    if (shadowDist < 0.1)
+    {
         return (material.ambientColor * lightColor);
+    }
         
-    float diffuseContribution = dot(normal, - ULightDirection);    
     vec3 reflected = reflect(-ULightDirection, normal);
     float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
     
@@ -250,30 +266,37 @@ vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec4 rayDir)
 
 void main()
 {
-    vec4 rayDirection = UInvView * vec4(getRayDirection(), 0.0);
+    vec3 cameraRayDir = getRayDir();
+    vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);       
     float dist = 0;
     
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = 0.0;
+    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                        
 
-    // if (ortho)
-    // {
-    //     eyePosition += vec4(((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y, 0.0);
-    //     rayDirection = vec3(0,0,-1);
-    // }
+    if (depth > UMaxDrawDistance - 1)
+    {
+        color = vec4(0.1, 0.1, 0.1, 1.0);
+        gl_FragDepth = 1.0;
+        return;
+    }
 
-    for(int i = 0; i < maxMarchingSteps; i++)
+    // https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/basic-sphere-tracer
+    // Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces, John C. Hart, 1996.
+    float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
+
+    for(int i = 0; i < UMarchingSteps; i++)
     {                
         position = vec3(eyePosition + depth * rayDirection);        
         vec2 dist_mat = distanceToScene(position);
-        dist = dist_mat.x;
-        if (dist < distEpsilon)
+        dist = dist_mat.x; 
+        float coneRadius = depth * coneRadiusCoeff;   
+        if (dist <= coneRadius)        
         {
             if (showStepCount)
             {
-                float steps = i/float(maxMarchingSteps);
+                float steps = i/float(UMarchingSteps);
                 color = vec4(steps, 0.0, 1.0 - steps, 1.0);
             }
             else
@@ -285,19 +308,19 @@ void main()
 
         depth += dist;
 
-        if (depth > maxDrawDistance)
+        if (depth > UMaxDrawDistance)
         {
             color = vec4(0.1, 0.1, 0.1, 1.0);
             return;
         }
 
         // this creates a cool looking effect! but no distant fog as it was intended for :)
-        // if (depth > maxDrawDistance - 10.0) 
+        // if (depth > UMaxDrawDistance - 10.0) 
         // {
-        //     float factor = depth / maxDrawDistance;
+        //     float factor = depth / UMaxDrawDistance;
         //     color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
         //     return;
         // }
     }    
-    color = vec4(0.1, 0.1, 0.1, 1.0);
+    color = vec4(0.7, 0.1, 0.1, 1.0);
 }

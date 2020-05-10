@@ -1,0 +1,188 @@
+#version 410 core
+#define MAX_OBJECTS 10
+#define MAX_MATERIALS 5
+
+struct Sphere 
+{
+    int materialId;
+    vec3 position;
+    float radius;
+};
+
+struct Torus
+{
+    int materialId;
+    vec3 position;
+    float radius;
+    float tubeRadius;
+};
+
+struct PrimitiveScene 
+{
+    Sphere spheres[MAX_OBJECTS];
+    Torus tori[MAX_OBJECTS];    
+    int numSpheres;
+    int numTori;
+};
+
+uniform float UFovY;
+uniform vec2 UImageDim;
+uniform vec4 UEyePosition;
+
+uniform PrimitiveScene UScene;
+uniform mat4 UInvView;
+
+uniform bool UUseDepthTexture;
+uniform int UMarchingSteps;
+uniform float UMaxDrawDistance;
+
+uniform sampler2D UDepthTexture;
+
+in vec2 TexCoords;
+out vec4 color;
+
+// credit iquilez
+float distanceToMandelbrot(vec3 pos)
+{
+    vec3 w = pos;
+    float m = dot(w,w);
+
+    vec4 trap = vec4(abs(w),m);
+	float dz = 1.0;
+    
+    
+	for( int i=0; i<4; i++ )
+    {
+        float m2 = m*m;
+        float m4 = m2*m2;
+		dz = 8.0*sqrt(m4*m2*m)*dz + 1.0;
+
+        float x = w.x; float x2 = x*x; float x4 = x2*x2;
+        float y = w.y; float y2 = y*y; float y4 = y2*y2;
+        float z = w.z; float z2 = z*z; float z4 = z2*z2;
+
+        float k3 = x2 + z2;
+        float k2 = inversesqrt( k3*k3*k3*k3*k3*k3*k3 );
+        float k1 = x4 + y4 + z4 - 6.0*y2*z2 - 6.0*x2*y2 + 2.0*z2*x2;
+        float k4 = x2 - y2 + z2;
+
+        w.x = pos.x +  64.0*x*y*z*(x2-z2)*k4*(x4-6.0*x2*z2+z4)*k1*k2;
+        w.y = pos.y + -16.0*y2*k3*k4*k4 + k1*k1;
+        w.z = pos.z +  -8.0*y*k4*(x4*x4 - 28.0*x4*x2*z2 + 70.0*x4*z4 - 28.0*x2*z2*z4 + z4*z4)*k1*k2;     
+        
+        trap = min( trap, vec4(abs(w),m) );
+
+        m = dot(w,w);
+		if( m > 256.0 )
+            break;
+    }    
+
+    return 0.25*log(m)*sqrt(m)/dz;
+}
+
+float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
+{
+	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
+}
+
+float distanceToSphere(vec3 spherePosition, float sphereRadius, vec3 position)
+{
+    return length(position - spherePosition) - sphereRadius;
+}
+
+float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 position)
+{
+    vec3 torusToPosition = position - torusPosition;
+    vec2 q = vec2(length(torusToPosition.xz)-radius,torusToPosition.y);
+    return length(q)-tubeRadius;
+}
+
+// -> vec2(distance, materialId)
+vec2 distanceToScene(vec3 position) 
+{
+    float minDistance = 10000;    
+    int materialId = -1;
+    
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        float d = distanceToSphere(sphere.position, sphere.radius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = sphere.materialId;
+        }        
+    }    
+
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];
+        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        if (d < minDistance)
+        {
+            minDistance = d;
+            materialId = torus.materialId;
+        }        
+    }
+
+    float fractalDistance = distanceToMandelbrot(position);
+    if (fractalDistance < minDistance)
+    {
+        minDistance = fractalDistance;
+        materialId = 1;
+    }    
+
+    return vec2(minDistance, materialId);
+}
+
+// https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
+vec3 getRayDir()
+{
+    vec2 uv = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y;        
+    return  normalize(vec3(uv, -1));                
+}
+
+void main()
+{    
+    vec3 cameraRayDir = getRayDir();
+    vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);       
+
+    float dist = 0;
+    float depth = 0;
+    vec3 position;
+    vec4 eyePosition = UEyePosition;       
+
+    if (UUseDepthTexture)
+    {
+        depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;        
+        if (depth > UMaxDrawDistance - 1)
+        {        
+            gl_FragDepth = 1.0;
+            return;
+        }     
+    }
+        
+    float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
+
+    for(int i = 0; i < UMarchingSteps; i++)
+    {                
+        position = vec3(eyePosition + depth * rayDirection);        
+        vec2 dist_mat = distanceToScene(position);
+        dist = dist_mat.x;
+        float coneRadius = depth * coneRadiusCoeff;
+        if (dist <= coneRadius)
+        {                                    
+            gl_FragDepth = depth / UMaxDrawDistance;
+            return;
+        }
+
+        depth += dist;
+
+        if (depth > UMaxDrawDistance)
+        {            
+            gl_FragDepth = 1.0;
+            return;
+        }       
+    }        
+    gl_FragDepth = depth / UMaxDrawDistance;
+}

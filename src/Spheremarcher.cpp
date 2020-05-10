@@ -1,7 +1,16 @@
 #include "Spheremarcher.h"
 
+#include "FrameBuffer.h"
+#include "TextureSampler.h"
+
 Spheremarcher::Spheremarcher(int width, int height)
-    : Window("Spheremarcher", width, height), marchingShader_(), mouseDown_(false), moving_(false)
+    : Window("Spheremarcher", width, height),
+      mouseDown_(false),
+      moving_(false),
+      firstPassBuffer_(GetWidth() / 8, GetHeight() / 8),
+      secondPassBuffer_(GetWidth() / 4, GetHeight() / 4),
+      thirdPassBuffer_(GetWidth() / 2, GetHeight() / 2),
+      fovy_(90.0f)
 {
 }
 
@@ -11,59 +20,67 @@ Spheremarcher::~Spheremarcher()
 
 void Spheremarcher::initialize()
 {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window_, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+    /////// SCENE TEST SETUP
     std::vector<Material> materials;
     materials.push_back(
         Material(
-            glm::vec3(0.2, 0.0, 0.0),
+            glm::vec3(0.2, 0.2, 0.0),
             glm::vec3(0.7, 0.7, 0.0),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
 
     materials.push_back(
         Material(
-            glm::vec3(0.0, 0.0, 0.2),
+            glm::vec3(0.2, 0.0, 0.2),
             glm::vec3(0.7, 0.0, 0.7),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
 
     Sphere testSphere;
-    testSphere.position = glm::vec3(0.0, 0.0, 0.0);
-    testSphere.radius = 1.0f;
+    testSphere.position = glm::vec3(1.0, 0.0, -1.0);
+    testSphere.radius = 0.7f;
     testSphere.materialId = 1;
-
-    // Torus testTorus;
-    // testTorus.position = glm::vec3(-2.0, 0.1, -5.0);
-    // testTorus.radius = 2.0f;
-    // testTorus.tubeRadius = 0.5f;
-    // testTorus.materialId = 0;
-
     scene_.AddSphere(testSphere);
-    // scene_.AddTorus(testTorus);
-    marchingShader_.Load("res/shaders/marching.vertex", "res/shaders/marching.fragment");
+    /////// END SCENE TEST SETUP
 
-    marchingShader_.Bind();
-    marchingShader_.SetUniform("UImageDim", glm::vec2(GetWidth(), GetHeight()));
-    marchingShader_.SetUniform("UNormalEpsilon", 0.003f);
-    marchingShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
-    marchingShader_.SetUniform("UScene", scene_);
-    marchingShader_.SetUniform("UMaterials", materials);
-    marchingShader_.SetUniform("UInvView", camera_.GetView());
-    marchingShader_.Unbind();
+    // TODO: create VertexArray class
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    // TODO: create IndexBuffer class
+    glGenBuffers(1, &ibo_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned int), nullptr, GL_STATIC_DRAW);
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window_, true);
-    ImGui_ImplOpenGL3_Init("#version 130");
+    offScreenShader_.Load("res/shaders/marching.vertex", "res/shaders/offScreenShader.fragment");
+    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
+
+    offScreenShader_.Bind();
+    offScreenShader_.SetUniform("UScene", scene_);
+    offScreenShader_.SetUniform("UMarchingSteps", 100);
+    offScreenShader_.SetUniform("UMaxDrawDistance", 50.0f);
+    offScreenShader_.Unbind();
+
+    screenShader_.Bind();
+    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
+    screenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
+    screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetUniform("UMaterials", materials);
+    screenShader_.SetUniform("UMarchingSteps", 80);
+    screenShader_.SetUniform("UMaxDrawDistance", 50.0f);
+    screenShader_.Unbind();
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -72,9 +89,12 @@ void Spheremarcher::resize(int width, int height)
     SetHeight(height);
     SetWidth(width);
 
-    marchingShader_.Bind();
-    marchingShader_.SetUniform("UImageDim", glm::vec2(width, height));
-    marchingShader_.Unbind();
+    offScreenShader_.Bind();
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(width, height));
+    offScreenShader_.Unbind();
+
+    // TODO: only allow resize of multipass compatible resoltions
+    // TODO: set resoltutions of framebuffers
 }
 
 void Spheremarcher::mouse(int button, int action, int mods)
@@ -136,40 +156,63 @@ void Spheremarcher::draw()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
     {
-        static float f = 0.0f;
-        static int counter = 0;
+        ImGui::Begin("debug");
+        ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
 
-        ImGui::Begin("debug"); // Create a window called "Hello, world!" and append into it.
-
-        ImGui::SliderFloat3("sphere position", &scene_.Spheres[0].position[0], -10.0f, 10.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-        // ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("fram time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
     ImGui::Render();
-    // TODO: create VertexArray class
-    unsigned int vao, ibo;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
-    // TODO: create IndexBuffer class
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned int), nullptr, GL_STATIC_DRAW);
-
-    marchingShader_.Bind();
-    // marchingShader_.SetUniform("UScene", scene_);
-    marchingShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
-    marchingShader_.SetUniform("UEyePosition", camera_.GetEye());
-    // this enables to draw the screen filling triangle in the vertex shader
+    glEnable(GL_DEPTH_TEST);
+    // glDepthFunc(GL_ALWAYS);
+    glBindVertexArray(vao_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    // // FIRST RENDER PASS TO FRAMEBUFFER
+    firstPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 8, 1080 / 8);
+    offScreenShader_.Bind();
+    offScreenShader_.SetUniform("UFovY", fovy_);
+    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
+    offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 8, 1080 / 8));
+    offScreenShader_.SetUniform("UUseDepthTexture", false);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    marchingShader_.Unbind();
+
+    //SECOND RENDER PASS TO FRAMEBUFFER
+    secondPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 4, 1080 / 4);
+    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UUseDepthTexture", true);
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
+    offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 0U);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    thirdPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 2, 1080 / 2);
+    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
+    offScreenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // DRAW TO SCREEN
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    screenShader_.Bind();
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920, 1080);
+    screenShader_.SetUniform("UFovY", fovy_);
+    screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
+    screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
+    screenShader_.SetUniform("UEyePosition", camera_.GetEye());
+    screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    screenShader_.Unbind();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

@@ -67,6 +67,8 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     //define blending function
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glEnable(GL_DEPTH_TEST); // this has to be enabled to write to gl_FragDepth as it seems
+
     // debug: print GL and GLSL version
     std::cout << "GLEW   " << glewGetString(GLEW_VERSION) << std::endl;
     std::cout << "GL     " << glGetString(GL_VERSION) << std::endl;
