@@ -125,12 +125,12 @@ vec2 distanceToScene(vec3 position)
         }        
     }
 
-    float fractalDistance = distanceToMandelbrot(position);
-    if (fractalDistance < minDistance)
+    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);
+    if (planeDistance < minDistance)
     {
-        minDistance = fractalDistance;
-        materialId = 1;
-    }    
+        minDistance = planeDistance;
+        materialId = 0;
+    }     
 
     return vec2(minDistance, materialId);
 }

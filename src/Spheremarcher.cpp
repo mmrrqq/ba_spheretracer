@@ -33,21 +33,21 @@ void Spheremarcher::initialize()
     std::vector<Material> materials;
     materials.push_back(
         Material(
-            glm::vec3(0.2, 0.2, 0.0),
-            glm::vec3(0.7, 0.7, 0.0),
+            glm::vec3(0.2, 0.2, 0.2),
+            glm::vec3(0.7, 0.7, 0.7),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
 
     materials.push_back(
         Material(
-            glm::vec3(0.2, 0.0, 0.2),
+            glm::vec3(0.1, 0.0, 0.1),
+            glm::vec3(0.6, 0.0, 0.6),
             glm::vec3(0.7, 0.0, 0.7),
-            glm::vec3(0.7, 0.7, 0.7),
             10.0f));
 
     Sphere testSphere;
-    testSphere.position = glm::vec3(1.0, 0.0, -1.0);
-    testSphere.radius = 0.7f;
+    testSphere.position = glm::vec3(0.0, 0.5, 0.0);
+    testSphere.radius = 1.0f;
     testSphere.materialId = 1;
     scene_.AddSphere(testSphere);
     /////// END SCENE TEST SETUP
