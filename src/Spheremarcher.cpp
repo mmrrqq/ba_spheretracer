@@ -33,7 +33,7 @@ void Spheremarcher::initialize()
     std::vector<Material> materials;
     materials.push_back(
         Material(
-            glm::vec3(0.2, 0.2, 0.2),
+            glm::vec3(0.1, 0.1, 0.1),
             glm::vec3(0.7, 0.7, 0.7),
             glm::vec3(0.7, 0.7, 0.7),
             10.0f));
@@ -75,7 +75,7 @@ void Spheremarcher::initialize()
 
     screenShader_.Bind();
     screenShader_.SetUniform("UNormalEpsilon", 0.003f);
-    screenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -1.0f, 0.5f)));
+    screenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -3.0f, 0.5f)));
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 80);

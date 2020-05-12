@@ -171,8 +171,12 @@ void main()
         dist = dist_mat.x;
         float coneRadius = depth * coneRadiusCoeff;
         if (dist <= coneRadius)
-        {                                    
-            gl_FragDepth = depth / UMaxDrawDistance;
+        {                            
+            // if we do not substract the coneRadius, the objects get cut..
+            // maybe use the last technique described in this post:
+            // https://iquilezles.org/www/articles/rmshadows/rmshadows.htm
+            // to improve that substraction..
+            gl_FragDepth = (depth - coneRadius) / UMaxDrawDistance;
             return;
         }
 
