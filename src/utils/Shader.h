@@ -84,10 +84,15 @@ public:
     /// \param materials the value for the uniform
     void SetUniform(const std::string, const std::vector<Material> &materials);
 
-    /// upload Materials vector uniform
+    /// upload texture sampler
     /// \param name string of the uniform name
     /// \param texture the value for the uniform
     void SetUniform(const std::string, TextureSampler &texture, unsigned int slot);
+
+    /// upload scene lights struct uniform
+    /// \param name string of the uniform name
+    /// \param lights the value for the uniform
+    void SetUniform(const std::string name, const SceneLights lights);
 
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it

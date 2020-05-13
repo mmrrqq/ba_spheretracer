@@ -1,6 +1,14 @@
 #version 410 core
 #define MAX_OBJECTS 10
 #define MAX_MATERIALS 5
+#define MAX_LIGHTS 5
+struct PointLight
+{
+    vec3 position;
+    vec3 color;
+    float size;
+};
+
 struct Sphere 
 {
     int materialId;
@@ -27,9 +35,15 @@ struct Material
 struct PrimitiveScene 
 {
     Sphere spheres[MAX_OBJECTS];
-    Torus tori[MAX_OBJECTS];    
+    Torus tori[MAX_OBJECTS];        
     int numSpheres;
     int numTori;
+};
+
+struct SceneLights
+{
+    PointLight pointLights[MAX_LIGHTS];
+    int numPointLights;
 };
 
 float distEpsilon = 0.01;
@@ -47,6 +61,7 @@ uniform float UMaxDrawDistance;
 uniform sampler2D UDepthTexture;
 
 uniform PrimitiveScene UScene;
+uniform SceneLights ULights;
 uniform Material UMaterials[MAX_MATERIALS];
 uniform mat4 UInvView;
 
@@ -169,54 +184,54 @@ vec3 getNormal(vec3 position)
     );
 }
 
-float getShadowMinDistance(vec3 position)
+float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
 {
-    vec3 lightPos = position -(ULightDirection * 10);    
-
-    vec3 lightVec = lightPos - position;
-
-    float maxDist = length(lightVec);
-    float lightSize = 0.4;
-    float depth = 0.01;
+    vec3 lightVec = lightPosition - position;
+    float maxDist = length(lightVec);    
+    vec3 rayDir = normalize(lightVec); 
     float dist = 0.0;    
     float minDist = 1.0;
-    vec3 rayDir = normalize(lightVec);        
+    float depth = 0.001;    
+
     for(int i = 0; i < UMarchingSteps; i++)
     {                        
         dist = distanceToScene(position + depth * rayDir).x;  
         // pad by 0.5 to improve inner shadow
-        minDist = min(0.8 + 0.5 * dist/(depth*lightSize), minDist);           
-
-        depth += dist;
-        if (depth > maxDist)        
-            break;        
-        if (minDist < 0.0001)                                  
+        minDist = min(0.5 + 0.5 * dist/(depth*lightSize), minDist);              
+        if (minDist < 0.01)                                  
             break;    
+
+        // this line is important as I want to step INTO the objects to get a negative dist
+        depth += clamp(dist, 0.005, 0.50);
+        if (depth > maxDist)
+            break;
     }        
-    return clamp(minDist, 0.0, 1.0);    
-    // return min((minDist * minDist), 1.0);       
+    return max(minDist, 0.0);         
 }
 
 vec3 getPhongColor(vec3 position, vec3 normal, int materialId, vec4 rayDir)
 {        
-    Material material = UMaterials[materialId];
-    // TODO: move to light struct
-    vec3 lightColor = vec3(1.0, 0.9, 0.9);
-    vec3 phongColor = material.ambientColor * lightColor;
-
-    float diffuseContribution = max(dot(normal, -ULightDirection), 0);    
+    Material material = UMaterials[materialId];    
+    vec3 phongColor = vec3(0.0, 0.0, 0.0);    
     
-    float shadowDist = getShadowMinDistance(position);
+    for (int i = 0; i < ULights.numPointLights; i++)
+    {
+        PointLight light = ULights.pointLights[i];
+        phongColor += material.ambientColor * light.color;
+        vec3 lightDir = normalize(light.position - position);
+        float diffuseContribution = dot(normal, lightDir);    
+        float shadow = getPointLightShadowFactor(position, light.position, light.size);        
 
-    if (shadowDist < 0.001)    
-        return vec3(0.0, 0.9, 0.9);        
-        
-    vec3 reflected = reflect(-ULightDirection, normal);
-    float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
-    
-    phongColor += shadowDist * (diffuseContribution * material.diffuseColor * lightColor
-        + specularContribution * material.specularColor * lightColor);
+        if (shadow < 0.01 || diffuseContribution < 0.0)    
+            continue;        
+            
+        vec3 reflected = reflect(lightDir, normal);
+        float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
+                
+        phongColor += shadow * (diffuseContribution * material.diffuseColor * light.color
+            + specularContribution * material.specularColor * light.color);
 
+    }    
     return phongColor;
 }
 
@@ -229,11 +244,11 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                        
+    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;    
 
     if (depth > UMaxDrawDistance - 1)
     {
-        color = vec4(0.1, 0.1, 0.1, 1.0);        
+        color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);        
         return;
     }
 
@@ -247,7 +262,7 @@ void main()
         vec2 dist_mat = distanceToScene(position);
         dist = dist_mat.x; 
         float coneRadius = depth * coneRadiusCoeff;   
-        if (dist <= coneRadius)        
+        if (dist < coneRadius)        
         {
             if (showStepCount)
             {
@@ -256,7 +271,7 @@ void main()
             }
             else
             {
-                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y), rayDirection), 1.0);
+                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y), rayDirection), 1.0) * exp(-0.00005*depth*depth*depth);
             }
             return;
         }                   
@@ -265,7 +280,7 @@ void main()
 
         if (depth > UMaxDrawDistance)
         {
-            color = vec4(0.1, 0.1, 0.1, 1.0);
+            color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
             return;
         }
 
@@ -277,5 +292,5 @@ void main()
         //     return;
         // }
     }    
-    color = vec4(0.7, 0.1, 0.1, 1.0);
+    color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
 }

@@ -50,6 +50,24 @@ void Spheremarcher::initialize()
     testSphere.radius = 1.0f;
     testSphere.materialId = 1;
     scene_.AddSphere(testSphere);
+    SceneLights lights;
+    PointLight yellowLight;
+    yellowLight.position = glm::vec3(4, 4, 0);
+    yellowLight.size = 0.05;
+    yellowLight.color = glm::vec3(0.7, 0.7, 0.2);
+    PointLight whiteLight;
+    whiteLight.position = glm::vec3(-4, 6, 0);
+    whiteLight.size = 0.3;
+    whiteLight.color = glm::vec3(0.6, 0.6, 0.6);
+
+    PointLight redLight;
+    redLight.position = glm::vec3(0, 5, -4);
+    redLight.size = 0.005;
+    redLight.color = glm::vec3(0.5, 0.1, 0.0);
+
+    lights.pointLights.push_back(whiteLight);
+    lights.pointLights.push_back(yellowLight);
+    lights.pointLights.push_back(redLight);
     /////// END SCENE TEST SETUP
 
     // TODO: create VertexArray class
@@ -69,17 +87,17 @@ void Spheremarcher::initialize()
 
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("UScene", scene_);
-    offScreenShader_.SetUniform("UMarchingSteps", 100);
-    offScreenShader_.SetUniform("UMaxDrawDistance", 50.0f);
+    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     offScreenShader_.Unbind();
 
     screenShader_.Bind();
-    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
-    screenShader_.SetUniform("ULightDirection", glm::normalize(glm::vec3(-1.0f, -3.0f, 0.5f)));
+    screenShader_.SetUniform("UNormalEpsilon", 0.00003f);
     screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
-    screenShader_.SetUniform("UMarchingSteps", 80);
-    screenShader_.SetUniform("UMaxDrawDistance", 50.0f);
+    screenShader_.SetUniform("UMarchingSteps", 120);
+    screenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     screenShader_.Unbind();
 }
 
@@ -175,7 +193,7 @@ void Spheremarcher::draw()
     glViewport(0, 0, 1920 / 8, 1080 / 8);
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("UFovY", fovy_);
-    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UMarchingSteps", 400);
     offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 8, 1080 / 8));
@@ -195,7 +213,7 @@ void Spheremarcher::draw()
     thirdPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920 / 2, 1080 / 2);
-    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    offScreenShader_.SetUniform("UMarchingSteps", 100);
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
     offScreenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);

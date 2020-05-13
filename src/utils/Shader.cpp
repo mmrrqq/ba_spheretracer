@@ -232,6 +232,22 @@ void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
     }
 }
 
+void Shader::SetUniform(const std::string name, const SceneLights lights)
+{
+    glUniform1i(getUniformLocation(name + ".numPointLights"), (int)lights.pointLights.size());
+    for (int i = 0; i < lights.pointLights.size(); i++)
+    {
+        PointLight light = lights.pointLights[i];
+        glUniform1f(getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].size"), light.size);
+        glUniform3f(
+            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].color"),
+            light.color[0], light.color[1], light.color[2]);
+        glUniform3f(
+            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].position"),
+            light.position[0], light.position[1], light.position[2]);
+    }
+}
+
 void Shader::SetUniform(const std::string name, const std::vector<Material> &materials)
 {
     for (int i = 0; i < materials.size(); i++)
