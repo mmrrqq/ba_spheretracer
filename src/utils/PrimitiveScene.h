@@ -20,6 +20,7 @@ struct Sphere
     int materialId;
     float radius;
     glm::vec3 position;
+    bool morph;
 };
 
 struct Torus

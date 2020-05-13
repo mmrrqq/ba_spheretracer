@@ -45,11 +45,26 @@ void Spheremarcher::initialize()
             glm::vec3(0.7, 0.0, 0.7),
             10.0f));
 
-    Sphere testSphere;
-    testSphere.position = glm::vec3(0.0, 0.5, 0.0);
-    testSphere.radius = 1.0f;
-    testSphere.materialId = 1;
-    scene_.AddSphere(testSphere);
+    Sphere sphere1;
+    sphere1.position = glm::vec3(1.5, 0.5, 0.0);
+    sphere1.radius = 0.7f;
+    sphere1.materialId = 1;
+    sphere1.morph = true;
+    Sphere sphere2;
+    sphere2.position = glm::vec3(0.0, 0.5, 0.0);
+    sphere2.radius = 1.0f;
+    sphere2.materialId = 0;
+    sphere2.morph = true;
+    Sphere sphere3;
+    sphere3.position = glm::vec3(1.5, 0.5, 2.0);
+    sphere3.radius = 1.0f;
+    sphere3.materialId = 0;
+    sphere3.morph = true;
+
+    scene_.AddSphere(sphere1);
+    scene_.AddSphere(sphere2);
+    scene_.AddSphere(sphere3);
+
     SceneLights lights;
     PointLight yellowLight;
     yellowLight.position = glm::vec3(4, 4, 0);
