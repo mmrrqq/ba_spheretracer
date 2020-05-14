@@ -214,6 +214,8 @@ void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
     {
         Sphere sphere = scene.Spheres[i];
         glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].materialId"), sphere.materialId);
+        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].morph"), sphere.morph);
+        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].cut"), sphere.cut);
         glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), sphere.radius);
         glUniform3f(
             getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"),

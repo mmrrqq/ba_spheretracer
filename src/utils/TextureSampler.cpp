@@ -23,7 +23,7 @@ TextureSampler::TextureSampler(unsigned int width, unsigned int height, unsigned
     case GL_DEPTH_ATTACHMENT:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
         break;
 
     default:

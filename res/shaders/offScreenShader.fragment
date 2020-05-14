@@ -7,6 +7,8 @@ struct Sphere
     int materialId;
     vec3 position;
     float radius;
+    bool morph;
+    bool cut;
 };
 
 struct Torus
@@ -97,49 +99,51 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
     return length(q)-tubeRadius;
 }
 
+vec2 hardMin(vec2 dist1, vec2 dist2)
+{
+    return dist1.x < dist2.x ? dist1 : dist2;    
+}
+
+vec2 smoothMin(vec2 dist1, vec2 dist2, float k)
+{
+    float h = max(k - abs(dist1.x - dist2.x), 0.0)/k;
+    float dist = min(dist1.x, dist2.x) - h*h*k*(1.0/4.0);
+    return vec2(dist, dist1.y);
+}
+
 // -> vec2(distance, materialId)
 vec2 distanceToScene(vec3 position) 
-{
-    float minDistance = 10000;    
-    int materialId = -1;
+{    
+    vec2 res = vec2(1000, -1);
     
     for (int i = 0; i < UScene.numSpheres; i++)
     {
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);
-        if (d < minDistance)
-        {
-            minDistance = d;
-            materialId = sphere.materialId;
-        }        
+        if (sphere.morph)
+            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);        
+        else
+            res = hardMin(res, vec2(d, sphere.materialId));  
     }    
 
     for (int i = 0; i < UScene.numTori; i++)
     {
         Torus torus = UScene.tori[i];
         float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-        if (d < minDistance)
-        {
-            minDistance = d;
-            materialId = torus.materialId;
-        }        
+        res = hardMin(res, vec2(d, torus.materialId));             
     }
 
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);
-    if (planeDistance < minDistance)
-    {
-        minDistance = planeDistance;
-        materialId = 0;
-    }     
+    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
+    res = hardMin(res, vec2(planeDistance, 0));
 
-    return vec2(minDistance, materialId);
+    return res;
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
 vec3 getRayDir()
 {
     vec2 uv = tan(radians(UFovY)/2) * ((TexCoords * UImageDim + 0.5) - 0.5 * UImageDim) / UImageDim.y;        
-    return  normalize(vec3(uv, -1));                
+    return  normalize(vec3(uv, -1));
 }
 
 void main()
@@ -148,6 +152,7 @@ void main()
     vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);       
 
     float dist = 0;
+    float prevDist = 1;
     float depth = 0;
     vec3 position;
     vec4 eyePosition = UEyePosition;       
@@ -170,17 +175,18 @@ void main()
         vec2 dist_mat = distanceToScene(position);
         dist = dist_mat.x;
         float coneRadius = depth * coneRadiusCoeff;
-        if (dist <= coneRadius)
+        if (dist < coneRadius)
         {                            
             // if we do not substract the coneRadius, the objects get cut..
             // maybe use the last technique described in this post:
             // https://iquilezles.org/www/articles/rmshadows/rmshadows.htm
-            // to improve that substraction..
-            gl_FragDepth = (depth - coneRadius) / UMaxDrawDistance;
+            // to improve that substraction..            
+            gl_FragDepth = (depth - (coneRadius - dist)) / UMaxDrawDistance;
             return;
         }
 
         depth += dist;
+        prevDist = dist;
 
         if (depth > UMaxDrawDistance)
         {            

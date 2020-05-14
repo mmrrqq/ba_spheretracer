@@ -72,3 +72,5 @@ _deps
 #exclude main build folder
 /build
 /bin
+
+nvcompatlog.txt
