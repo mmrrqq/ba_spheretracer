@@ -45,6 +45,13 @@ void Spheremarcher::initialize()
             glm::vec3(0.7, 0.0, 0.7),
             10.0f));
 
+    materials.push_back(
+        Material(
+            glm::vec3(0.1, 0.3, 0.0),
+            glm::vec3(0.2, 0.8, 0.0),
+            glm::vec3(0.1, 0.7, 0.0),
+            10.0f));
+
     Sphere sphere1;
     sphere1.position = glm::vec3(1.5, 0.5, 0.0);
     sphere1.radius = 0.7f;
@@ -56,9 +63,9 @@ void Spheremarcher::initialize()
     sphere2.materialId = 0;
     sphere2.morph = true;
     Sphere sphere3;
-    sphere3.position = glm::vec3(1.5, 0.5, 2.0);
+    sphere3.position = glm::vec3(1.5, 0.5, -1.7);
     sphere3.radius = 1.0f;
-    sphere3.materialId = 0;
+    sphere3.materialId = 2;
     sphere3.morph = true;
 
     scene_.AddSphere(sphere1);
@@ -73,15 +80,15 @@ void Spheremarcher::initialize()
     PointLight whiteLight;
     whiteLight.position = glm::vec3(-4, 6, 0);
     whiteLight.size = 0.3;
-    whiteLight.color = glm::vec3(0.6, 0.6, 0.6);
+    whiteLight.color = glm::vec3(0.8, 0.8, 0.8);
 
     PointLight redLight;
     redLight.position = glm::vec3(0, 5, -4);
     redLight.size = 0.005;
-    redLight.color = glm::vec3(0.5, 0.1, 0.0);
+    redLight.color = glm::vec3(0.7, 0.5, 0.1);
 
     lights.pointLights.push_back(whiteLight);
-    lights.pointLights.push_back(yellowLight);
+    // lights.pointLights.push_back(yellowLight);
     lights.pointLights.push_back(redLight);
     /////// END SCENE TEST SETUP
 

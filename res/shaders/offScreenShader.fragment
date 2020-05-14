@@ -100,11 +100,7 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
 
 vec2 hardMin(vec2 dist1, vec2 dist2)
 {
-    if (dist1.x < dist2.x)
-    {
-        return dist1;
-    }
-    return dist2;
+    return dist1.x < dist2.x ? dist1 : dist2;    
 }
 
 vec2 smoothMin(vec2 dist1, vec2 dist2, float k)

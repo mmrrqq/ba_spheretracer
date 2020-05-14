@@ -130,18 +130,61 @@ vec4 hardMin(vec4 dist1, vec4 dist2)
     return dist1.x < dist2.x ? dist1 : dist2;
 }
 
-vec4 smoothMin(vec2 dist1, vec2 dist2, float k)
+vec2 hardMin(vec2 dist1, vec2 dist2)
 {
-    vec2 minVec = mix(dist1, dist2, step(dist2.x, dist1.x));
-    vec2 maxVec = mix(dist1, dist2, step(dist1.x, dist2.x));
-
-    float h = max(k - abs(dist1.x - dist2.x), 0.0)/k;
-    float dist = min(dist1.x, dist2.x) - h*h*k*(1.0/4.0);
-    return vec4(dist, minVec.y, maxVec.y, h/2.0);
+    return dist1.x < dist2.x ? dist1 : dist2;    
 }
 
-// -> vec2(distance, materialId)
-vec4 distanceToScene(vec3 position) 
+vec4 smoothColorMin(vec4 distMatColor, vec2 distMat, float k)
+{
+    vec4 minVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMat.x, distMatColor.x));
+    vec4 maxVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMatColor.x, distMat.x));
+
+    vec3 minDiffCol = minVec.z < 0 ? UMaterials[int(minVec.y)].diffuseColor : minVec.yzw;
+    vec3 maxDiffCol = maxVec.z < 0 ? UMaterials[int(maxVec.y)].diffuseColor : maxVec.yzw;
+
+    float h = max(k - abs(distMat.x - distMatColor.x), 0.0)/k;
+    float dist = min(distMat.x, distMatColor.x) - h*h*k*(1.0/4.0);
+    return vec4(dist, mix(minDiffCol, maxDiffCol, h/2.0));
+}
+
+vec2 smoothMin(vec2 dist1, vec2 dist2, float k)
+{
+    float h = max(k - abs(dist1.x - dist2.x), 0.0)/k;
+    float dist = min(dist1.x, dist2.x) - h*h*k*(1.0/4.0);
+    return vec2(dist, dist1.y);
+}
+
+vec2 distanceToScene(vec3 position) 
+{    
+    vec2 res = vec2(1000, -1);
+    
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        float d = distanceToSphere(sphere.position, sphere.radius, position);
+        if (sphere.morph)
+            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);        
+        else        
+            res = hardMin(res, vec2(d, sphere.materialId));  
+    }    
+
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];
+        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        res = hardMin(res, vec2(d, torus.materialId));             
+    }
+
+    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
+    res = hardMin(res, vec2(planeDistance, 0));
+
+    return res;
+}
+
+
+// yzw are either the diffuse color value or y is the materialID and others are -1
+vec4 distanceToSceneColor(vec3 position)
 {
     vec4 res = vec4(1000, -1, -1, -1);
 
@@ -150,7 +193,7 @@ vec4 distanceToScene(vec3 position)
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);        
         if (sphere.morph)
-            res = smoothMin(res.xy, vec2(d, sphere.materialId), 0.5);
+            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);
         else
             res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
     }
@@ -214,19 +257,15 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
     return max(minDist, 0.0);         
 }
 
-vec3 getPhongColor(vec3 position, vec3 normal, int firstMaterialID, int secondMaterialID, float matMix, vec4 rayDir)
+vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 {   
     Material material;
-    if (secondMaterialID == -1)     
-        material = UMaterials[firstMaterialID];    
+    if (matCol.y < 0)     
+        material = UMaterials[int(matCol.x)];    
     else
-    {
-        Material material1 = UMaterials[firstMaterialID];
-        Material material2 = UMaterials[secondMaterialID];
-        material.ambientColor = mix(material1.ambientColor, material2.ambientColor, matMix);
-        material.diffuseColor = mix(material1.diffuseColor, material2.diffuseColor, matMix);
-        material.specularColor = mix(material1.specularColor, material2.specularColor, matMix);
-        material.shininess = mix(material1.shininess, material2.shininess, matMix);
+    {        
+        material = UMaterials[0];        
+        material.diffuseColor = matCol;        
     }
     
     vec3 phongColor = vec3(0.0, 0.0, 0.0);    
@@ -276,8 +315,8 @@ void main()
     for(int i = 0; i < UMarchingSteps; i++)
     {                
         position = vec3(eyePosition + depth * rayDirection);        
-        vec4 dist_mat = distanceToScene(position);
-        dist = dist_mat.x; 
+        vec4 distMat = distanceToSceneColor(position);
+        dist = distMat.x; 
         float coneRadius = depth * coneRadiusCoeff;   
         if (dist < coneRadius)        
         {
@@ -288,7 +327,10 @@ void main()
             }
             else
             {
-                color = vec4(getPhongColor(position, getNormal(position), int(dist_mat.y), int(dist_mat.z), dist_mat.w, rayDirection), 1.0) * exp(-0.00005*depth*depth*depth);
+                color = vec4(
+                    getPhongColor(position, getNormal(position), distMat.yzw, rayDirection), 
+                    1.0
+                ) * exp(-0.00005*depth*depth*depth);
             }
             return;
         }                   
@@ -300,14 +342,6 @@ void main()
             color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
             return;
         }
-
-        // this creates a cool looking effect! but no distant fog as it was intended for :)
-        // if (depth > UMaxDrawDistance - 10.0) 
-        // {
-        //     float factor = depth / UMaxDrawDistance;
-        //     color = vec4(0.1, 0.1, 0.1, 1.0) * factor;
-        //     return;
-        // }
     }    
     color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
 }
