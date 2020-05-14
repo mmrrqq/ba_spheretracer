@@ -15,6 +15,7 @@ struct Sphere
     vec3 position;
     float radius;
     bool morph;
+    bool cut;
 };
 
 struct Torus
@@ -164,7 +165,7 @@ vec2 distanceToScene(vec3 position)
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);
         if (sphere.morph)
-            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);        
+            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);                
         else        
             res = hardMin(res, vec2(d, sphere.materialId));  
     }    
@@ -193,7 +194,7 @@ vec4 distanceToSceneColor(vec3 position)
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);        
         if (sphere.morph)
-            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);
+            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);        
         else
             res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
     }

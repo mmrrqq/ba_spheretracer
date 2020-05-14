@@ -7,9 +7,10 @@ Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
       mouseDown_(false),
       moving_(false),
-      firstPassBuffer_(GetWidth() / 8, GetHeight() / 8),
-      secondPassBuffer_(GetWidth() / 4, GetHeight() / 4),
-      thirdPassBuffer_(GetWidth() / 2, GetHeight() / 2),
+      firstPassBuffer_(GetWidth() / 16, GetHeight() / 16),
+      secondPassBuffer_(GetWidth() / 8, GetHeight() / 8),
+      thirdPassBuffer_(GetWidth() / 4, GetHeight() / 4),
+      fourthPassBuffer_(GetWidth() / 2, GetHeight() / 2),
       fovy_(90.0f)
 {
 }
@@ -118,7 +119,7 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
-    screenShader_.SetUniform("UMarchingSteps", 120);
+    screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     screenShader_.Unbind();
 }
@@ -199,6 +200,7 @@ void Spheremarcher::draw()
     {
         ImGui::Begin("debug");
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
+        ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
 
         ImGui::Text("fram time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
@@ -206,38 +208,47 @@ void Spheremarcher::draw()
     ImGui::Render();
 
     glEnable(GL_DEPTH_TEST);
-    // glDepthFunc(GL_ALWAYS);
+    glDepthFunc(GL_LESS);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     // // FIRST RENDER PASS TO FRAMEBUFFER
     firstPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1920 / 8, 1080 / 8);
+    glViewport(0, 0, 1920 / 16, 1080 / 16);
     offScreenShader_.Bind();
+    offScreenShader_.SetUniform("UScene", scene_);
     offScreenShader_.SetUniform("UFovY", fovy_);
     offScreenShader_.SetUniform("UMarchingSteps", 400);
     offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     offScreenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 8, 1080 / 8));
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 16, 1080 / 16));
     offScreenShader_.SetUniform("UUseDepthTexture", false);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     //SECOND RENDER PASS TO FRAMEBUFFER
     secondPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1920 / 4, 1080 / 4);
-    offScreenShader_.SetUniform("UMarchingSteps", 200);
+    glViewport(0, 0, 1920 / 8, 1080 / 8);
+    offScreenShader_.SetUniform("UMarchingSteps", 400);
     offScreenShader_.SetUniform("UUseDepthTexture", true);
-    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 8, 1080 / 8));
     offScreenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     thirdPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1920 / 2, 1080 / 2);
+    glViewport(0, 0, 1920 / 4, 1080 / 4);
     offScreenShader_.SetUniform("UMarchingSteps", 100);
-    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 4, 1080 / 4));
     offScreenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    fourthPassBuffer_.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, 1920 / 2, 1080 / 2);
+    offScreenShader_.SetUniform("UMarchingSteps", 20);
+    offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
+    offScreenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     // DRAW TO SCREEN
@@ -246,11 +257,12 @@ void Spheremarcher::draw()
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
+    screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("UFovY", fovy_);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
+    screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();
 

@@ -21,6 +21,7 @@ struct Sphere
     float radius;
     glm::vec3 position;
     bool morph;
+    bool cut;
 };
 
 struct Torus
