@@ -32,7 +32,6 @@ public:
 
     /// load (from file), compile, and link shader with given type,
     /// \param file string with the adress to the shader
-    /// \param shaderType GLenum for shader type
     bool Load(const char *vertexShader, const char *fragmentShader);
 
     /// deletes all shader and frees GPU shader capacities
@@ -102,7 +101,6 @@ private:
 
     int getUniformLocation(std::string name);
 
-private:
     /// id of the linked shader program
     unsigned int pid_;
     /// id of the vertex shader

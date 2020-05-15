@@ -2,6 +2,7 @@
 
 #include "FrameBuffer.h"
 #include "TextureSampler.h"
+#include "raytracing/Mesh.h"
 
 Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
@@ -122,6 +123,10 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     screenShader_.Unbind();
+
+    Mesh mesh("res/meshes/pichu.obj");
+    sdfGenerator_ = SDFGenerator(mesh, 50, 50, 50);
+    sdfGenerator_.Generate();
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -194,6 +199,8 @@ void Spheremarcher::motion(double xpos, double ypos)
 
 void Spheremarcher::draw()
 {
+    sdfGenerator_.Generate();
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();

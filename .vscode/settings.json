@@ -60,7 +60,8 @@
         "mutex": "cpp",
         "new": "cpp",
         "cinttypes": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "bitset": "cpp"
     },
     "cmake.configureOnOpen": true
 }

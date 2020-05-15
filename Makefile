@@ -618,6 +618,33 @@ src/utils/PrimitiveScene.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/PrimitiveScene.cpp.s
 .PHONY : src/utils/PrimitiveScene.cpp.s
 
+src/utils/SDFGenerator.o: src/utils/SDFGenerator.cpp.o
+
+.PHONY : src/utils/SDFGenerator.o
+
+# target to build an object file
+src/utils/SDFGenerator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDFGenerator.cpp.o
+.PHONY : src/utils/SDFGenerator.cpp.o
+
+src/utils/SDFGenerator.i: src/utils/SDFGenerator.cpp.i
+
+.PHONY : src/utils/SDFGenerator.i
+
+# target to preprocess a source file
+src/utils/SDFGenerator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDFGenerator.cpp.i
+.PHONY : src/utils/SDFGenerator.cpp.i
+
+src/utils/SDFGenerator.s: src/utils/SDFGenerator.cpp.s
+
+.PHONY : src/utils/SDFGenerator.s
+
+# target to generate assembly for a file
+src/utils/SDFGenerator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDFGenerator.cpp.s
+.PHONY : src/utils/SDFGenerator.cpp.s
+
 src/utils/Shader.o: src/utils/Shader.cpp.o
 
 .PHONY : src/utils/Shader.o
@@ -699,6 +726,33 @@ src/utils/Window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Window.cpp.s
 .PHONY : src/utils/Window.cpp.s
 
+src/utils/raytracing/Mesh.o: src/utils/raytracing/Mesh.cpp.o
+
+.PHONY : src/utils/raytracing/Mesh.o
+
+# target to build an object file
+src/utils/raytracing/Mesh.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.o
+.PHONY : src/utils/raytracing/Mesh.cpp.o
+
+src/utils/raytracing/Mesh.i: src/utils/raytracing/Mesh.cpp.i
+
+.PHONY : src/utils/raytracing/Mesh.i
+
+# target to preprocess a source file
+src/utils/raytracing/Mesh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.i
+.PHONY : src/utils/raytracing/Mesh.cpp.i
+
+src/utils/raytracing/Mesh.s: src/utils/raytracing/Mesh.cpp.s
+
+.PHONY : src/utils/raytracing/Mesh.s
+
+# target to generate assembly for a file
+src/utils/raytracing/Mesh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.s
+.PHONY : src/utils/raytracing/Mesh.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -757,6 +811,9 @@ help:
 	@echo "... src/utils/PrimitiveScene.o"
 	@echo "... src/utils/PrimitiveScene.i"
 	@echo "... src/utils/PrimitiveScene.s"
+	@echo "... src/utils/SDFGenerator.o"
+	@echo "... src/utils/SDFGenerator.i"
+	@echo "... src/utils/SDFGenerator.s"
 	@echo "... src/utils/Shader.o"
 	@echo "... src/utils/Shader.i"
 	@echo "... src/utils/Shader.s"
@@ -766,6 +823,9 @@ help:
 	@echo "... src/utils/Window.o"
 	@echo "... src/utils/Window.i"
 	@echo "... src/utils/Window.s"
+	@echo "... src/utils/raytracing/Mesh.o"
+	@echo "... src/utils/raytracing/Mesh.i"
+	@echo "... src/utils/raytracing/Mesh.s"
 .PHONY : help
 
 

@@ -4,6 +4,7 @@
 #include "utils/Camera.h"
 #include "utils/Shader.h"
 #include "utils/PrimitiveScene.h"
+#include "utils/SDFGenerator.h"
 #include "FrameBuffer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -23,6 +24,7 @@ private:
     bool mouseDown_, moving_;
     unsigned int vao_, ibo_;
     float fovy_;
+    SDFGenerator sdfGenerator_;
 
     void initializeFramebuffers();
     /// function that is called on the creation of the widget for the initialisation of OpenGL
