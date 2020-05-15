@@ -53,7 +53,7 @@ bool Mesh::read_obj(const char *_filename)
         if (header == "v")
         {
             Vertex v;
-            lineData >> v.position[0] >> v.position[1] >> v.position[2];
+            lineData >> v.position.x >> v.position.y >> v.position.z;
 
             vertices_.push_back(v);
             continue;

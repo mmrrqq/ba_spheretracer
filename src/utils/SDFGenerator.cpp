@@ -11,7 +11,7 @@ SDFGenerator::SDFGenerator()
 SDFGenerator::SDFGenerator(const Mesh &mesh, const int outX, const int outY, const int outZ)
 {
     // TODO: generate float array/buffer from mesh triangles..
-    float textureData[mesh.triangles_.size() * 4 * 3];
+    GLfloat textureData[mesh.triangles_.size() * 4 * 3];
     for (int i = 0; i < mesh.triangles_.size(); i++)
     {
         Triangle triangle = mesh.triangles_[i];
@@ -19,20 +19,20 @@ SDFGenerator::SDFGenerator(const Mesh &mesh, const int outX, const int outY, con
         Vertex v2 = mesh.vertices_[triangle.i1];
         Vertex v3 = mesh.vertices_[triangle.i2];
 
-        textureData[i] = v1.position[0];
-        textureData[i + 1] = v1.position[1];
-        textureData[i + 2] = v1.position[2];
-        textureData[i + 3] = 1.0; // ALPHA value..
+        textureData[12 * i + 0] = v1.position.x;
+        textureData[12 * i + 1] = v1.position.y;
+        textureData[12 * i + 2] = v1.position.z;
+        textureData[12 * i + 3] = 1.0f; // ALPHA value..
 
-        textureData[i + 4] = v2.position[0];
-        textureData[i + 5] = v2.position[1];
-        textureData[i + 6] = v2.position[2];
-        textureData[i + 7] = 1.0; // ALPHA value..
+        textureData[12 * i + 4] = v2.position.x;
+        textureData[12 * i + 5] = v2.position.y;
+        textureData[12 * i + 6] = v2.position.z;
+        textureData[12 * i + 7] = 1.0f; // ALPHA value..
 
-        textureData[i + 8] = v3.position[0];
-        textureData[i + 9] = v3.position[1];
-        textureData[i + 10] = v3.position[2];
-        textureData[i + 11] = 1.0; // ALPHA value..
+        textureData[12 * i + 8] = v3.position.x;
+        textureData[12 * i + 9] = v3.position.y;
+        textureData[12 * i + 10] = v3.position.z;
+        textureData[12 * i + 11] = 1.0f; // ALPHA value..
     }
 
     // create program
