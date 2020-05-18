@@ -11,12 +11,9 @@ SDFGenerator::SDFGenerator()
 SDFGenerator::SDFGenerator(const Mesh &mesh)
 {
     glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
-    std::cout << mesh.bb_max_.x << ' ' << mesh.bb_max_.y << ' ' << mesh.bb_max_.z << std::endl;
-    std::cout << mesh.bb_min_.x << ' ' << mesh.bb_min_.y << ' ' << mesh.bb_min_.z << std::endl;
-    outX_ = dimensions.x, outY_ = dimensions.y, outZ_ = dimensions.z;
-    std::cout << dimensions.x << ' ' << dimensions.y << ' ' << dimensions.z << std::endl;
 
-    data_ = std::vector<float>(outX_ * outY_ * outZ_ * 4.0, 0.0);
+    outX_ = std::ceil(dimensions.x) + 2.0, outY_ = std::ceil(dimensions.y) + 2.0, outZ_ = std::ceil(dimensions.z) + 2.0;
+    data_ = std::vector<float>(outZ_ * outY_ * outX_ * 4);
 
     // TODO: generate float array/buffer from mesh triangles..
     GLfloat textureData[mesh.triangles_.size() * 4 * 3];
@@ -83,17 +80,9 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX_, outY_, outZ_, 0, GL_RGBA, GL_FLOAT, data_.data());
-    glBindImageTexture(1, texOutput_, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX_, outY_, outZ_, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glBindImageTexture(1, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-    glUseProgram(program_);
-    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"outTex"), 0);
-    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"inTex"), 1);
-    // glBindImageTexture(0, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
-    glDispatchCompute(1, 1, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-    std::cout << "haha" << std::endl;
     glUseProgram(0);
 }
 
@@ -105,18 +94,9 @@ void SDFGenerator::Generate()
 {
     // TODO: TIDY THIS UP
     glUseProgram(program_);
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-    // glBindTexture(GL_TEXTURE_3D, 0);
-    // glBindTexture(GL_TEXTURE_3D, texOutput_);
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, texInput_);
-    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"outTex"), 0);
-    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"inTex"), 1);
-    // glBindImageTexture(0, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
-    // glBindImageTexture(1, texInput_, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-    glDispatchCompute(1, 1, 1);
+    glDispatchCompute(outX_, outY_, outZ_);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
 }
 
 unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)
