@@ -147,7 +147,7 @@ vec3 getRayDir()
 }
 
 void main()
-{    
+{
     vec3 cameraRayDir = getRayDir();
     vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);       
 

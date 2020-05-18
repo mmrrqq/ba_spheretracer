@@ -8,8 +8,16 @@ SDFGenerator::SDFGenerator()
 {
 }
 
-SDFGenerator::SDFGenerator(const Mesh &mesh, const int outX, const int outY, const int outZ)
+SDFGenerator::SDFGenerator(const Mesh &mesh)
 {
+    glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
+    std::cout << mesh.bb_max_.x << ' ' << mesh.bb_max_.y << ' ' << mesh.bb_max_.z << std::endl;
+    std::cout << mesh.bb_min_.x << ' ' << mesh.bb_min_.y << ' ' << mesh.bb_min_.z << std::endl;
+    outX_ = dimensions.x, outY_ = dimensions.y, outZ_ = dimensions.z;
+    std::cout << dimensions.x << ' ' << dimensions.y << ' ' << dimensions.z << std::endl;
+
+    data_ = std::vector<float>(outX_ * outY_ * outZ_ * 4.0, 0.0);
+
     // TODO: generate float array/buffer from mesh triangles..
     GLfloat textureData[mesh.triangles_.size() * 4 * 3];
     for (int i = 0; i < mesh.triangles_.size(); i++)
@@ -57,26 +65,36 @@ SDFGenerator::SDFGenerator(const Mesh &mesh, const int outX, const int outY, con
         delete[] info;
     }
 
-    glGenTextures(1, &texOutput_);
     glGenTextures(1, &texInput_);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texInput_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mesh.triangles_.size() * 3, 1, 0, GL_RGBA, GL_FLOAT, &textureData);
     glBindImageTexture(0, texInput_, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
 
     glActiveTexture(GL_TEXTURE1);
+    glGenTextures(1, &texOutput_);
     glBindTexture(GL_TEXTURE_3D, texOutput_);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX, outY, outZ, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindImageTexture(0, texOutput_, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX_, outY_, outZ_, 0, GL_RGBA, GL_FLOAT, data_.data());
+    glBindImageTexture(1, texOutput_, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+    glUseProgram(program_);
+    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"outTex"), 0);
+    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"inTex"), 1);
+    // glBindImageTexture(0, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    std::cout << "haha" << std::endl;
+    glUseProgram(0);
 }
 
 SDFGenerator::~SDFGenerator()
@@ -87,12 +105,18 @@ void SDFGenerator::Generate()
 {
     // TODO: TIDY THIS UP
     glUseProgram(program_);
-    glActiveTexture(GL_TEXTURE0);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_3D, texOutput_);
-    glBindTexture(GL_TEXTURE_2D, texInput_);
-    glDispatchCompute(50, 50, 50);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, 0);
+    // glBindTexture(GL_TEXTURE_3D, 0);
+    // glBindTexture(GL_TEXTURE_3D, texOutput_);
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, texInput_);
+    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"outTex"), 0);
+    // glUniform1i(glGetUniformLocation(program_, (const GLchar *)"inTex"), 1);
+    // glBindImageTexture(0, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
+    // glBindImageTexture(1, texInput_, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 }
 
 unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)
@@ -118,7 +142,6 @@ unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)
         return 0;
     }
 
-    // compile vertex shader
     glShaderSource(id, 1, &source, NULL);
     glCompileShader(id);
 

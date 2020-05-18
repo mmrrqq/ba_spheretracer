@@ -85,10 +85,13 @@ private:
                             glm::vec3 &_intersection_normal,
                             glm::vec3 &_intersection_diffuse,
                             double &_intersection_t) const;
+    void compute_bounding_box();
 
 public:
+    glm::vec3 bb_min_, bb_max_;
     /// Array of vertices
-    std::vector<Vertex> vertices_;
+    std::vector<Vertex>
+        vertices_;
 
     /// Array of triangles
     std::vector<Triangle> triangles_;

@@ -164,6 +164,7 @@ bool Mesh::read_obj(const char *_filename)
 
     std::cout << "\n  read " << _filename << ": " << vertices_.size() << " vertices, " << triangles_.size() << " triangles" << std::flush;
 
+    compute_bounding_box();
     compute_normals();
 
     return true;
@@ -249,6 +250,20 @@ bool Mesh::intersect(const Ray &_ray,
     }
 
     return (_intersection_t != DBL_MAX);
+}
+
+void Mesh::compute_bounding_box()
+{
+    bb_min_ = glm::vec3(10e10);
+    bb_max_ = glm::vec3(-10e10);
+
+    for (Vertex v : vertices_)
+    {
+        bb_min_ = glm::min(bb_min_, v.position);
+        bb_max_ = glm::max(bb_max_, v.position);
+        if (v.position.z > 0)
+            std::cout << v.position.z << std::endl;
+    }
 }
 
 //-----------------------------------------------------------------------------
