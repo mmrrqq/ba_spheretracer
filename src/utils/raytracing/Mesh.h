@@ -52,18 +52,6 @@ public:
     /// Construct a mesh by specifying its draw_mode and its filename
     Mesh(std::string _filename = 0);
 
-    /// Intersect mesh with ray (calls ray-triangle intersection)
-    /// If \c _ray intersects a face of the mesh, it provides the following results:
-    /// \param[in] _ray the ray to intersect the mesh with
-    /// \param[out] _intersection_point the point of intersection
-    /// \param[out] _intersection_normal the surface normal at intersection point
-    /// \param[out] _intersection_t ray parameter at the intersection point
-    virtual bool intersect(const Ray &_ray,
-                           glm::vec3 &_intersection_point,
-                           glm::vec3 &_intersection_normal,
-                           glm::vec3 &_intersection_diffuse,
-                           double &_intersection_t) const;
-
 private:
     /// Read mesh form an OBJ file
     bool read_obj(const char *_filename);
@@ -71,20 +59,6 @@ private:
     /// Compute normal vectors for triangles and vertices
     void compute_normals();
 
-    /// Intersect a triangle with a ray. Return whether there is an intersection.
-    /// If there is an intersection, store intersection data.
-    /// This function overrides Object::intersect().
-    /// \param[in] _triangle the triangle to be intersected
-    /// \param[in] _ray the ray to intersect the triangle with
-    /// \param[out] _intersection_point the point of intersection
-    /// \param[out] _intersection_normal the surface normal at intersection point
-    /// \param[out] _intersection_t ray parameter at the intersection point
-    bool intersect_triangle(const Triangle &_triangle,
-                            const Ray &_ray,
-                            glm::vec3 &_intersection_point,
-                            glm::vec3 &_intersection_normal,
-                            glm::vec3 &_intersection_diffuse,
-                            double &_intersection_t) const;
     void compute_bounding_box();
 
 public:

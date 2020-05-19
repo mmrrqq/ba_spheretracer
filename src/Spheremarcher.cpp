@@ -124,7 +124,7 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     screenShader_.Unbind();
 
-    Mesh mesh("res/meshes/tree.obj");
+    Mesh mesh("res/meshes/tree2.obj");
     sdfGenerator_ = SDFGenerator(mesh);
     sdfGenerator_.Generate();
 }

@@ -220,38 +220,6 @@ void Mesh::compute_normals()
     }
 }
 
-bool Mesh::intersect(const Ray &_ray,
-                     glm::vec3 &_intersection_point,
-                     glm::vec3 &_intersection_normal,
-                     glm::vec3 &_intersection_diffuse,
-                     double &_intersection_t) const
-{
-    glm::vec3 p, n, d;
-    double t;
-
-    _intersection_t = DBL_MAX;
-
-    // for each triangle
-    for (const Triangle &triangle : triangles_)
-    {
-        // does ray intersect triangle?
-        if (intersect_triangle(triangle, _ray, p, n, d, t))
-        {
-            // is intersection closer than previous intersections?
-            if (t < _intersection_t)
-            {
-                // store data of this intersection
-                _intersection_t = t;
-                _intersection_point = p;
-                _intersection_normal = n;
-                _intersection_diffuse = d;
-            }
-        }
-    }
-
-    return (_intersection_t != DBL_MAX);
-}
-
 void Mesh::compute_bounding_box()
 {
     bb_min_ = glm::vec3(10e10);
@@ -261,59 +229,5 @@ void Mesh::compute_bounding_box()
     {
         bb_min_ = glm::min(bb_min_, v.position);
         bb_max_ = glm::max(bb_max_, v.position);
-        if (v.position.z > 0)
-            std::cout << v.position.z << std::endl;
     }
 }
-
-//-----------------------------------------------------------------------------
-
-bool Mesh::
-    intersect_triangle(const Triangle &_triangle,
-                       const Ray &_ray,
-                       glm::vec3 &_intersection_point,
-                       glm::vec3 &_intersection_normal,
-                       glm::vec3 &_intersection_diffuse,
-                       double &_intersection_t) const
-{
-    const Vertex v0 = vertices_[_triangle.i0];
-    const Vertex v1 = vertices_[_triangle.i1];
-    const Vertex v2 = vertices_[_triangle.i2];
-    const glm::vec3 &p0 = v0.position;
-    const glm::vec3 &p1 = v1.position;
-    const glm::vec3 &p2 = v2.position;
-
-    const glm::vec3 vec_a = p0 - p2;
-    const glm::vec3 vec_b = p1 - p2;
-    const glm::vec3 vec_t = -_ray.direction;
-
-    // key vector
-    const glm::vec3 key = _ray.origin - p2;
-    const glm::mat3 matrix = {vec_a, vec_b, vec_t};
-    const double determinantBaseMatrix = glm::determinant(matrix);
-
-    // solve for a
-    const glm::mat3 matrix_a = {key, vec_b, vec_t};
-    const float a = glm::determinant(matrix_a) / (determinantBaseMatrix);
-    if (a < 0.0 || a > 1.0)
-        return false;
-
-    // solve for b
-    const glm::mat3 matrix_b = {vec_a, key, vec_t};
-    const float b = glm::determinant(matrix_b) / (determinantBaseMatrix);
-    if (b < 0.0 || b > 1.0 || a + b > 1.0)
-        return false;
-
-    // solve for t
-    const glm::mat3 matrix_t = {vec_a, vec_b, key};
-    const float t = glm::determinant(matrix_t) / (determinantBaseMatrix);
-    if (t <= 1e-5)
-        return false;
-
-    _intersection_t = t;
-    _intersection_point = _ray(t);
-
-    return true;
-}
-
-//=============================================================================

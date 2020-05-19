@@ -12,7 +12,14 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
 {
     glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
 
-    outX_ = std::ceil(dimensions.x) + 2.0, outY_ = std::ceil(dimensions.y) + 2.0, outZ_ = std::ceil(dimensions.z) + 2.0;
+    outX_ = std::ceil(dimensions.x) + 1.0, outY_ = std::ceil(dimensions.y) + 1.0, outZ_ = std::ceil(dimensions.z) + 1.0;
+
+    float scaleFactor = 20;
+
+    outX_ *= scaleFactor;
+    outY_ *= scaleFactor;
+    outZ_ *= scaleFactor;
+
     data_ = std::vector<float>(outZ_ * outY_ * outX_ * 4);
 
     // TODO: generate float array/buffer from mesh triangles..
@@ -24,19 +31,23 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
         Vertex v2 = mesh.vertices_[triangle.i1];
         Vertex v3 = mesh.vertices_[triangle.i2];
 
-        textureData[12 * i + 0] = v1.position.x;
-        textureData[12 * i + 1] = v1.position.y;
-        textureData[12 * i + 2] = v1.position.z;
+        v1.position *= scaleFactor;
+        v2.position *= scaleFactor;
+        v3.position *= scaleFactor;
+
+        textureData[12 * i + 0] = v1.position.x + outX_ / 2.0;
+        textureData[12 * i + 1] = v1.position.y + outY_ / 2.0;
+        textureData[12 * i + 2] = v1.position.z + outZ_ / 2.0;
         textureData[12 * i + 3] = 1.0f; // ALPHA value..
 
-        textureData[12 * i + 4] = v2.position.x;
-        textureData[12 * i + 5] = v2.position.y;
-        textureData[12 * i + 6] = v2.position.z;
+        textureData[12 * i + 4] = v2.position.x + outX_ / 2.0;
+        textureData[12 * i + 5] = v2.position.y + outY_ / 2.0;
+        textureData[12 * i + 6] = v2.position.z + outZ_ / 2.0;
         textureData[12 * i + 7] = 1.0f; // ALPHA value..
 
-        textureData[12 * i + 8] = v3.position.x;
-        textureData[12 * i + 9] = v3.position.y;
-        textureData[12 * i + 10] = v3.position.z;
+        textureData[12 * i + 8] = v3.position.x + outX_ / 2.0;
+        textureData[12 * i + 9] = v3.position.y + outY_ / 2.0;
+        textureData[12 * i + 10] = v3.position.z + outZ_ / 2.0;
         textureData[12 * i + 11] = 1.0f; // ALPHA value..
     }
 
