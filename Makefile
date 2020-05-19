@@ -645,6 +645,33 @@ src/utils/SDFGenerator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDFGenerator.cpp.s
 .PHONY : src/utils/SDFGenerator.cpp.s
 
+src/utils/SDField.o: src/utils/SDField.cpp.o
+
+.PHONY : src/utils/SDField.o
+
+# target to build an object file
+src/utils/SDField.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.o
+.PHONY : src/utils/SDField.cpp.o
+
+src/utils/SDField.i: src/utils/SDField.cpp.i
+
+.PHONY : src/utils/SDField.i
+
+# target to preprocess a source file
+src/utils/SDField.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.i
+.PHONY : src/utils/SDField.cpp.i
+
+src/utils/SDField.s: src/utils/SDField.cpp.s
+
+.PHONY : src/utils/SDField.s
+
+# target to generate assembly for a file
+src/utils/SDField.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.s
+.PHONY : src/utils/SDField.cpp.s
+
 src/utils/Shader.o: src/utils/Shader.cpp.o
 
 .PHONY : src/utils/Shader.o
@@ -814,6 +841,9 @@ help:
 	@echo "... src/utils/SDFGenerator.o"
 	@echo "... src/utils/SDFGenerator.i"
 	@echo "... src/utils/SDFGenerator.s"
+	@echo "... src/utils/SDField.o"
+	@echo "... src/utils/SDField.i"
+	@echo "... src/utils/SDField.s"
 	@echo "... src/utils/Shader.o"
 	@echo "... src/utils/Shader.i"
 	@echo "... src/utils/Shader.s"

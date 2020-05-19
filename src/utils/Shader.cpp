@@ -274,6 +274,14 @@ void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigne
     glUniform1i(getUniformLocation(name), slot);
 }
 
+void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot)
+{
+    sdField->Bind(textureSlot);
+    glUniform1i(getUniformLocation(name + ".field"), textureSlot);
+    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0], sdField->Position()[1], sdField->Position()[2]);
+    glUniform3f(getUniformLocation(name + ".dimensions"), sdField->Dimensions()[0], sdField->Dimensions()[1], sdField->Dimensions()[2]);
+}
+
 int Shader::getUniformLocation(const std::string name)
 {
     if (!pid_)

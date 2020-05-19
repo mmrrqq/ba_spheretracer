@@ -5,6 +5,7 @@
 #include "utils/Shader.h"
 #include "utils/PrimitiveScene.h"
 #include "utils/SDFGenerator.h"
+#include "utils/SDField.h"
 #include "FrameBuffer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -25,6 +26,7 @@ private:
     unsigned int vao_, ibo_;
     float fovy_;
     SDFGenerator sdfGenerator_;
+    SDField sdField_;
 
     void initializeFramebuffers();
     /// function that is called on the creation of the widget for the initialisation of OpenGL

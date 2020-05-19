@@ -6,15 +6,15 @@ FrameBuffer::FrameBuffer()
 }
 
 FrameBuffer::FrameBuffer(int width, int height)
-    : colorTexture_(width, height, GL_COLOR_ATTACHMENT0),
-      depthTexture_(width, height, GL_DEPTH_ATTACHMENT)
+    : colorTexture_(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT),
+      depthTexture_(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT)
 {
     glGenFramebuffers(1, &id_);
     Bind();
     colorTexture_.Bind();
-    AttachTexture(colorTexture_);
+    AttachTexture(colorTexture_, GL_COLOR_ATTACHMENT0);
     depthTexture_.Bind();
-    AttachTexture(depthTexture_);
+    AttachTexture(depthTexture_, GL_DEPTH_ATTACHMENT);
 
     CheckStatus();
 }
@@ -34,9 +34,9 @@ void FrameBuffer::Unbind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::AttachTexture(TextureSampler &texture)
+void FrameBuffer::AttachTexture(TextureSampler &texture, unsigned int attachmentType)
 {
-    glFramebufferTexture2D(GL_FRAMEBUFFER, texture.GetAttachmentType(), GL_TEXTURE_2D, texture.GetID(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D, texture.GetID(), 0);
 }
 
 unsigned int FrameBuffer::CheckStatus()

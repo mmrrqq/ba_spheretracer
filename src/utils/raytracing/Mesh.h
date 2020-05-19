@@ -11,7 +11,6 @@
 #pragma once
 //== INCLUDES =================================================================
 
-#include "Ray.h"
 #include "glm/glm.hpp"
 #include <stdlib.h>
 #include <iostream>

@@ -14,7 +14,7 @@ public:
     void Bind();
     void Unbind();
 
-    void AttachTexture(TextureSampler &texture);
+    void AttachTexture(TextureSampler &texture, unsigned int attachmentType);
     unsigned int CheckStatus();
 
     TextureSampler &GetColorTexture() { return colorTexture_; };

@@ -31,7 +31,13 @@ void Spheremarcher::initialize()
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
     /////// SCENE TEST SETUP
+    Mesh mesh("res/meshes/tree2.obj");
+    sdfGenerator_ = SDFGenerator(mesh);
+
+    sdfGenerator_.Generate(&sdField_);
+
     std::vector<Material> materials;
     materials.push_back(
         Material(
@@ -110,23 +116,21 @@ void Spheremarcher::initialize()
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
 
     offScreenShader_.Bind();
-    offScreenShader_.SetUniform("UScene", scene_);
+    offScreenShader_.SetUniform("USDField", &sdField_, 1);
+    // offScreenShader_.SetUniform("UScene", scene_);
     offScreenShader_.SetUniform("UMarchingSteps", 200);
     offScreenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     offScreenShader_.Unbind();
 
     screenShader_.Bind();
+    screenShader_.SetUniform("USDField", &sdField_, 1);
     screenShader_.SetUniform("UNormalEpsilon", 0.00003f);
-    screenShader_.SetUniform("UScene", scene_);
+    // screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     screenShader_.Unbind();
-
-    Mesh mesh("res/meshes/tree2.obj");
-    sdfGenerator_ = SDFGenerator(mesh);
-    sdfGenerator_.Generate();
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -213,7 +217,7 @@ void Spheremarcher::draw()
     ImGui::Render();
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_ALWAYS);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     // // FIRST RENDER PASS TO FRAMEBUFFER
@@ -221,7 +225,8 @@ void Spheremarcher::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920 / 16, 1080 / 16);
     offScreenShader_.Bind();
-    offScreenShader_.SetUniform("UScene", scene_);
+    // offScreenShader_.SetUniform("UScene", scene_);
+    offScreenShader_.SetUniform("USDField", &sdField_, 1);
     offScreenShader_.SetUniform("UFovY", fovy_);
     offScreenShader_.SetUniform("UMarchingSteps", 400);
     offScreenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
@@ -262,7 +267,8 @@ void Spheremarcher::draw()
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
-    screenShader_.SetUniform("UScene", scene_);
+    // screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetUniform("USDField", &sdField_, 1);
     screenShader_.SetUniform("UFovY", fovy_);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));

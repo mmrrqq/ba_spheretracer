@@ -12,6 +12,7 @@
 #include "PrimitiveScene.h"
 #include "Material.h"
 #include "TextureSampler.h"
+#include "SDFGenerator.h"
 
 #include "GLUtils.h"
 #include "glm/glm.hpp"
@@ -92,6 +93,11 @@ public:
     /// \param name string of the uniform name
     /// \param lights the value for the uniform
     void SetUniform(const std::string name, const SceneLights lights);
+
+    /// upload sd field struct uniform
+    /// \param name string of the uniform name
+    /// \param sdField the value for the uniform
+    void SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot);
 
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it

@@ -2,13 +2,24 @@
 
 #include "GLUtils.h"
 
-// TODO: this is more a framebuffer texture class..
 // mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture class
 class TextureSampler
 {
 public:
     TextureSampler();
-    TextureSampler(unsigned int width, unsigned int height, unsigned int attachmentType);
+    TextureSampler(unsigned int width,
+                   unsigned int height,
+                   unsigned int internalFormat,
+                   unsigned int format,
+                   unsigned int type,
+                   void *data = nullptr);
+    TextureSampler(unsigned int width,
+                   unsigned int height,
+                   unsigned int depth,
+                   unsigned int internalFormat,
+                   unsigned int format,
+                   unsigned int type,
+                   void *data = nullptr);
     ~TextureSampler() { release(); };
 
     TextureSampler(const TextureSampler &) = delete;
@@ -16,10 +27,10 @@ public:
 
     TextureSampler(TextureSampler &&other) : id_(other.id_)
     {
-        other.id_ = 0; //Use the "null" texture for the old object.
+        other.id_ = 0;
         other.width_ = 0;
         other.height_ = 0;
-        other.attachmentType_ = 0;
+        other.depth_ = 0;
     }
 
     TextureSampler &operator=(TextureSampler &&other)
@@ -32,7 +43,7 @@ public:
             std::swap(id_, other.id_);
             std::swap(width_, other.width_);
             std::swap(height_, other.height_);
-            std::swap(attachmentType_, other.attachmentType_);
+            std::swap(depth_, other.depth_);
         }
     }
 
@@ -41,10 +52,9 @@ public:
     void Unbind();
 
     inline unsigned int GetID() { return id_; }
-    inline unsigned int GetAttachmentType() { return attachmentType_; }
 
 private:
     void release() { glDeleteTextures(1, &id_); };
-    unsigned int id_, height_, width_, attachmentType_;
+    unsigned int id_, height_, width_, depth_;
     std::string uniform_name;
 };

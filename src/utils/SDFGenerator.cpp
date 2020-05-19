@@ -10,6 +10,7 @@ SDFGenerator::SDFGenerator()
 
 SDFGenerator::SDFGenerator(const Mesh &mesh)
 {
+    // TODO: move object to barycenter of vertices..
     glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
 
     outX_ = std::ceil(dimensions.x) + 1.0, outY_ = std::ceil(dimensions.y) + 1.0, outZ_ = std::ceil(dimensions.z) + 1.0;
@@ -101,13 +102,14 @@ SDFGenerator::~SDFGenerator()
 {
 }
 
-void SDFGenerator::Generate()
+void SDFGenerator::Generate(SDField *field)
 {
-    // TODO: TIDY THIS UP
     glUseProgram(program_);
     glDispatchCompute(outX_, outY_, outZ_);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
+
+    field->FromData(&data_, glm::vec3(outX_, outY_, outZ_));
 }
 
 unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)

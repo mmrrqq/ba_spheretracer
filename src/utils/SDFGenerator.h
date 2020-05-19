@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDField.h"
 #include "GLUtils.h"
 #include "raytracing/Mesh.h"
 
@@ -9,7 +10,7 @@ public:
     SDFGenerator();
     SDFGenerator(const Mesh &mesh);
     ~SDFGenerator();
-    void Generate();
+    void Generate(SDField *field);
 
 private:
     unsigned int texInput_, texOutput_, program_, shader_;
