@@ -12,6 +12,8 @@ public:
                    unsigned int internalFormat,
                    unsigned int format,
                    unsigned int type,
+                   unsigned int wrap = GL_CLAMP_TO_EDGE,
+                   unsigned int filter = GL_LINEAR,
                    void *data = nullptr);
     TextureSampler(unsigned int width,
                    unsigned int height,

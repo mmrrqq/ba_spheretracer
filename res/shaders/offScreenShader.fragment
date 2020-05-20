@@ -123,12 +123,12 @@ float distanceToField(SDField field, vec3 position)
 
         vec3 texSize = textureSize(field.field, 0);
 
-        voxelCoords += 0.5;
+        // voxelCoords += 0.5;
         voxelCoords /= field.dimensions;         
 
-        return texture(field.field, voxelCoords).x;
+        return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
     }
-    return distanceBox + 0.02;
+    return distanceBox + 0.5;
 }
 
 vec2 hardMin(vec2 dist1, vec2 dist2)

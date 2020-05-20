@@ -124,7 +124,7 @@ void Spheremarcher::initialize()
 
     screenShader_.Bind();
     screenShader_.SetUniform("USDField", &sdField_, 1);
-    screenShader_.SetUniform("UNormalEpsilon", 0.00003f);
+    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
     // screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);

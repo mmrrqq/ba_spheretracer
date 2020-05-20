@@ -6,8 +6,8 @@ FrameBuffer::FrameBuffer()
 }
 
 FrameBuffer::FrameBuffer(int width, int height)
-    : colorTexture_(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT),
-      depthTexture_(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT)
+    : colorTexture_(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT, GL_CLAMP_TO_EDGE, GL_LINEAR),
+      depthTexture_(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT, GL_CLAMP_TO_EDGE, GL_NEAREST)
 {
     glGenFramebuffers(1, &id_);
     Bind();

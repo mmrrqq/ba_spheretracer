@@ -10,6 +10,8 @@ TextureSampler::TextureSampler(
     unsigned int internalFormat,
     unsigned int format,
     unsigned int type,
+    unsigned int wrap,
+    unsigned int filter,
     void *data)
 {
     width_ = width;
@@ -18,11 +20,11 @@ TextureSampler::TextureSampler(
 
     glGenTextures(1, &id_);
     glBindTexture(GL_TEXTURE_2D, id_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
     // TODO: this is only valid for depth..
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width_, height_, 0, format, type, data);
 
     glBindTexture(GL_TEXTURE_2D, 0);

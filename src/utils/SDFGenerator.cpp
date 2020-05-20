@@ -1,8 +1,4 @@
 #include "SDFGenerator.h"
-#include "Shader.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 SDFGenerator::SDFGenerator()
 {
@@ -13,7 +9,9 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
     // TODO: move object to barycenter of vertices..
     glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
 
-    outX_ = std::ceil(dimensions.x) + 1.0, outY_ = std::ceil(dimensions.y) + 1.0, outZ_ = std::ceil(dimensions.z) + 1.0;
+    float bbMaximum = std::ceil(glm::compMax(dimensions));
+
+    outX_ = bbMaximum + 1.0, outY_ = bbMaximum + 1.0, outZ_ = bbMaximum + 1.0;
 
     float scaleFactor = 20;
 
@@ -32,23 +30,23 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
         Vertex v2 = mesh.vertices_[triangle.i1];
         Vertex v3 = mesh.vertices_[triangle.i2];
 
-        v1.position *= scaleFactor;
-        v2.position *= scaleFactor;
-        v3.position *= scaleFactor;
+        v1.position = (v1.position + bbMaximum / 2.0f) * scaleFactor;
+        v2.position = (v2.position + bbMaximum / 2.0f) * scaleFactor;
+        v3.position = (v3.position + bbMaximum / 2.0f) * scaleFactor;
 
-        textureData[12 * i + 0] = v1.position.x + outX_ / 2.0;
-        textureData[12 * i + 1] = v1.position.y + outY_ / 2.0;
-        textureData[12 * i + 2] = v1.position.z + outZ_ / 2.0;
+        textureData[12 * i + 0] = v1.position.x;
+        textureData[12 * i + 1] = v1.position.y;
+        textureData[12 * i + 2] = v1.position.z;
         textureData[12 * i + 3] = 1.0f; // ALPHA value..
 
-        textureData[12 * i + 4] = v2.position.x + outX_ / 2.0;
-        textureData[12 * i + 5] = v2.position.y + outY_ / 2.0;
-        textureData[12 * i + 6] = v2.position.z + outZ_ / 2.0;
+        textureData[12 * i + 4] = v2.position.x;
+        textureData[12 * i + 5] = v2.position.y;
+        textureData[12 * i + 6] = v2.position.z;
         textureData[12 * i + 7] = 1.0f; // ALPHA value..
 
-        textureData[12 * i + 8] = v3.position.x + outX_ / 2.0;
-        textureData[12 * i + 9] = v3.position.y + outY_ / 2.0;
-        textureData[12 * i + 10] = v3.position.z + outZ_ / 2.0;
+        textureData[12 * i + 8] = v3.position.x;
+        textureData[12 * i + 9] = v3.position.y;
+        textureData[12 * i + 10] = v3.position.z;
         textureData[12 * i + 11] = 1.0f; // ALPHA value..
     }
 

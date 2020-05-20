@@ -150,12 +150,12 @@ float distanceToField(SDField field, vec3 position)
 
         ivec3 texSize = textureSize(field.field, 0);
 
-        voxelCoords += 0.5;
+        // voxelCoords += 0.5;
         voxelCoords /= field.dimensions;        
         
-        return texture(field.field, voxelCoords).x;
+        return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
     }
-    return distanceBox + 0.02;
+    return distanceBox + 0.5;
 }
 
 vec4 hardMin(vec4 dist1, vec4 dist2)
@@ -260,7 +260,7 @@ vec3 getRayDir()
 // http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/#surface-normals-and-lighting
 vec3 getNormal(vec3 position)
 {
-    vec2 epsilon = vec2(UNormalEpsilon, 0.0);
+    vec2 epsilon = vec2(UNormalEpsilon, 0.0);    
 
     return normalize(
         vec3(
@@ -339,9 +339,7 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;    
-
-    depth = 0.0;
+    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;        
 
     if (depth > UMaxDrawDistance - 1)
     {

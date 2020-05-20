@@ -99,9 +99,7 @@ void main() {
   }
 
   if (inside)
-    depth = -depth;  
-
-  depth = depth / 20.0;
+    depth = -depth;    
       
   imageStore(outTex, ivec3(voxelCoords), vec4(depth, depth, depth, 1.0));
 }

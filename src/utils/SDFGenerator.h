@@ -2,7 +2,13 @@
 
 #include "SDField.h"
 #include "GLUtils.h"
+#include "Shader.h"
+#include "glm/gtx/component_wise.hpp"
 #include "raytracing/Mesh.h"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 class SDFGenerator
 {
