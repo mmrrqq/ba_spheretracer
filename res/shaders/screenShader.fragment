@@ -142,19 +142,21 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
 
 float distanceToField(SDField field, vec3 position)
 {
-    float distanceBox = distanceToBox(position, field.dimensions);
+    float distanceBox = distanceToBox(position - field.position, field.dimensions);
 
     if (distanceBox < 0.0)
     {
-        vec3 voxelCoords = position - field.position;
+        vec3 voxelCoords = position - field.position;        
 
         ivec3 texSize = textureSize(field.field, 0);
 
         // voxelCoords += 0.5;
         voxelCoords /= field.dimensions;        
+        // todo: hier liegt der fehler bei modulo
+        voxelCoords = 0.5 + 0.5 * voxelCoords;
         
         return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
-    }
+    }    
     return distanceBox + 0.5;
 }
 
@@ -209,7 +211,7 @@ vec2 distanceToScene(vec3 position)
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
 
-    float fieldDistance = distanceToField(USDField, position);
+    float fieldDistance = distanceToField(USDField, mod(position, 2));
     res = hardMin(res, vec2(fieldDistance, 1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
@@ -241,8 +243,8 @@ vec4 distanceToSceneColor(vec3 position)
     //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
     // }
 
-    float fieldDistance = distanceToField(USDField, position);
-    res = hardMin(res, vec4(fieldDistance, 0, -1, -1));
+    float fieldDistance = distanceToField(USDField, mod(position, 2));
+    res = hardMin(res, vec4(fieldDistance, 2, -1, -1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
     res = hardMin(res, vec4(planeDistance, 0, -1, -1));

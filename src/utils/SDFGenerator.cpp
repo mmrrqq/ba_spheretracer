@@ -6,14 +6,13 @@ SDFGenerator::SDFGenerator()
 
 SDFGenerator::SDFGenerator(const Mesh &mesh)
 {
-    // TODO: move object to barycenter of vertices..
     glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
 
     float bbMaximum = std::ceil(glm::compMax(dimensions));
 
     outX_ = bbMaximum + 1.0, outY_ = bbMaximum + 1.0, outZ_ = bbMaximum + 1.0;
 
-    float scaleFactor = 20;
+    float scaleFactor = 10;
 
     outX_ *= scaleFactor;
     outY_ *= scaleFactor;
@@ -21,7 +20,6 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
 
     data_ = std::vector<float>(outZ_ * outY_ * outX_ * 4);
 
-    // TODO: generate float array/buffer from mesh triangles..
     GLfloat textureData[mesh.triangles_.size() * 4 * 3];
     for (int i = 0; i < mesh.triangles_.size(); i++)
     {
@@ -30,9 +28,12 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
         Vertex v2 = mesh.vertices_[triangle.i1];
         Vertex v3 = mesh.vertices_[triangle.i2];
 
-        v1.position = (v1.position + bbMaximum / 2.0f) * scaleFactor;
-        v2.position = (v2.position + bbMaximum / 2.0f) * scaleFactor;
-        v3.position = (v3.position + bbMaximum / 2.0f) * scaleFactor;
+        // TODO: move object to barycenter of vertices..
+        glm::vec3 toCenter(bbMaximum / 2.0f, bbMaximum / 3.0f, bbMaximum / 2.0f);
+
+        v1.position = (v1.position + toCenter) * scaleFactor;
+        v2.position = (v2.position + toCenter) * scaleFactor;
+        v3.position = (v3.position + toCenter) * scaleFactor;
 
         textureData[12 * i + 0] = v1.position.x;
         textureData[12 * i + 1] = v1.position.y;
@@ -107,7 +108,7 @@ void SDFGenerator::Generate(SDField *field)
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
 
-    field->FromData(&data_, glm::vec3(outX_, outY_, outZ_));
+    field->FromData(&data_, glm::vec3(outX_, outY_, outZ_), glm::vec3(0.0, 0.5, 0.0));
 }
 
 unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)

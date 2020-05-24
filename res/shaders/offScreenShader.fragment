@@ -115,7 +115,7 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
 
 float distanceToField(SDField field, vec3 position)
 {
-    float distanceBox = distanceToBox(position, field.dimensions);
+    float distanceBox = distanceToBox(position - field.position, field.dimensions);
 
     if (distanceBox < 0.0)
     {
@@ -123,12 +123,13 @@ float distanceToField(SDField field, vec3 position)
 
         vec3 texSize = textureSize(field.field, 0);
 
-        // voxelCoords += 0.5;
+        // voxelCoords += 0.5 / field.dimensions;
         voxelCoords /= field.dimensions;         
+        voxelCoords = 0.5 + 0.5 * voxelCoords;
 
         return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
-    }
-    return distanceBox + 0.5;
+    }    
+    return distanceBox + 0.5;    
 }
 
 vec2 hardMin(vec2 dist1, vec2 dist2)
@@ -165,7 +166,7 @@ vec2 distanceToScene(vec3 position)
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
 
-    float fieldDistance = distanceToField(USDField, position);
+    float fieldDistance = distanceToField(USDField, mod(position, 2));
     res = hardMin(res, vec2(fieldDistance, 1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    

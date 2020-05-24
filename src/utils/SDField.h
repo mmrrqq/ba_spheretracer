@@ -9,7 +9,7 @@ class SDField
 public:
     SDField();
     ~SDField();
-    void FromData(const std::vector<float> *data, glm::vec3 size);
+    void FromData(const std::vector<float> *data, glm::vec3 size, glm::vec3 position = glm::vec3(0.0));
     inline void Bind(unsigned int slot) { field_.Bind(slot); };
     inline glm::vec3 Dimensions() { return dimensions_; };
     inline glm::vec3 Position() { return position_; };
