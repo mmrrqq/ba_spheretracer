@@ -211,7 +211,7 @@ vec2 distanceToScene(vec3 position)
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
 
-    float fieldDistance = distanceToField(USDField, mod(position, 2));
+    float fieldDistance = distanceToField(USDField, position);
     res = hardMin(res, vec2(fieldDistance, 1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
@@ -243,7 +243,7 @@ vec4 distanceToSceneColor(vec3 position)
     //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
     // }
 
-    float fieldDistance = distanceToField(USDField, mod(position, 2));
+    float fieldDistance = distanceToField(USDField, position);
     res = hardMin(res, vec4(fieldDistance, 2, -1, -1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    

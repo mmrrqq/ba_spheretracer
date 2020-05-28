@@ -12,7 +12,7 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
 
     outX_ = bbMaximum + 1.0, outY_ = bbMaximum + 1.0, outZ_ = bbMaximum + 1.0;
 
-    float scaleFactor = 10;
+    float scaleFactor = 15;
 
     outX_ *= scaleFactor;
     outY_ *= scaleFactor;
