@@ -33,7 +33,8 @@ void Spheremarcher::initialize()
 
     /////// SCENE TEST SETUP
     pmp::SurfaceMesh mesh;
-    mesh.read("res/meshes/tree2.obj");
+    mesh.read("res/meshes/tree.obj");
+    mesh.triangulate();
     sdfGenerator_ = SDFGenerator(mesh);
 
     sdfGenerator_.Generate(&sdField_);
@@ -87,7 +88,7 @@ void Spheremarcher::initialize()
     yellowLight.color = glm::vec3(0.7, 0.7, 0.2);
     PointLight whiteLight;
     whiteLight.position = glm::vec3(-4, 6, 0);
-    whiteLight.size = 0.3;
+    whiteLight.size = 0.03;
     whiteLight.color = glm::vec3(0.8, 0.8, 0.8);
 
     PointLight redLight;
@@ -124,7 +125,7 @@ void Spheremarcher::initialize()
 
     screenShader_.Bind();
     screenShader_.SetUniform("USDField", &sdField_, 1);
-    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
+    screenShader_.SetUniform("UNormalEpsilon", 0.0003f);
     // screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);

@@ -142,7 +142,7 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
 
 float distanceToField(SDField field, vec3 position)
 {
-    float distanceBox = distanceToBox(position - field.position, field.dimensions);
+    float distanceBox = distanceToBox(position - field.position, field.dimensions);    
 
     if (distanceBox < 0.0)
     {
@@ -150,10 +150,9 @@ float distanceToField(SDField field, vec3 position)
 
         ivec3 texSize = textureSize(field.field, 0);
 
-        // voxelCoords += 0.5;
-        voxelCoords /= field.dimensions;        
-        // todo: hier liegt der fehler bei modulo
-        voxelCoords = 0.5 + 0.5 * voxelCoords;
+        // voxelCoords += (0.5 / field.dimensions.x);
+        voxelCoords /= field.dimensions;                
+        voxelCoords = .5 + 0.5 * voxelCoords;
         
         return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
     }    
@@ -210,8 +209,9 @@ vec2 distanceToScene(vec3 position)
     //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
+    vec3 rep = vec3(3.0, 1000.0, 3.0);
 
-    float fieldDistance = distanceToField(USDField, position);
+    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);
     res = hardMin(res, vec2(fieldDistance, 1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
@@ -242,8 +242,9 @@ vec4 distanceToSceneColor(vec3 position)
     //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
     //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
     // }
+    vec3 rep = vec3(3.0, 1000.0, 3.0);
 
-    float fieldDistance = distanceToField(USDField, position);
+    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);
     res = hardMin(res, vec4(fieldDistance, 2, -1, -1));
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    

@@ -13,7 +13,7 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
 
     outX_ = bbMaximum + 1.0, outY_ = bbMaximum + 1.0, outZ_ = bbMaximum + 1.0;
 
-    float scaleFactor = 15;
+    float scaleFactor = 20;
 
     outX_ *= scaleFactor;
     outY_ *= scaleFactor;
@@ -21,11 +21,22 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
 
     data_ = std::vector<float>(outZ_ * outY_ * outX_ * 4);
 
+    glm::vec3 barycenter(0.0f);
+    for (auto v : mesh.vertices())
+    {
+        pmp::Point vPosition = mesh.position(v);
+        barycenter += glm::vec3(vPosition[0], vPosition[1], vPosition[2]);
+        std::cout << vPosition[0] << " " << vPosition[1] << " " << vPosition[2] << std::endl;
+    }
+    barycenter /= mesh.n_vertices();
+    std::cout << barycenter.x << " " << barycenter.y << " " << barycenter.z << std::endl;
+    std::cout << bbMaximum << std::endl;
+    glm::vec3 toCenter = glm::vec3(bbMaximum / 2.0f) - barycenter;
+
     GLfloat textureData[mesh.n_faces() * 4 * 3];
     // for (int i = 0; i < mesh.n_faces(); i++)
     for (auto f : mesh.faces())
     {
-        glm::vec3 toCenter(bbMaximum / 2.0f, bbMaximum / 3.0f, bbMaximum / 2.0f);
         int fvi = 0;
         for (auto fv : mesh.vertices(f))
         {
@@ -80,8 +91,8 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX_, outY_, outZ_, 0, GL_RGBA, GL_FLOAT, nullptr);
     glBindImageTexture(1, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
 
@@ -99,7 +110,7 @@ void SDFGenerator::Generate(SDField *field)
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
 
-    field->FromData(&data_, glm::vec3(outX_, outY_, outZ_), glm::vec3(0.0, 0.5, 0.0));
+    field->FromData(&data_, glm::vec3(outX_, outY_, outZ_), glm::vec3(0.0, 0.1, 0.0));
 }
 
 unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)
