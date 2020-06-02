@@ -2,7 +2,6 @@
 
 #include "FrameBuffer.h"
 #include "TextureSampler.h"
-#include "raytracing/Mesh.h"
 
 Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
@@ -33,7 +32,8 @@ void Spheremarcher::initialize()
     ImGui_ImplOpenGL3_Init("#version 130");
 
     /////// SCENE TEST SETUP
-    Mesh mesh("res/meshes/tree2.obj");
+    pmp::SurfaceMesh mesh;
+    mesh.read("res/meshes/tree2.obj");
     sdfGenerator_ = SDFGenerator(mesh);
 
     sdfGenerator_.Generate(&sdField_);

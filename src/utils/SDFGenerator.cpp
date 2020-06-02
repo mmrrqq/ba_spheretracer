@@ -4,9 +4,10 @@ SDFGenerator::SDFGenerator()
 {
 }
 
-SDFGenerator::SDFGenerator(const Mesh &mesh)
+SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
 {
-    glm::vec3 dimensions = mesh.bb_max_ - mesh.bb_min_;
+    pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
+    glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
 
     float bbMaximum = std::ceil(glm::compMax(dimensions));
 
@@ -20,35 +21,25 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
 
     data_ = std::vector<float>(outZ_ * outY_ * outX_ * 4);
 
-    GLfloat textureData[mesh.triangles_.size() * 4 * 3];
-    for (int i = 0; i < mesh.triangles_.size(); i++)
+    GLfloat textureData[mesh.n_faces() * 4 * 3];
+    // for (int i = 0; i < mesh.n_faces(); i++)
+    for (auto f : mesh.faces())
     {
-        Triangle triangle = mesh.triangles_[i];
-        Vertex v1 = mesh.vertices_[triangle.i0];
-        Vertex v2 = mesh.vertices_[triangle.i1];
-        Vertex v3 = mesh.vertices_[triangle.i2];
+        glm::vec3 toCenter(bbMaximum / 2.0f, bbMaximum / 3.0f, bbMaximum / 2.0f);
+        int fvi = 0;
+        for (auto fv : mesh.vertices(f))
+        {
+            pmp::Point vertex = mesh.position(fv);
+            glm::vec3 glmVertex = glm::vec3(vertex[0], vertex[1], vertex[2]);
+            glmVertex = (glmVertex + toCenter) * scaleFactor;
+            textureData[12 * f.idx() + 4 * fvi + 0] = glmVertex.x;
+            textureData[12 * f.idx() + 4 * fvi + 1] = glmVertex.y;
+            textureData[12 * f.idx() + 4 * fvi + 2] = glmVertex.z;
+            textureData[12 * f.idx() + 4 * fvi + 3] = 1.0f; // ALPHA value..
+            fvi++;
+        }
 
         // TODO: move object to barycenter of vertices..
-        glm::vec3 toCenter(bbMaximum / 2.0f, bbMaximum / 3.0f, bbMaximum / 2.0f);
-
-        v1.position = (v1.position + toCenter) * scaleFactor;
-        v2.position = (v2.position + toCenter) * scaleFactor;
-        v3.position = (v3.position + toCenter) * scaleFactor;
-
-        textureData[12 * i + 0] = v1.position.x;
-        textureData[12 * i + 1] = v1.position.y;
-        textureData[12 * i + 2] = v1.position.z;
-        textureData[12 * i + 3] = 1.0f; // ALPHA value..
-
-        textureData[12 * i + 4] = v2.position.x;
-        textureData[12 * i + 5] = v2.position.y;
-        textureData[12 * i + 6] = v2.position.z;
-        textureData[12 * i + 7] = 1.0f; // ALPHA value..
-
-        textureData[12 * i + 8] = v3.position.x;
-        textureData[12 * i + 9] = v3.position.y;
-        textureData[12 * i + 10] = v3.position.z;
-        textureData[12 * i + 11] = 1.0f; // ALPHA value..
     }
 
     // create program
@@ -80,7 +71,7 @@ SDFGenerator::SDFGenerator(const Mesh &mesh)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mesh.triangles_.size() * 3, 1, 0, GL_RGBA, GL_FLOAT, &textureData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mesh.n_faces() * 3, 1, 0, GL_RGBA, GL_FLOAT, &textureData);
     glBindImageTexture(0, texInput_, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
 
     glActiveTexture(GL_TEXTURE1);

@@ -4,7 +4,7 @@
 #include "GLUtils.h"
 #include "Shader.h"
 #include "glm/gtx/component_wise.hpp"
-#include "raytracing/Mesh.h"
+#include "pmp/SurfaceMesh.h"
 
 #include <iostream>
 #include <fstream>
@@ -14,7 +14,7 @@ class SDFGenerator
 {
 public:
     SDFGenerator();
-    SDFGenerator(const Mesh &mesh);
+    SDFGenerator(pmp::SurfaceMesh &mesh);
     ~SDFGenerator();
     void Generate(SDField *field);
 
@@ -23,6 +23,4 @@ private:
     unsigned int loadAndCompile(const char *filename, GLenum type);
     int outX_, outY_, outZ_;
     std::vector<float> data_;
-    // mesh data
-    // texture dimensions
 };

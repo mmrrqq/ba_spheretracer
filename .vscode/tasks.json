@@ -6,7 +6,7 @@
     {
       "type": "shell",
       "label": "cmake and make",
-      "command": "cmake . && make",
+      "command": "cmake . && make -j",
       "group": {
         "kind": "build",
         "isDefault": true

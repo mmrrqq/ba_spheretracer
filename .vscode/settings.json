@@ -61,7 +61,17 @@
         "new": "cpp",
         "cinttypes": "cpp",
         "variant": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "compare": "cpp",
+        "complex": "cpp",
+        "concepts": "cpp",
+        "forward_list": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp",
+        "cfenv": "cpp",
+        "valarray": "cpp"
     },
     "cmake.configureOnOpen": true
 }

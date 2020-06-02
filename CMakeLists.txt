@@ -16,6 +16,8 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
+set(pmp_DIR dependency/pmp-library)
+
 find_package(OpenGL)
 file(GLOB app_src "src/*.cpp")
 file(GLOB utils_src "src/utils/*.cpp")
@@ -25,6 +27,13 @@ file(GLOB imgui_src "dependency/imgui/*.cpp")
 add_subdirectory(dependency/glew/build/cmake)
 add_subdirectory(dependency/glfw)
 add_subdirectory(dependency/glm)
+
+set(PMP_BUILD_APPS     OFF CACHE BOOL "")
+set(PMP_BUILD_EXAMPLES OFF CACHE BOOL "")
+set(PMP_BUILD_TESTS    OFF CACHE BOOL "")
+set(PMP_BUILD_DOCS     OFF CACHE BOOL "")
+add_subdirectory(dependency/pmp-library)
+
 
 # not included in glew cmake process, but required to succeed..
 execute_process(
@@ -40,8 +49,9 @@ include_directories(dependency/glew)
 include_directories(dependency/glfw/include)
 include_directories(dependency/glm)
 include_directories(dependency/imgui)
+include_directories(dependency/pmp-library/external/eigen)
 
 
 add_executable(Spheremarcher ${app_src} ${utils_src} ${imgui_src} ${raytrace_src})
 
-target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL)
+target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL pmp)
