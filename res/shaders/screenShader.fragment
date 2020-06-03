@@ -193,15 +193,15 @@ vec2 distanceToScene(vec3 position)
 {    
     vec2 res = vec2(1000, -1);
     
-    // for (int i = 0; i < UScene.numSpheres; i++)
-    // {
-    //     Sphere sphere = UScene.spheres[i];
-    //     float d = distanceToSphere(sphere.position, sphere.radius, position);
-    //     if (sphere.morph)
-    //         res = smoothMin(res, vec2(d, sphere.materialId), 0.5);                
-    //     else        
-    //         res = hardMin(res, vec2(d, sphere.materialId));  
-    // }    
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        float d = distanceToSphere(sphere.position, sphere.radius, position);
+        if (sphere.morph)
+            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);                
+        else        
+            res = hardMin(res, vec2(d, sphere.materialId));  
+    }    
 
     // for (int i = 0; i < UScene.numTori; i++)
     // {
@@ -226,15 +226,15 @@ vec4 distanceToSceneColor(vec3 position)
 {
     vec4 res = vec4(1000, -1, -1, -1);
 
-    // for (int i = 0; i < UScene.numSpheres; i++)
-    // {
-    //     Sphere sphere = UScene.spheres[i];
-    //     float d = distanceToSphere(sphere.position, sphere.radius, position);        
-    //     if (sphere.morph)
-    //         res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);        
-    //     else
-    //         res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
-    // }
+    for (int i = 0; i < UScene.numSpheres; i++)
+    {
+        Sphere sphere = UScene.spheres[i];
+        float d = distanceToSphere(sphere.position, sphere.radius, position);        
+        if (sphere.morph)
+            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);        
+        else
+            res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
+    }
 
     // for (int i = 0; i < UScene.numTori; i++)
     // {

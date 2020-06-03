@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Shader.h"
 #include "SDField.h"
 #include "GLUtils.h"
-#include "Shader.h"
 #include "glm/gtx/component_wise.hpp"
 #include "pmp/SurfaceMesh.h"
 
@@ -12,6 +12,12 @@
 
 class SDFGenerator
 {
+private:
+    Shader computeShader_;
+    TextureSampler texInput_, texOutput_;
+    int outX_, outY_, outZ_;
+    std::vector<float> data_;
+
 public:
     SDFGenerator();
     SDFGenerator(pmp::SurfaceMesh &mesh);
@@ -19,10 +25,9 @@ public:
     SDFGenerator(const SDFGenerator &) = delete;
     SDFGenerator &operator=(const SDFGenerator &) = delete;
 
-    SDFGenerator(SDFGenerator &&other) : program_(other.program_)
+    SDFGenerator(SDFGenerator &&other)
     {
-        other.program_ = 0;
-        other.shader_ = 0;
+        other.computeShader_ = Shader();
         other.outX_ = 0;
         other.outY_ = 0;
         other.outZ_ = 0;
@@ -36,8 +41,7 @@ public:
         //ALWAYS check for self-assignment.
         if (this != &other)
         {
-            std::swap(program_, other.program_);
-            std::swap(shader_, other.shader_);
+            std::swap(computeShader_, other.computeShader_);
             std::swap(outX_, other.outX_);
             std::swap(outY_, other.outY_);
             std::swap(outZ_, other.outZ_);
@@ -48,11 +52,4 @@ public:
     }
 
     void Generate(SDField *field);
-
-private:
-    unsigned int program_, shader_;
-    TextureSampler texInput_, texOutput_;
-    unsigned int loadAndCompile(const char *filename, GLenum type);
-    int outX_, outY_, outZ_;
-    std::vector<float> data_;
 };

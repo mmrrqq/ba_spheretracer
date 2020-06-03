@@ -47,26 +47,8 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
         }
     }
 
-    // create program
-    program_ = glCreateProgram();
-    shader_ = loadAndCompile("res/shaders/sdfGenerator.compute", GL_COMPUTE_SHADER);
-    glAttachShader(program_, shader_);
-
-    // link program
-    glLinkProgram(program_);
-    GLint status;
-    glGetProgramiv(program_, GL_LINK_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint length;
-        glGetProgramiv(program_, GL_INFO_LOG_LENGTH, &length);
-
-        GLchar *info = new GLchar[length + 1];
-        glGetProgramInfoLog(program_, length, NULL, info);
-        std::cerr << "Shader: Cannot link program:\n"
-                  << info << std::endl;
-        delete[] info;
-    }
+    computeShader_.Load("res/shaders/sdfGenerator.compute");
+    computeShader_.Bind();
 
     TextureSampler texInput(
         (int)mesh.n_faces() * 3,
@@ -92,7 +74,7 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
     texInput_.BindImage(0, GL_READ_ONLY, GL_RGBA32F);
     texOutput_.BindImage(1, GL_READ_WRITE, GL_RGBA32F);
 
-    glUseProgram(0);
+    computeShader_.Unbind();
 }
 
 SDFGenerator::~SDFGenerator()
@@ -101,59 +83,11 @@ SDFGenerator::~SDFGenerator()
 
 void SDFGenerator::Generate(SDField *field)
 {
-    glUseProgram(program_);
+    computeShader_.Bind();
     glDispatchCompute(outX_, outY_, outZ_);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
 
     field->FromData(&data_, glm::vec3(outX_, outY_, outZ_), glm::vec3(0.0, 0.1, 0.0));
-}
-
-unsigned int SDFGenerator::loadAndCompile(const char *filename, GLenum type)
-{
-    // read file to string
-    std::ifstream ifs(filename);
-    if (!ifs)
-    {
-        std::cerr << "Shader: Cannot open file \"" << filename << "\"\n";
-        return 0;
-    }
-    std::stringstream ss;
-    ss << ifs.rdbuf();
-    std::string str = ss.str();
-    const char *source = str.c_str();
-    ifs.close();
-
-    // create shader
-    GLint id = glCreateShader(type);
-    if (!id)
-    {
-        std::cerr << "Shader: Cannot create " << type << " shader object for \"" << filename << "\"\n";
-        return 0;
-    }
-
-    glShaderSource(id, 1, &source, NULL);
-    glCompileShader(id);
-
-    // check compile status
-    GLint status;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        GLint length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-
-        GLchar *info = new GLchar[length + 1];
-        glGetShaderInfoLog(id, length, NULL, info);
-
-        std::cerr << "Shader: Cannot compile shader \"" << filename << "\"\n"
-                  << info << std::endl;
-
-        delete[] info;
-        glDeleteShader(id);
-
-        return 0;
-    }
-
-    return id;
+    computeShader_.Unbind();
 }

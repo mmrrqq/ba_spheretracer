@@ -63,17 +63,17 @@ void Spheremarcher::initialize()
 
     Sphere sphere1;
     sphere1.position = glm::vec3(1.5, 0.5, 0.0);
-    sphere1.radius = 0.7f;
+    sphere1.radius = 0.2f;
     sphere1.materialId = 1;
     sphere1.morph = true;
     Sphere sphere2;
     sphere2.position = glm::vec3(0.0, 0.5, 0.0);
-    sphere2.radius = 1.0f;
+    sphere2.radius = 0.1f;
     sphere2.materialId = 0;
     sphere2.morph = true;
     Sphere sphere3;
     sphere3.position = glm::vec3(1.5, 0.5, -1.7);
-    sphere3.radius = 1.0f;
+    sphere3.radius = 0.3f;
     sphere3.materialId = 2;
     sphere3.morph = true;
 
@@ -118,15 +118,15 @@ void Spheremarcher::initialize()
 
     offScreenShader_.Bind();
     offScreenShader_.SetUniform("USDField", &sdField_, 1);
-    // offScreenShader_.SetUniform("UScene", scene_);
+    offScreenShader_.SetUniform("UScene", scene_);
     offScreenShader_.SetUniform("UMarchingSteps", 200);
     offScreenShader_.SetUniform("UMaxDrawDistance", 30.0f);
     offScreenShader_.Unbind();
 
     screenShader_.Bind();
     screenShader_.SetUniform("USDField", &sdField_, 1);
-    screenShader_.SetUniform("UNormalEpsilon", 0.0003f);
-    // screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetUniform("UNormalEpsilon", 0.003f);
+    screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
@@ -257,7 +257,7 @@ void Spheremarcher::draw()
     fourthPassBuffer_.Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920 / 2, 1080 / 2);
-    offScreenShader_.SetUniform("UMarchingSteps", 20);
+    offScreenShader_.SetUniform("UMarchingSteps", 40);
     offScreenShader_.SetUniform("UImageDim", glm::vec2(1920 / 2, 1080 / 2));
     offScreenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);

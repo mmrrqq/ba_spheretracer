@@ -15,7 +15,7 @@
 
 //=============================================================================
 
-Shader::Shader() : pid_(0), vid_(0), fid_(0)
+Shader::Shader()
 {
 }
 
@@ -37,8 +37,10 @@ void Shader::Cleanup()
         glDeleteShader(vid_);
     if (fid_)
         glDeleteShader(fid_);
+    if (cid_)
+        glDeleteShader(cid_);
 
-    pid_ = vid_ = fid_ = 0;
+    pid_ = vid_ = fid_ = cid_ = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -84,6 +86,29 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
     return true;
 }
 
+bool Shader::Load(const char *computeShaderFilePath)
+{
+    pid_ = glCreateProgram();
+    cid_ = loadAndCompile(computeShaderFilePath, GL_COMPUTE_SHADER);
+    glAttachShader(pid_, cid_);
+
+    // link program
+    glLinkProgram(pid_);
+    GLint status;
+    glGetProgramiv(pid_, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE)
+    {
+        GLint length;
+        glGetProgramiv(pid_, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar *info = new GLchar[length + 1];
+        glGetProgramInfoLog(pid_, length, NULL, info);
+        std::cerr << "Shader: Cannot link program:\n"
+                  << info << std::endl;
+        delete[] info;
+    }
+}
+
 //-----------------------------------------------------------------------------
 
 unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
@@ -109,7 +134,6 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
         return 0;
     }
 
-    // compile vertex shader
     glShaderSource(id, 1, &source, NULL);
     glCompileShader(id);
 
