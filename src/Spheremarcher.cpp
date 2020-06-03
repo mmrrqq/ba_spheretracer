@@ -35,7 +35,7 @@ void Spheremarcher::initialize()
     pmp::SurfaceMesh mesh;
     mesh.read("res/meshes/tree.obj");
     mesh.triangulate();
-    sdfGenerator_ = SDFGenerator(mesh);
+    sdfGenerator_ = std::move(SDFGenerator(mesh));
 
     sdfGenerator_.Generate(&sdField_);
 

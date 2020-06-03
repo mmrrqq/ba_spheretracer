@@ -51,6 +51,7 @@ public:
 
     void Bind();
     void Bind(unsigned int slot);
+    void BindImage(unsigned int slot, unsigned int mode, unsigned int format);
     void Unbind();
 
     inline unsigned int GetID() { return id_; }

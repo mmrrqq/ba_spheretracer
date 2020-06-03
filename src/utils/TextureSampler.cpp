@@ -22,7 +22,6 @@ TextureSampler::TextureSampler(
     glBindTexture(GL_TEXTURE_2D, id_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-    // TODO: this is only valid for depth..
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width_, height_, 0, format, type, data);
@@ -64,6 +63,21 @@ void TextureSampler::Bind(unsigned int slot)
 void TextureSampler::Bind()
 {
     depth_ == 0 ? glBindTexture(GL_TEXTURE_2D, id_) : glBindTexture(GL_TEXTURE_3D, id_);
+}
+
+void TextureSampler::BindImage(unsigned int slot, unsigned int mode, unsigned int format)
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    if (depth_ == 0)
+    {
+        glBindTexture(GL_TEXTURE_2D, id_);
+        glBindImageTexture(slot, id_, 0, GL_FALSE, 0, mode, format);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_3D, id_);
+        glBindImageTexture(slot, id_, 0, GL_TRUE, 0, mode, format);
+    }
 }
 
 void TextureSampler::Unbind()

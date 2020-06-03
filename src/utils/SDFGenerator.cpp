@@ -26,15 +26,11 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
     {
         pmp::Point vPosition = mesh.position(v);
         barycenter += glm::vec3(vPosition[0], vPosition[1], vPosition[2]);
-        std::cout << vPosition[0] << " " << vPosition[1] << " " << vPosition[2] << std::endl;
     }
     barycenter /= mesh.n_vertices();
-    std::cout << barycenter.x << " " << barycenter.y << " " << barycenter.z << std::endl;
-    std::cout << bbMaximum << std::endl;
     glm::vec3 toCenter = glm::vec3(bbMaximum / 2.0f) - barycenter;
 
     GLfloat textureData[mesh.n_faces() * 4 * 3];
-    // for (int i = 0; i < mesh.n_faces(); i++)
     for (auto f : mesh.faces())
     {
         int fvi = 0;
@@ -49,13 +45,10 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
             textureData[12 * f.idx() + 4 * fvi + 3] = 1.0f; // ALPHA value..
             fvi++;
         }
-
-        // TODO: move object to barycenter of vertices..
     }
 
     // create program
     program_ = glCreateProgram();
-
     shader_ = loadAndCompile("res/shaders/sdfGenerator.compute", GL_COMPUTE_SHADER);
     glAttachShader(program_, shader_);
 
@@ -75,26 +68,29 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
         delete[] info;
     }
 
-    glGenTextures(1, &texInput_);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texInput_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mesh.n_faces() * 3, 1, 0, GL_RGBA, GL_FLOAT, &textureData);
-    glBindImageTexture(0, texInput_, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+    TextureSampler texInput(
+        (int)mesh.n_faces() * 3,
+        1,
+        GL_RGBA32F,
+        GL_RGBA,
+        GL_FLOAT,
+        GL_CLAMP_TO_EDGE,
+        GL_LINEAR,
+        &textureData);
+    TextureSampler texOutput(
+        (int)outX_,
+        (int)outY_,
+        (int)outZ_,
+        GL_RGBA32F,
+        GL_RGBA,
+        GL_FLOAT,
+        nullptr);
 
-    glActiveTexture(GL_TEXTURE1);
-    glGenTextures(1, &texOutput_);
-    glBindTexture(GL_TEXTURE_3D, texOutput_);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, outX_, outY_, outZ_, 0, GL_RGBA, GL_FLOAT, nullptr);
-    glBindImageTexture(1, texOutput_, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
+    texInput_ = std::move(texInput);
+    texOutput_ = std::move(texOutput);
+
+    texInput_.BindImage(0, GL_READ_ONLY, GL_RGBA32F);
+    texOutput_.BindImage(1, GL_READ_WRITE, GL_RGBA32F);
 
     glUseProgram(0);
 }
