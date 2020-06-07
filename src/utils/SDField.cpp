@@ -11,13 +11,13 @@ SDField::~SDField()
 void SDField::FromData(const std::vector<float> *data, glm::vec3 size, glm::vec3 position)
 {
     position_ = position;
-    dimensions_ = size / 100.0f;
+    dimensions_ = size / 150.0f;
     field_ = TextureSampler(
         (int)size.x,
         (int)size.y,
         (int)size.z,
-        GL_RGBA32F,
-        GL_RGBA,
+        GL_R32F,
+        GL_RED,
         GL_FLOAT,
         (void *)data->data());
 }

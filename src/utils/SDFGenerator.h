@@ -5,10 +5,12 @@
 #include "GLUtils.h"
 #include "glm/gtx/component_wise.hpp"
 #include "pmp/SurfaceMesh.h"
+#include "pmp/algorithms/TriangleKdTree.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <bits/stdc++.h>
 
 class SDFGenerator
 {
@@ -17,6 +19,20 @@ private:
     TextureSampler texInput_, texOutput_;
     int outX_, outY_, outZ_;
     std::vector<float> data_;
+
+    struct Triangle
+    {
+        glm::vec3 p0;
+        glm::vec3 p1;
+        glm::vec3 p2;
+    };
+
+    struct Node
+    {
+        int leftNode;
+        int rightNode;
+        std::vector<unsigned int> triangles;
+    };
 
 public:
     SDFGenerator();
@@ -51,5 +67,6 @@ public:
         }
     }
 
+    void KDTree(pmp::SurfaceMesh &mesh);
     void Generate(SDField *field);
 };

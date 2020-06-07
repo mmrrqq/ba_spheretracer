@@ -6,7 +6,8 @@ FrameBuffer::FrameBuffer()
 }
 
 FrameBuffer::FrameBuffer(int width, int height)
-    : colorTexture_(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT, GL_CLAMP_TO_EDGE, GL_LINEAR),
+    : width_(width), height_(height),
+      colorTexture_(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_INT, GL_CLAMP_TO_EDGE, GL_LINEAR),
       depthTexture_(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT, GL_CLAMP_TO_EDGE, GL_NEAREST)
 {
     glGenFramebuffers(1, &id_);
@@ -24,9 +25,12 @@ FrameBuffer::~FrameBuffer()
     glDeleteFramebuffers(1, &id_);
 }
 
-void FrameBuffer::Bind()
+void FrameBuffer::Bind(bool clearDepth)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, id_);
+    if (clearDepth)
+        glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, width_, height_);
 }
 
 void FrameBuffer::Unbind()
