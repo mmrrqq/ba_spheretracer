@@ -63,19 +63,16 @@ void Spheremarcher::initialize()
 
     Sphere sphere1;
     sphere1.position = glm::vec3(1.5, 0.5, 0.0);
-    sphere1.radius = 0.2f;
+    sphere1.radius = 0.4f;
     sphere1.materialId = 1;
-    sphere1.morph = true;
     Sphere sphere2;
     sphere2.position = glm::vec3(0.0, 0.5, 0.0);
-    sphere2.radius = 0.1f;
+    sphere2.radius = 0.3f;
     sphere2.materialId = 0;
-    sphere2.morph = true;
     Sphere sphere3;
     sphere3.position = glm::vec3(1.5, 0.5, -1.7);
-    sphere3.radius = 0.3f;
+    sphere3.radius = 0.6f;
     sphere3.materialId = 2;
-    sphere3.morph = true;
 
     scene_.AddSphere(sphere1);
     scene_.AddSphere(sphere2);
@@ -123,6 +120,7 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UMaxDrawDistance", 27.0f);
+    screenShader_.SetUniform("USmooth", false);
     screenShader_.Unbind();
 }
 
@@ -203,6 +201,7 @@ void Spheremarcher::draw()
         ImGui::Begin("debug");
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
         ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
+        ImGui::Checkbox("smoothing", &smooth_);
 
         ImGui::Text("frame time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
@@ -230,6 +229,7 @@ void Spheremarcher::draw()
     screenShader_.SetUniform("UImageDim", glm::vec2(firstPassBuffer_.GetWidth(), firstPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UUseDepthTexture", false);
     screenShader_.SetUniform("UWriteColor", false);
+    screenShader_.SetUniform("USmooth", smooth_);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     secondPassBuffer_.Bind(true);

@@ -23,7 +23,7 @@ private:
     Shader screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
-    bool mouseDown_, moving_;
+    bool mouseDown_, moving_, smooth_;
     unsigned int vao_, ibo_;
     float fovy_;
     SDFGenerator sdfGenerator_;

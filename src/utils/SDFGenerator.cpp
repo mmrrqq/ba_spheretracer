@@ -86,7 +86,7 @@ void SDFGenerator::KDTree(pmp::SurfaceMesh &mesh)
 
     outX_ = bbMaximum + 0.5, outY_ = bbMaximum + 0.5, outZ_ = bbMaximum + 0.5;
 
-    float scaleFactor = 20;
+    float scaleFactor = 15;
 
     outX_ *= scaleFactor;
     outY_ *= scaleFactor;

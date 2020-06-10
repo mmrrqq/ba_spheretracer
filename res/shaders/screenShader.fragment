@@ -14,9 +14,7 @@ struct Sphere
 {
     int materialId;
     vec3 position;
-    float radius;
-    bool morph;
-    bool cut;
+    float radius;        
 };
 
 struct Torus
@@ -67,6 +65,7 @@ uniform int UMarchingSteps;
 uniform float UMaxDrawDistance;
 uniform bool UUseDepthTexture;
 uniform bool UWriteColor;
+uniform bool USmooth;
 
 uniform sampler2D UDepthTexture;
 
@@ -190,18 +189,27 @@ vec2 smoothMin(vec2 dist1, vec2 dist2, float k)
     return vec2(dist, dist1.y);
 }
 
-vec2 distanceToScene(vec3 position) 
+float smoothMin(float dist1, float dist2, float k)
+{
+    float h = max(k - abs(dist1 - dist2), 0.0)/k;
+    return min(dist1, dist2) - h*h*k*(1.0/4.0);
+}
+
+float minFn(float prevDist, float dist)
+{
+    if (USmooth)
+        return smoothMin(prevDist, dist, 0.5);
+    return min(prevDist, dist);
+}
+
+float distanceToScene(vec3 position) 
 {    
-    vec2 res = vec2(1000, -1);
+    float res = 1000;
     
     for (int i = 0; i < UScene.numSpheres; i++)
     {
         Sphere sphere = UScene.spheres[i];
-        float d = distanceToSphere(sphere.position, sphere.radius, position);
-        if (sphere.morph)
-            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);                
-        else        
-            res = hardMin(res, vec2(d, sphere.materialId));  
+        res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
     }    
 
     // for (int i = 0; i < UScene.numTori; i++)
@@ -211,14 +219,19 @@ vec2 distanceToScene(vec3 position)
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
     vec3 rep = vec3(10.0, 1000.0, 10.0);
+    
+    res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
 
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);
-    res = hardMin(res, vec2(fieldDistance, 1));
-
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
-    res = hardMin(res, vec2(planeDistance, 0));
+    res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
 
     return res;
+}
+
+vec4 minColorFn(vec4 prevDist, float dist, int materialId)
+{
+    if (USmooth)
+        return smoothColorMin(prevDist, vec2(dist, materialId), 0.5);
+    return hardMin(prevDist, vec4(dist, materialId, -1, -1));
 }
 
 
@@ -231,10 +244,7 @@ vec4 distanceToSceneColor(vec3 position)
     {
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);        
-        if (sphere.morph)
-            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);        
-        else
-            res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
+        res = minColorFn(res, d, sphere.materialId);
     }
 
     // for (int i = 0; i < UScene.numTori; i++)
@@ -245,11 +255,11 @@ vec4 distanceToSceneColor(vec3 position)
     // }
     vec3 rep = vec3(10.0, 1000.0, 10.0);
 
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);
-    res = hardMin(res, vec4(fieldDistance, 2, -1, -1));
+    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
+    res = minColorFn(res, fieldDistance, 2);
 
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
-    res = hardMin(res, vec4(planeDistance, 0, -1, -1));
+    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
+    res = minColorFn(res, planeDistance, 0);
 
     return res;
 }
@@ -268,9 +278,9 @@ vec3 getNormal(vec3 position)
 
     return normalize(
         vec3(
-            distanceToScene(position + epsilon.xyy).x - distanceToScene(position - epsilon.xyy).x,
-            distanceToScene(position + epsilon.yxy).x - distanceToScene(position - epsilon.yxy).x,
-            distanceToScene(position + epsilon.yyx).x - distanceToScene(position - epsilon.yyx).x
+            distanceToScene(position + epsilon.xyy) - distanceToScene(position - epsilon.xyy),
+            distanceToScene(position + epsilon.yxy) - distanceToScene(position - epsilon.yxy),
+            distanceToScene(position + epsilon.yyx) - distanceToScene(position - epsilon.yyx)
         )
     );
 }
@@ -286,7 +296,7 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
 
     for(int i = 0; i < UMarchingSteps; i++)
     {                        
-        dist = distanceToScene(position + depth * rayDir).x;  
+        dist = distanceToScene(position + depth * rayDir);  
         // pad by 0.5 to improve inner shadow
         minDist = min(0.5 + 0.5 * dist/(depth*lightSize), minDist);              
         if (minDist < 0.05)                                  
@@ -361,7 +371,7 @@ void main()
         vec4 distMat = distanceToSceneColor(position);
         dist = distMat.x; 
         float coneRadius = depth * coneRadiusCoeff;   
-        if (dist < coneRadius)        
+        if (dist < coneRadius + 0.005)        
         {
             gl_FragDepth = (depth - (coneRadius - dist)) / UMaxDrawDistance;            
 
