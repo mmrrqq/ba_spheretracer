@@ -38,6 +38,8 @@ void Spheremarcher::initialize()
     sdfGenerator_ = std::move(SDFGenerator(mesh));
 
     sdfGenerator_.Generate(&sdField_);
+    // sdField_.Scale(0.01);
+    // sdField_.SetPosition(glm::vec3(0.0, 0.2, 0.0));
 
     std::vector<Material> materials;
     materials.push_back(
@@ -79,10 +81,6 @@ void Spheremarcher::initialize()
     scene_.AddSphere(sphere3);
 
     SceneLights lights;
-    PointLight yellowLight;
-    yellowLight.position = glm::vec3(4, 4, 0);
-    yellowLight.size = 0.05;
-    yellowLight.color = glm::vec3(0.7, 0.7, 0.2);
     PointLight whiteLight;
     whiteLight.position = glm::vec3(-4, 6, 0);
     whiteLight.size = 0.03;
@@ -94,7 +92,6 @@ void Spheremarcher::initialize()
     redLight.color = glm::vec3(0.7, 0.5, 0.1);
 
     lights.pointLights.push_back(whiteLight);
-    // lights.pointLights.push_back(yellowLight);
     lights.pointLights.push_back(redLight);
     /////// END SCENE TEST SETUP
 
@@ -109,18 +106,17 @@ void Spheremarcher::initialize()
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
-
     screenShader_.Bind();
     screenShader_.SetUniform("USDField", &sdField_, 1);
+
     screenShader_.SetUniform("UNormalEpsilon", 0.007f);
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UMaxDrawDistance", 27.0f);
-    screenShader_.SetUniform("USmooth", false);
+    screenShader_.SetUniform("USmooth", smooth_);
     screenShader_.Unbind();
 }
 
@@ -200,6 +196,8 @@ void Spheremarcher::draw()
     {
         ImGui::Begin("debug");
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
+        // ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.5f);
+        // ImGui::SliderFloat("draw distance", &drawDistance_, 5.0f, 50.0f);
         ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
         ImGui::Checkbox("smoothing", &smooth_);
 
@@ -221,7 +219,9 @@ void Spheremarcher::draw()
 
     firstPassBuffer_.Bind(true);
     // screenShader_.SetUniform("UScene", scene_);
-    // screenShader_.SetUniform("USDField", &sdField_, 1);
+    // screenShader_.SetUniform("USDField", &sdField_, 0U);
+    // screenShader_.SetUniform("UMaxDrawDistance", drawDistance_);
+    // screenShader_.SetUniform("UNormalEpsilon", normalEpsilon_);
     screenShader_.SetUniform("UFovY", fovy_);
     screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
@@ -257,7 +257,7 @@ void Spheremarcher::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
     screenShader_.SetUniform("UWriteColor", true);
-    screenShader_.SetUniform("UMarchingSteps", 60);
+    screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
 

@@ -77,6 +77,7 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh)
     computeShader_.Unbind();
 }
 
+// TODO: revisit and implement kd-tree sdf generation
 void SDFGenerator::KDTree(pmp::SurfaceMesh &mesh)
 {
     pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();

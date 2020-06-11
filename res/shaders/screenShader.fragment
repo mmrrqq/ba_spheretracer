@@ -54,8 +54,6 @@ struct SDField
     vec3 dimensions;
 };
 
-float distEpsilon = 0.01;
-
 uniform float UFovY;
 uniform vec2 UImageDim;
 uniform float UNormalEpsilon;
@@ -341,8 +339,17 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         phongColor += shadow * (diffuseContribution * material.diffuseColor * light.color
             + specularContribution * material.specularColor * light.color);
 
-    }    
-    return phongColor;
+    }        
+    
+    return phongColor;        
+}
+
+vec3 applyFog(vec3 color, float depth)
+{
+    //https://iquilezles.org/www/articles/fog/fog.htm
+    vec3 fogColor = vec3(0.5,0.6,0.7);
+    return mix(color, fogColor, 1.0 - exp(-depth * 0.05)) 
+        * exp(-0.00005*depth*depth*depth);
 }
 
 void main()
@@ -371,16 +378,17 @@ void main()
         vec4 distMat = distanceToSceneColor(position);
         dist = distMat.x; 
         float coneRadius = depth * coneRadiusCoeff;   
-        if (dist < coneRadius + 0.005)        
+        if (dist < coneRadius)        
         {
             gl_FragDepth = (depth - (coneRadius - dist)) / UMaxDrawDistance;            
 
             if (UWriteColor)
             {
+                vec3 phongColor = getPhongColor(position, getNormal(position), distMat.yzw, rayDirection);
                 color = vec4(
-                    getPhongColor(position, getNormal(position), distMat.yzw, rayDirection), 
+                    applyFog(phongColor, depth), 
                     1.0
-                ) * exp(-0.00005*depth*depth*depth);            
+                );            
             }
             return;
         }                   
@@ -390,12 +398,13 @@ void main()
         if (depth > UMaxDrawDistance)
         {
             gl_FragDepth = 1.0;            
-            // color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);            
+            if (UWriteColor)
+                color = vec4(applyFog(vec3(0.1, 0.1, 0.1), depth), 1.0);
             return;
         }
     }  
 
     gl_FragDepth = depth / UMaxDrawDistance; 
     if (UWriteColor)
-        color = vec4(0.4, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
+        color = vec4(applyFog(vec3(0.4, 0.1, 0.1), depth), 1.0);
 }
