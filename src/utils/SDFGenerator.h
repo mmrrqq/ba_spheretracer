@@ -17,8 +17,16 @@ class SDFGenerator
 private:
     Shader computeShader_;
     TextureSampler texInput_, texOutput_;
-    int outX_, outY_, outZ_;
     std::vector<float> data_;
+
+    void release()
+    {
+        computeShader_.~Shader();
+        OutX = OutY = OutZ = 0;
+        texInput_.~TextureSampler();
+        texOutput_.~TextureSampler();
+        data_.~vector();
+    }
 
     struct Triangle
     {
@@ -35,18 +43,19 @@ private:
     };
 
 public:
+    int OutX, OutY, OutZ;
     SDFGenerator();
-    SDFGenerator(pmp::SurfaceMesh &mesh);
-    ~SDFGenerator();
+    SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFactor);
+    ~SDFGenerator() { release(); };
     SDFGenerator(const SDFGenerator &) = delete;
     SDFGenerator &operator=(const SDFGenerator &) = delete;
 
     SDFGenerator(SDFGenerator &&other)
     {
         other.computeShader_ = Shader();
-        other.outX_ = 0;
-        other.outY_ = 0;
-        other.outZ_ = 0;
+        other.OutX = 0;
+        other.OutY = 0;
+        other.OutZ = 0;
         other.texInput_ = TextureSampler();
         other.texOutput_ = TextureSampler();
         other.data_ = std::vector<float>();
@@ -58,9 +67,9 @@ public:
         if (this != &other)
         {
             std::swap(computeShader_, other.computeShader_);
-            std::swap(outX_, other.outX_);
-            std::swap(outY_, other.outY_);
-            std::swap(outZ_, other.outZ_);
+            std::swap(OutX, other.OutX);
+            std::swap(OutY, other.OutY);
+            std::swap(OutZ, other.OutZ);
             std::swap(texInput_, other.texInput_);
             std::swap(texOutput_, other.texOutput_);
             std::swap(data_, other.data_);
@@ -68,5 +77,5 @@ public:
     }
 
     void KDTree(pmp::SurfaceMesh &mesh);
-    void Generate(SDField *field);
+    std::vector<float> Generate();
 };

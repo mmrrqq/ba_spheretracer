@@ -25,11 +25,10 @@ private:
     Camera camera_;
     bool mouseDown_, moving_, smooth_;
     unsigned int vao_, ibo_;
-    float fovy_;
-    SDFGenerator sdfGenerator_;
-    SDField sdField_;
+    float fovy_; //, normalEpsilon_, drawDistance_;
+    // SDFGenerator sdfGenerator_;
+    std::vector<float> sdfData_;
 
-    void initializeFramebuffers();
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 

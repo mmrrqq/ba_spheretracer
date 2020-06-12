@@ -12,6 +12,8 @@ Spheremarcher::Spheremarcher(int width, int height)
       thirdPassBuffer_(GetWidth() / 8, GetHeight() / 8),
       fourthPassBuffer_(GetWidth() / 2, GetHeight() / 2),
       fovy_(90.0f)
+//   normalEpsilon_(0.005f),
+//   drawDistance_(27.0f)
 {
 }
 
@@ -35,10 +37,22 @@ void Spheremarcher::initialize()
     pmp::SurfaceMesh mesh;
     mesh.read("res/meshes/tree.obj");
     mesh.triangulate();
-    sdfGenerator_ = std::move(SDFGenerator(mesh));
 
-    sdfGenerator_.Generate(&sdField_);
-    // sdField_.Scale(0.01);
+    pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
+    glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
+    float bbMaximum = std::ceil(glm::compMax(dimensions));
+    float boxDim = bbMaximum + 1.0;
+    float scaleFactor = 15;
+
+    // sdfGenerator_ = std::move(SDFGenerator(mesh, boxDim, scaleFactor));
+
+    SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
+
+    sdfData_ = sdfGenerator.Generate();
+
+    SDField field(glm::vec3(sdfGenerator.OutX, sdfGenerator.OutY, sdfGenerator.OutZ));
+    field.SetData(&sdfData_);
+    field.Scale(0.001);
     // sdField_.SetPosition(glm::vec3(0.0, 0.2, 0.0));
 
     std::vector<Material> materials;
@@ -108,7 +122,7 @@ void Spheremarcher::initialize()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
     screenShader_.Bind();
-    screenShader_.SetUniform("USDField", &sdField_, 1);
+    screenShader_.SetUniform("USDField", &field, 1);
 
     screenShader_.SetUniform("UNormalEpsilon", 0.007f);
     screenShader_.SetUniform("UScene", scene_);

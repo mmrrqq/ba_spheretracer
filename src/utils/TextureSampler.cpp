@@ -1,7 +1,5 @@
 #include "TextureSampler.h"
 
-#include "GLUtils.h"
-
 TextureSampler::TextureSampler() {}
 
 TextureSampler::TextureSampler(
@@ -11,22 +9,28 @@ TextureSampler::TextureSampler(
     unsigned int format,
     unsigned int type,
     unsigned int wrap,
-    unsigned int filter,
-    void *data)
+    unsigned int filter)
 {
     width_ = width;
     height_ = height;
     depth_ = 0;
+    internalFormat_ = internalFormat;
+    format_ = format;
+    type_ = type;
 
-    glGenTextures(1, &id_);
-    glBindTexture(GL_TEXTURE_2D, id_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width_, height_, 0, format, type, data);
+    // glGenTextures(1, &id_);
+    // glBindTexture(GL_TEXTURE_2D, id_);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glCreateTextures(GL_TEXTURE_2D, 1, &id_);
+    glTextureStorage2D(id_, 1, internalFormat_, width, height_);
+
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, wrap);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, wrap);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, filter);
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, filter);
+    // glBindTexture(GL_TEXTURE_2D, 0);
+
+    // glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width_, height_, 0, format, type, data);
 }
 
 TextureSampler::TextureSampler(
@@ -36,22 +40,28 @@ TextureSampler::TextureSampler(
     unsigned int internalFormat,
     unsigned int format,
     unsigned int type,
-    void *data)
+    unsigned int wrap,
+    unsigned int filter)
 {
     width_ = width;
     height_ = height;
     depth_ = depth;
+    internalFormat_ = internalFormat;
+    format_ = format;
+    type_ = type;
 
-    glGenTextures(1, &id_);
-    glBindTexture(GL_TEXTURE_3D, id_);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width_, height_, depth_, 0, format, type, data);
+    // glGenTextures(1, &id_);
+    glCreateTextures(GL_TEXTURE_3D, 1, &id_);
+    glTextureStorage3D(id_, 1, internalFormat_, width, height_, depth_);
+    // glBindTexture(GL_TEXTURE_3D, id_);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, wrap);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, wrap);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_R, wrap);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, filter);
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, filter);
+    // glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width_, height_, depth_, 0, format, type, data);
 
-    glBindTexture(GL_TEXTURE_3D, 0);
+    // glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 void TextureSampler::Bind(unsigned int slot)
@@ -83,4 +93,16 @@ void TextureSampler::BindImage(unsigned int slot, unsigned int mode, unsigned in
 void TextureSampler::Unbind()
 {
     depth_ == 0 ? glBindTexture(GL_TEXTURE_2D, 0) : glBindTexture(GL_TEXTURE_3D, 0);
+}
+
+void TextureSampler::SetData(void *data)
+{
+    if (depth_ == 0)
+    {
+        glTextureSubImage2D(id_, 0, 0, 0, width_, height_, format_, type_, data);
+    }
+    else
+    {
+        glTextureSubImage3D(id_, 0, 0, 0, 0, width_, height_, depth_, format_, type_, data);
+    }
 }

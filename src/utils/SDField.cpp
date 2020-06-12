@@ -1,23 +1,25 @@
 #include "SDField.h"
 
-SDField::SDField() : position_(glm::vec3(0.0, 1.0, 0.0))
+SDField::SDField(glm::vec3 size)
+    : position_(glm::vec3(0.0, 1.0, 0.0)),
+      field_((int)size.x,
+             (int)size.y,
+             (int)size.z,
+             GL_R32F,
+             GL_RED,
+             GL_FLOAT,
+             GL_CLAMP_TO_EDGE,
+             GL_LINEAR),
+      dimensions_(size)
 {
 }
 
-SDField::~SDField()
+void SDField::SetData(std::vector<float> *data)
 {
+    field_.SetData((void *)data->data());
 }
 
-void SDField::FromData(const std::vector<float> *data, glm::vec3 size, glm::vec3 position)
+void SDField::Scale(float factor)
 {
-    position_ = position;
-    dimensions_ = size / 150.0f;
-    field_ = TextureSampler(
-        (int)size.x,
-        (int)size.y,
-        (int)size.z,
-        GL_R32F,
-        GL_RED,
-        GL_FLOAT,
-        (void *)data->data());
+    dimensions_ *= factor;
 }
