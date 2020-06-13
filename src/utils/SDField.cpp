@@ -16,7 +16,7 @@ SDField::SDField(glm::vec3 size)
 
 void SDField::SetData(std::vector<float> *data)
 {
-    field_.SetData((void *)data->data());
+    field_.SetData(data->data());
 }
 
 void SDField::Scale(float factor)

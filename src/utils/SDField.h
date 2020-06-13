@@ -44,7 +44,6 @@ private:
 
     void release()
     {
-        field_.~TextureSampler();
         position_ = dimensions_ = glm::vec3(0.0);
     };
 };

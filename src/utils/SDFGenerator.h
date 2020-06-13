@@ -21,11 +21,7 @@ private:
 
     void release()
     {
-        computeShader_.~Shader();
         OutX = OutY = OutZ = 0;
-        texInput_.~TextureSampler();
-        texOutput_.~TextureSampler();
-        data_.~vector();
     }
 
     struct Triangle
@@ -77,5 +73,5 @@ public:
     }
 
     void KDTree(pmp::SurfaceMesh &mesh);
-    std::vector<float> Generate();
+    void Generate(std::vector<float> *data);
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLUtils.h"
+#include <iostream>
 
 // mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture class
 class TextureSampler
@@ -55,7 +56,6 @@ public:
         }
     }
 
-    void Bind();
     void Bind(unsigned int slot);
     void BindImage(unsigned int slot, unsigned int mode, unsigned int format);
     void Unbind();

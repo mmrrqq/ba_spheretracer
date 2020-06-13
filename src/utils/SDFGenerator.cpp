@@ -12,7 +12,7 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFac
           GL_RGBA,
           GL_FLOAT,
           GL_CLAMP_TO_EDGE,
-          GL_LINEAR),
+          GL_NEAREST),
       texOutput_((int)boxSize * scaleFactor,
                  (int)boxSize * scaleFactor,
                  (int)boxSize * scaleFactor,
@@ -20,10 +20,10 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFac
                  GL_RGBA,
                  GL_FLOAT,
                  GL_CLAMP_TO_EDGE,
-                 GL_LINEAR)
+                 GL_NEAREST),
+      data_(boxSize * scaleFactor * 3 * 4)
 {
     OutX = OutY = OutZ = boxSize * scaleFactor;
-    data_ = std::vector<float>(OutZ * OutY * OutX * 4);
 
     glm::vec3 barycenter(0.0f);
     for (auto v : mesh.vertices())
@@ -54,11 +54,7 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFac
     computeShader_.Load("res/shaders/sdfGenerator.compute");
     computeShader_.Bind();
 
-    texInput_.Bind();
     texInput_.SetData(&textureData);
-
-    texInput_.BindImage(0, GL_READ_ONLY, GL_RGBA32F);
-    texOutput_.BindImage(1, GL_READ_WRITE, GL_RGBA32F);
 
     computeShader_.Unbind();
 }
@@ -171,20 +167,26 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFac
 //     computeShader_.Unbind();
 // }
 
-std::vector<float> SDFGenerator::Generate()
+void SDFGenerator::Generate(std::vector<float> *data)
 {
     computeShader_.Bind();
+
+    texInput_.BindImage(0, GL_READ_ONLY, GL_RGBA32F);
+    texOutput_.BindImage(1, GL_READ_WRITE, GL_RGBA32F);
+
     glDispatchCompute(OutX, OutY, OutZ);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, &data_[0]);
 
-    std::vector<float> new_data(data_.size() / 4.0);
+    data_ = std::vector<float>(OutX * OutY * OutZ * 4);
 
-    for (int i = 0; i < data_.size(); i += 4)
-    {
-        new_data.push_back(data_.data()[i]);
-    }
+    glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, data_.data());
     computeShader_.Unbind();
 
-    return new_data;
+    data->reserve(data_.size() / 4.0);
+
+    int i;
+    for (i = 0; i < data_.size(); i += 4)
+    {
+        data->push_back(data_.data()[i]);
+    }
 }

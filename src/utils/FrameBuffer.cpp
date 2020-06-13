@@ -12,9 +12,7 @@ FrameBuffer::FrameBuffer(int width, int height)
 {
     glGenFramebuffers(1, &id_);
     Bind();
-    colorTexture_.Bind();
     AttachTexture(colorTexture_, GL_COLOR_ATTACHMENT0);
-    depthTexture_.Bind();
     AttachTexture(depthTexture_, GL_DEPTH_ATTACHMENT);
 
     CheckStatus();

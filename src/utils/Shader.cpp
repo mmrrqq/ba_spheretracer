@@ -16,6 +16,7 @@
 //=============================================================================
 
 Shader::Shader()
+    : pid_(0), vid_(0), fid_(0), cid_(0)
 {
 }
 
@@ -24,7 +25,6 @@ Shader::Shader()
 Shader::~Shader()
 {
     Cleanup();
-    locations.~map();
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +88,9 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
 
 bool Shader::Load(const char *computeShaderFilePath)
 {
+    // cleanup existing shaders first
+    Cleanup();
+
     pid_ = glCreateProgram();
     cid_ = loadAndCompile(computeShaderFilePath, GL_COMPUTE_SHADER);
     glAttachShader(pid_, cid_);
@@ -293,7 +296,7 @@ void Shader::SetUniform(const std::string name, const std::vector<Material> &mat
 void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
 {
     texture.Bind(slot);
-    glUniform1i(getUniformLocation(name), slot);
+    // glUniform1i(getUniformLocation(name), slot);
 }
 
 void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot)
