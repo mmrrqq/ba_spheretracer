@@ -1,14 +1,28 @@
 #pragma once
 
 #include "GLUtils.h"
+#include <iostream>
 
-// TODO: this is more a framebuffer texture class..
 // mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture class
 class TextureSampler
 {
 public:
     TextureSampler();
-    TextureSampler(unsigned int width, unsigned int height, unsigned int attachmentType);
+    TextureSampler(unsigned int width,
+                   unsigned int height,
+                   unsigned int internalFormat,
+                   unsigned int format,
+                   unsigned int type,
+                   unsigned int wrap,
+                   unsigned int filter);
+    TextureSampler(unsigned int width,
+                   unsigned int height,
+                   unsigned int depth,
+                   unsigned int internalFormat,
+                   unsigned int format,
+                   unsigned int type,
+                   unsigned int wrap,
+                   unsigned int filter);
     ~TextureSampler() { release(); };
 
     TextureSampler(const TextureSampler &) = delete;
@@ -16,10 +30,13 @@ public:
 
     TextureSampler(TextureSampler &&other) : id_(other.id_)
     {
-        other.id_ = 0; //Use the "null" texture for the old object.
+        other.id_ = 0;
         other.width_ = 0;
         other.height_ = 0;
-        other.attachmentType_ = 0;
+        other.depth_ = 0;
+        other.internalFormat_ = 0;
+        other.type_ = 0;
+        other.format_ = 0;
     }
 
     TextureSampler &operator=(TextureSampler &&other)
@@ -32,19 +49,26 @@ public:
             std::swap(id_, other.id_);
             std::swap(width_, other.width_);
             std::swap(height_, other.height_);
-            std::swap(attachmentType_, other.attachmentType_);
+            std::swap(depth_, other.depth_);
+            std::swap(internalFormat_, other.internalFormat_);
+            std::swap(format_, other.format_);
+            std::swap(type_, other.type_);
         }
     }
 
-    void Bind();
     void Bind(unsigned int slot);
+    void BindImage(unsigned int slot, unsigned int mode, unsigned int format);
     void Unbind();
 
+    void SetData(void *data);
+
     inline unsigned int GetID() { return id_; }
-    inline unsigned int GetAttachmentType() { return attachmentType_; }
 
 private:
-    void release() { glDeleteTextures(1, &id_); };
-    unsigned int id_, height_, width_, attachmentType_;
-    std::string uniform_name;
+    void release()
+    {
+        glDeleteTextures(1, &id_);
+        id_ = height_ = width_ = depth_, internalFormat_, type_, format_ = 0;
+    };
+    unsigned int id_, height_, width_, depth_, internalFormat_, type_, format_ = 0;
 };

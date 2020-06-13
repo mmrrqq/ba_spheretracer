@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/dependency/glm",
-                "${workspaceFolder}/dependency"
+                "${workspaceFolder}/dependency",
+                "${workspaceFolder}/dependency/pmp-library/src"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

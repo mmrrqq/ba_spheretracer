@@ -2,6 +2,7 @@
 #define MAX_OBJECTS 10
 #define MAX_MATERIALS 5
 #define MAX_LIGHTS 5
+#define UNumLights 2
 struct PointLight
 {
     vec3 position;
@@ -13,9 +14,7 @@ struct Sphere
 {
     int materialId;
     vec3 position;
-    float radius;
-    bool morph;
-    bool cut;
+    float radius;        
 };
 
 struct Torus
@@ -48,9 +47,12 @@ struct SceneLights
     int numPointLights;
 };
 
-float distEpsilon = 0.01;
-bool ortho = false;
-bool showStepCount = false;
+struct SDField
+{
+    sampler3D field;
+    vec3 position;
+    vec3 dimensions;
+};
 
 uniform float UFovY;
 uniform vec2 UImageDim;
@@ -59,6 +61,9 @@ uniform vec3 ULightDirection;
 uniform vec4 UEyePosition;
 uniform int UMarchingSteps;
 uniform float UMaxDrawDistance;
+uniform bool UUseDepthTexture;
+uniform bool UWriteColor;
+uniform bool USmooth;
 
 uniform sampler2D UDepthTexture;
 
@@ -66,6 +71,7 @@ uniform PrimitiveScene UScene;
 uniform SceneLights ULights;
 uniform Material UMaterials[MAX_MATERIALS];
 uniform mat4 UInvView;
+uniform SDField USDField;
 
 in vec2 TexCoords;
 out vec4 color;
@@ -109,6 +115,12 @@ float distanceToMandelbrot2(vec3 pos)
     return 0.25*log(m)*sqrt(m)/dz;
 }
 
+float distanceToBox(vec3 p, vec3 dimensions)
+{
+  vec3 q = abs(p) - dimensions;
+  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
 float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
 {
 	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
@@ -124,6 +136,25 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
     vec3 torusToPosition = position - torusPosition;
     vec2 q = vec2(length(torusToPosition.xz)-radius,torusToPosition.y);
     return length(q)-tubeRadius;
+}
+
+float distanceToField(SDField field, vec3 position)
+{
+    float distanceBox = distanceToBox(position - field.position, field.dimensions);    
+
+    if (distanceBox < 0.0)
+    {
+        vec3 voxelCoords = position - field.position;        
+
+        ivec3 texSize = textureSize(field.field, 0);
+
+        // voxelCoords += (0.5 / field.dimensions.x);
+        voxelCoords /= field.dimensions;                
+        voxelCoords = .5 + 0.5 * voxelCoords;
+        
+        return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
+    }    
+    return distanceBox + 0.5;
 }
 
 vec4 hardMin(vec4 dist1, vec4 dist2)
@@ -156,31 +187,49 @@ vec2 smoothMin(vec2 dist1, vec2 dist2, float k)
     return vec2(dist, dist1.y);
 }
 
-vec2 distanceToScene(vec3 position) 
+float smoothMin(float dist1, float dist2, float k)
+{
+    float h = max(k - abs(dist1 - dist2), 0.0)/k;
+    return min(dist1, dist2) - h*h*k*(1.0/4.0);
+}
+
+float minFn(float prevDist, float dist)
+{
+    if (USmooth)
+        return smoothMin(prevDist, dist, 0.5);
+    return min(prevDist, dist);
+}
+
+float distanceToScene(vec3 position) 
 {    
-    vec2 res = vec2(1000, -1);
+    float res = 1000;
     
     for (int i = 0; i < UScene.numSpheres; i++)
     {
         Sphere sphere = UScene.spheres[i];
-        float d = distanceToSphere(sphere.position, sphere.radius, position);
-        if (sphere.morph)
-            res = smoothMin(res, vec2(d, sphere.materialId), 0.5);                
-        else        
-            res = hardMin(res, vec2(d, sphere.materialId));  
+        res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
     }    
 
-    for (int i = 0; i < UScene.numTori; i++)
-    {
-        Torus torus = UScene.tori[i];
-        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-        res = hardMin(res, vec2(d, torus.materialId));             
-    }
+    // for (int i = 0; i < UScene.numTori; i++)
+    // {
+    //     Torus torus = UScene.tori[i];
+    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+    //     res = hardMin(res, vec2(d, torus.materialId));             
+    // }
+    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    
+    res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
 
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
-    res = hardMin(res, vec2(planeDistance, 0));
+    res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
 
     return res;
+}
+
+vec4 minColorFn(vec4 prevDist, float dist, int materialId)
+{
+    if (USmooth)
+        return smoothColorMin(prevDist, vec2(dist, materialId), 0.5);
+    return hardMin(prevDist, vec4(dist, materialId, -1, -1));
 }
 
 
@@ -193,21 +242,22 @@ vec4 distanceToSceneColor(vec3 position)
     {
         Sphere sphere = UScene.spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);        
-        if (sphere.morph)
-            res = smoothColorMin(res, vec2(d, sphere.materialId), 0.5);        
-        else
-            res = hardMin(res, vec4(d, sphere.materialId, -1, -1));
+        res = minColorFn(res, d, sphere.materialId);
     }
 
-    for (int i = 0; i < UScene.numTori; i++)
-    {
-        Torus torus = UScene.tori[i];
-        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-        res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
-    }
+    // for (int i = 0; i < UScene.numTori; i++)
+    // {
+    //     Torus torus = UScene.tori[i];
+    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+    //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
+    // }
+    vec3 rep = vec3(10.0, 1000.0, 10.0);
 
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);    
-    res = hardMin(res, vec4(planeDistance, 0, -1, -1));
+    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
+    res = minColorFn(res, fieldDistance, 2);
+
+    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
+    res = minColorFn(res, planeDistance, 0);
 
     return res;
 }
@@ -222,13 +272,13 @@ vec3 getRayDir()
 // http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/#surface-normals-and-lighting
 vec3 getNormal(vec3 position)
 {
-    vec2 epsilon = vec2(UNormalEpsilon, 0.0);
+    vec2 epsilon = vec2(UNormalEpsilon, 0.0);    
 
     return normalize(
         vec3(
-            distanceToScene(position + epsilon.xyy).x - distanceToScene(position - epsilon.xyy).x,
-            distanceToScene(position + epsilon.yxy).x - distanceToScene(position - epsilon.yxy).x,
-            distanceToScene(position + epsilon.yyx).x - distanceToScene(position - epsilon.yyx).x
+            distanceToScene(position + epsilon.xyy) - distanceToScene(position - epsilon.xyy),
+            distanceToScene(position + epsilon.yxy) - distanceToScene(position - epsilon.yxy),
+            distanceToScene(position + epsilon.yyx) - distanceToScene(position - epsilon.yyx)
         )
     );
 }
@@ -244,10 +294,10 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
 
     for(int i = 0; i < UMarchingSteps; i++)
     {                        
-        dist = distanceToScene(position + depth * rayDir).x;  
+        dist = distanceToScene(position + depth * rayDir);  
         // pad by 0.5 to improve inner shadow
         minDist = min(0.5 + 0.5 * dist/(depth*lightSize), minDist);              
-        if (minDist < 0.01)                                  
+        if (minDist < 0.05)                                  
             break;    
 
         // this line is important as I want to step INTO the objects to get a negative dist
@@ -277,6 +327,7 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         phongColor += material.ambientColor * light.color;
         vec3 lightDir = normalize(light.position - position);
         float diffuseContribution = dot(normal, lightDir);    
+        // float shadow = 1.0;
         float shadow = getPointLightShadowFactor(position, light.position, light.size);        
 
         if (shadow < 0.01 || diffuseContribution < 0.0)    
@@ -288,8 +339,17 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         phongColor += shadow * (diffuseContribution * material.diffuseColor * light.color
             + specularContribution * material.specularColor * light.color);
 
-    }    
-    return phongColor;
+    }        
+    
+    return phongColor;        
+}
+
+vec3 applyFog(vec3 color, float depth)
+{
+    //https://iquilezles.org/www/articles/fog/fog.htm
+    vec3 fogColor = vec3(0.5,0.6,0.7);
+    return mix(color, fogColor, 1.0 - exp(-depth * 0.05)) 
+        * exp(-0.00005*depth*depth*depth);
 }
 
 void main()
@@ -301,14 +361,13 @@ void main()
     vec3 position;
     vec4 eyePosition = UEyePosition;
 
-    float depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;    
+    float depth = 0.0;
 
-    if (depth > UMaxDrawDistance - 1)
+    if (UUseDepthTexture)
     {
-        color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);        
-        return;
-    }
-
+        depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                
+    }    
+    
     // https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/basic-sphere-tracer
     // Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces, John C. Hart, 1996.
     float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
@@ -321,17 +380,15 @@ void main()
         float coneRadius = depth * coneRadiusCoeff;   
         if (dist < coneRadius)        
         {
-            if (showStepCount)
+            gl_FragDepth = (depth - (coneRadius - dist)) / UMaxDrawDistance;            
+
+            if (UWriteColor)
             {
-                float steps = i/float(UMarchingSteps);
-                color = vec4(steps, 0.0, 1.0 - steps, 1.0);
-            }
-            else
-            {
+                vec3 phongColor = getPhongColor(position, getNormal(position), distMat.yzw, rayDirection);
                 color = vec4(
-                    getPhongColor(position, getNormal(position), distMat.yzw, rayDirection), 
+                    applyFog(phongColor, depth), 
                     1.0
-                ) * exp(-0.00005*depth*depth*depth);
+                );            
             }
             return;
         }                   
@@ -340,9 +397,14 @@ void main()
 
         if (depth > UMaxDrawDistance)
         {
-            color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
+            gl_FragDepth = 1.0;            
+            if (UWriteColor)
+                color = vec4(applyFog(vec3(0.1, 0.1, 0.1), depth), 1.0);
             return;
         }
-    }    
-    color = vec4(0.1, 0.1, 0.1, 1.0) * exp(-0.00005*depth*depth*depth);
+    }  
+
+    gl_FragDepth = depth / UMaxDrawDistance; 
+    if (UWriteColor)
+        color = vec4(applyFog(vec3(0.4, 0.1, 0.1), depth), 1.0);
 }

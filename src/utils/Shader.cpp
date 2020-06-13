@@ -15,7 +15,8 @@
 
 //=============================================================================
 
-Shader::Shader() : pid_(0), vid_(0), fid_(0)
+Shader::Shader()
+    : pid_(0), vid_(0), fid_(0), cid_(0)
 {
 }
 
@@ -24,7 +25,6 @@ Shader::Shader() : pid_(0), vid_(0), fid_(0)
 Shader::~Shader()
 {
     Cleanup();
-    locations.~map();
 }
 
 //-----------------------------------------------------------------------------
@@ -37,8 +37,10 @@ void Shader::Cleanup()
         glDeleteShader(vid_);
     if (fid_)
         glDeleteShader(fid_);
+    if (cid_)
+        glDeleteShader(cid_);
 
-    pid_ = vid_ = fid_ = 0;
+    pid_ = vid_ = fid_ = cid_ = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -84,6 +86,32 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
     return true;
 }
 
+bool Shader::Load(const char *computeShaderFilePath)
+{
+    // cleanup existing shaders first
+    Cleanup();
+
+    pid_ = glCreateProgram();
+    cid_ = loadAndCompile(computeShaderFilePath, GL_COMPUTE_SHADER);
+    glAttachShader(pid_, cid_);
+
+    // link program
+    glLinkProgram(pid_);
+    GLint status;
+    glGetProgramiv(pid_, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE)
+    {
+        GLint length;
+        glGetProgramiv(pid_, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar *info = new GLchar[length + 1];
+        glGetProgramInfoLog(pid_, length, NULL, info);
+        std::cerr << "Shader: Cannot link program:\n"
+                  << info << std::endl;
+        delete[] info;
+    }
+}
+
 //-----------------------------------------------------------------------------
 
 unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
@@ -109,7 +137,6 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
         return 0;
     }
 
-    // compile vertex shader
     glShaderSource(id, 1, &source, NULL);
     glCompileShader(id);
 
@@ -214,8 +241,6 @@ void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
     {
         Sphere sphere = scene.Spheres[i];
         glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].materialId"), sphere.materialId);
-        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].morph"), sphere.morph);
-        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].cut"), sphere.cut);
         glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), sphere.radius);
         glUniform3f(
             getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"),
@@ -271,7 +296,15 @@ void Shader::SetUniform(const std::string name, const std::vector<Material> &mat
 void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
 {
     texture.Bind(slot);
-    glUniform1i(getUniformLocation(name), slot);
+    // glUniform1i(getUniformLocation(name), slot);
+}
+
+void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot)
+{
+    sdField->Bind(textureSlot);
+    glUniform1i(getUniformLocation(name + ".field"), textureSlot);
+    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0], sdField->Position()[1], sdField->Position()[2]);
+    glUniform3f(getUniformLocation(name + ".dimensions"), sdField->Dimensions()[0], sdField->Dimensions()[1], sdField->Dimensions()[2]);
 }
 
 int Shader::getUniformLocation(const std::string name)

@@ -12,6 +12,7 @@
 #include "PrimitiveScene.h"
 #include "Material.h"
 #include "TextureSampler.h"
+#include "SDField.h"
 
 #include "GLUtils.h"
 #include "glm/glm.hpp"
@@ -31,8 +32,10 @@ public:
     ~Shader();
 
     /// load (from file), compile, and link shader with given type,
-    /// \param file string with the adress to the shader
-    bool Load(const char *vertexShader, const char *fragmentShader);
+    /// \param vertexShaderFilePath string with the adress to the shader
+    /// \param fragmentShaderFilePath string with the adress to the shader
+    bool Load(const char *vertexShaderFilePath, const char *fragmentShaderFilePath);
+    bool Load(const char *computeShaderFilePath);
 
     /// deletes all shader and frees GPU shader capacities
     void Cleanup();
@@ -93,6 +96,11 @@ public:
     /// \param lights the value for the uniform
     void SetUniform(const std::string name, const SceneLights lights);
 
+    /// upload sd field struct uniform
+    /// \param name string of the uniform name
+    /// \param sdField the value for the uniform
+    void SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot);
+
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it
     /// \param filename the location and name of the shader
@@ -101,12 +109,7 @@ private:
 
     int getUniformLocation(std::string name);
 
-    /// id of the linked shader program
-    unsigned int pid_;
-    /// id of the vertex shader
-    unsigned int vid_;
-    /// id of the fragment shader
-    unsigned int fid_;
+    unsigned int pid_, vid_, fid_, cid_;
 
     std::map<std::string, int> locations;
 };

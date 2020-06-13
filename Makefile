@@ -76,17 +76,6 @@ CMAKE_BINARY_DIR = /home/markus/dev/ba_spheremarcher
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
-
 # Special rule for the target install/strip
 install/strip: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
@@ -99,38 +88,27 @@ install/strip/fast: preinstall/fast
 	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip/fast
 
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : edit_cache
 
-# Special rule for the target install/local
-install/local/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local/fast
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
+.PHONY : edit_cache/fast
 
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
+# Special rule for the target package_source
+package_source:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
+	/usr/bin/cpack --config ./CPackSourceConfig.cmake /home/markus/dev/ba_spheremarcher/CPackSourceConfig.cmake
+.PHONY : package_source
 
-.PHONY : rebuild_cache/fast
+# Special rule for the target package_source
+package_source/fast: package_source
 
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-
-.PHONY : list_install_components/fast
+.PHONY : package_source/fast
 
 # Special rule for the target install
 install: preinstall
@@ -143,6 +121,50 @@ install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
 	/usr/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
+
+# Special rule for the target package
+package: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool..."
+	/usr/bin/cpack --config ./CPackConfig.cmake
+.PHONY : package
+
+# Special rule for the target package
+package/fast: package
+
+.PHONY : package/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -190,17 +212,17 @@ Spheremarcher/fast:
 .PHONY : Spheremarcher/fast
 
 #=============================================================================
-# Target rules for targets named glew_s
+# Target rules for targets named uninstall
 
 # Build rule for target.
-glew_s: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew_s
-.PHONY : glew_s
+uninstall: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
+.PHONY : uninstall
 
 # fast build rule for target.
-glew_s/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build
-.PHONY : glew_s/fast
+uninstall/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build.make dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build
+.PHONY : uninstall/fast
 
 #=============================================================================
 # Target rules for targets named visualinfo
@@ -216,19 +238,6 @@ visualinfo/fast:
 .PHONY : visualinfo/fast
 
 #=============================================================================
-# Target rules for targets named glew
-
-# Build rule for target.
-glew: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew
-.PHONY : glew
-
-# fast build rule for target.
-glew/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/build
-.PHONY : glew/fast
-
-#=============================================================================
 # Target rules for targets named glewinfo
 
 # Build rule for target.
@@ -242,17 +251,30 @@ glewinfo/fast:
 .PHONY : glewinfo/fast
 
 #=============================================================================
-# Target rules for targets named uninstall
+# Target rules for targets named glew_s
 
 # Build rule for target.
-uninstall: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
-.PHONY : uninstall
+glew_s: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew_s
+.PHONY : glew_s
 
 # fast build rule for target.
-uninstall/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build.make dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build
-.PHONY : uninstall/fast
+glew_s/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build
+.PHONY : glew_s/fast
+
+#=============================================================================
+# Target rules for targets named glew
+
+# Build rule for target.
+glew: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew
+.PHONY : glew
+
+# fast build rule for target.
+glew/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/build
+.PHONY : glew/fast
 
 #=============================================================================
 # Target rules for targets named glfw
@@ -266,6 +288,97 @@ glfw: cmake_check_build_system
 glfw/fast:
 	$(MAKE) $(MAKESILENT) -f dependency/glfw/src/CMakeFiles/glfw.dir/build.make dependency/glfw/src/CMakeFiles/glfw.dir/build
 .PHONY : glfw/fast
+
+#=============================================================================
+# Target rules for targets named stb_image
+
+# Build rule for target.
+stb_image: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 stb_image
+.PHONY : stb_image
+
+# fast build rule for target.
+stb_image/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/external/stb_image/CMakeFiles/stb_image.dir/build.make dependency/pmp-library/external/stb_image/CMakeFiles/stb_image.dir/build
+.PHONY : stb_image/fast
+
+#=============================================================================
+# Target rules for targets named rply
+
+# Build rule for target.
+rply: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 rply
+.PHONY : rply
+
+# fast build rule for target.
+rply/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/external/rply/CMakeFiles/rply.dir/build.make dependency/pmp-library/external/rply/CMakeFiles/rply.dir/build
+.PHONY : rply/fast
+
+#=============================================================================
+# Target rules for targets named pmp
+
+# Build rule for target.
+pmp: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 pmp
+.PHONY : pmp
+
+# fast build rule for target.
+pmp/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build.make dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build
+.PHONY : pmp/fast
+
+#=============================================================================
+# Target rules for targets named docs
+
+# Build rule for target.
+docs: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs
+.PHONY : docs
+
+# fast build rule for target.
+docs/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/docs/CMakeFiles/docs.dir/build.make dependency/pmp-library/docs/CMakeFiles/docs.dir/build
+.PHONY : docs/fast
+
+#=============================================================================
+# Target rules for targets named doxygen
+
+# Build rule for target.
+doxygen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 doxygen
+.PHONY : doxygen
+
+# fast build rule for target.
+doxygen/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/docs/CMakeFiles/doxygen.dir/build.make dependency/pmp-library/docs/CMakeFiles/doxygen.dir/build
+.PHONY : doxygen/fast
+
+#=============================================================================
+# Target rules for targets named gtest_runner
+
+# Build rule for target.
+gtest_runner: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gtest_runner
+.PHONY : gtest_runner
+
+# fast build rule for target.
+gtest_runner/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/tests/CMakeFiles/gtest_runner.dir/build.make dependency/pmp-library/tests/CMakeFiles/gtest_runner.dir/build
+.PHONY : gtest_runner/fast
+
+#=============================================================================
+# Target rules for targets named googletest
+
+# Build rule for target.
+googletest: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest
+.PHONY : googletest
+
+# fast build rule for target.
+googletest/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/tests/CMakeFiles/googletest.dir/build.make dependency/pmp-library/tests/CMakeFiles/googletest.dir/build
+.PHONY : googletest/fast
 
 dependency/imgui/imgui.o: dependency/imgui/imgui.cpp.o
 
@@ -645,6 +758,33 @@ src/utils/SDFGenerator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDFGenerator.cpp.s
 .PHONY : src/utils/SDFGenerator.cpp.s
 
+src/utils/SDField.o: src/utils/SDField.cpp.o
+
+.PHONY : src/utils/SDField.o
+
+# target to build an object file
+src/utils/SDField.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.o
+.PHONY : src/utils/SDField.cpp.o
+
+src/utils/SDField.i: src/utils/SDField.cpp.i
+
+.PHONY : src/utils/SDField.i
+
+# target to preprocess a source file
+src/utils/SDField.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.i
+.PHONY : src/utils/SDField.cpp.i
+
+src/utils/SDField.s: src/utils/SDField.cpp.s
+
+.PHONY : src/utils/SDField.s
+
+# target to generate assembly for a file
+src/utils/SDField.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/SDField.cpp.s
+.PHONY : src/utils/SDField.cpp.s
+
 src/utils/Shader.o: src/utils/Shader.cpp.o
 
 .PHONY : src/utils/Shader.o
@@ -726,33 +866,6 @@ src/utils/Window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Window.cpp.s
 .PHONY : src/utils/Window.cpp.s
 
-src/utils/raytracing/Mesh.o: src/utils/raytracing/Mesh.cpp.o
-
-.PHONY : src/utils/raytracing/Mesh.o
-
-# target to build an object file
-src/utils/raytracing/Mesh.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.o
-.PHONY : src/utils/raytracing/Mesh.cpp.o
-
-src/utils/raytracing/Mesh.i: src/utils/raytracing/Mesh.cpp.i
-
-.PHONY : src/utils/raytracing/Mesh.i
-
-# target to preprocess a source file
-src/utils/raytracing/Mesh.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.i
-.PHONY : src/utils/raytracing/Mesh.cpp.i
-
-src/utils/raytracing/Mesh.s: src/utils/raytracing/Mesh.cpp.s
-
-.PHONY : src/utils/raytracing/Mesh.s
-
-# target to generate assembly for a file
-src/utils/raytracing/Mesh.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/raytracing/Mesh.cpp.s
-.PHONY : src/utils/raytracing/Mesh.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -764,13 +877,22 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
+	@echo "... package"
+	@echo "... package_source"
 	@echo "... rebuild_cache"
+	@echo "... docs"
+	@echo "... doxygen"
 	@echo "... uninstall"
 	@echo "... Spheremarcher"
 	@echo "... glew"
 	@echo "... glew_s"
 	@echo "... glewinfo"
 	@echo "... glfw"
+	@echo "... googletest"
+	@echo "... gtest_runner"
+	@echo "... pmp"
+	@echo "... rply"
+	@echo "... stb_image"
 	@echo "... visualinfo"
 	@echo "... dependency/imgui/imgui.o"
 	@echo "... dependency/imgui/imgui.i"
@@ -814,6 +936,9 @@ help:
 	@echo "... src/utils/SDFGenerator.o"
 	@echo "... src/utils/SDFGenerator.i"
 	@echo "... src/utils/SDFGenerator.s"
+	@echo "... src/utils/SDField.o"
+	@echo "... src/utils/SDField.i"
+	@echo "... src/utils/SDField.s"
 	@echo "... src/utils/Shader.o"
 	@echo "... src/utils/Shader.i"
 	@echo "... src/utils/Shader.s"
@@ -823,9 +948,6 @@ help:
 	@echo "... src/utils/Window.o"
 	@echo "... src/utils/Window.i"
 	@echo "... src/utils/Window.s"
-	@echo "... src/utils/raytracing/Mesh.o"
-	@echo "... src/utils/raytracing/Mesh.i"
-	@echo "... src/utils/raytracing/Mesh.s"
 .PHONY : help
 
 

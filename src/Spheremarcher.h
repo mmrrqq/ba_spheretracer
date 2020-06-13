@@ -5,10 +5,12 @@
 #include "utils/Shader.h"
 #include "utils/PrimitiveScene.h"
 #include "utils/SDFGenerator.h"
+#include "utils/SDField.h"
 #include "FrameBuffer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "pmp/SurfaceMesh.h"
 
 class Spheremarcher : public Window
 {
@@ -18,15 +20,16 @@ public:
 
 private:
     FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_, fourthPassBuffer_;
-    Shader offScreenShader_, screenShader_;
+    Shader screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
-    bool mouseDown_, moving_;
+    bool mouseDown_, moving_, smooth_;
     unsigned int vao_, ibo_;
-    float fovy_;
-    SDFGenerator sdfGenerator_;
+    float fovy_, normalEpsilon_, drawDistance_;
+    // SDFGenerator sdfGenerator_;
+    std::vector<float> sdfData_;
+    SDField sdField_;
 
-    void initializeFramebuffers();
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
 
@@ -47,4 +50,6 @@ private:
 
     // /// mouse wheel
     // virtual void scroll(double xoffset, double yoffset);
+
+    void generateSDField();
 };
