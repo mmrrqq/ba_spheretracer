@@ -116,24 +116,24 @@ void Spheremarcher::generateSDField()
 {
     /////// SCENE TEST SETUP
     pmp::SurfaceMesh mesh;
-    mesh.read("res/meshes/tree.obj");
+    mesh.read("res/meshes/amo.off");
     mesh.triangulate();
 
     pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
     glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
     float bbMaximum = std::ceil(glm::compMax(dimensions));
-    float boxDim = bbMaximum + 1.0;
+    float boxDim = bbMaximum + (bbMaximum / 2.0f);
 
-    float scaleFactor = 15;
+    float scaleFactor = 0.5;
 
     SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
+    sdfData_ = std::vector<float>(sdfGenerator.OutX * sdfGenerator.OutY * sdfGenerator.OutZ);
 
-    // sdfData_.reserve(3 * sdfGenerator.OutX);
     sdfGenerator.Generate(&sdfData_);
 
     SDField field(glm::vec3(sdfGenerator.OutX, sdfGenerator.OutY, sdfGenerator.OutZ));
     field.SetData(&sdfData_);
-    field.Scale(0.01);
+    field.Scale(0.02);
 
     std::cout << sdfData_.size() << std::endl;
 

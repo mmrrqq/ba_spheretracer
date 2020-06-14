@@ -16,7 +16,7 @@ class SDFGenerator
 {
 private:
     Shader computeShader_;
-    TextureSampler texInput_, texOutput_;
+    TextureSampler texOutput_;
     std::vector<float> data_;
 
     void release()
@@ -26,16 +26,19 @@ private:
 
     struct Triangle
     {
-        glm::vec3 p0;
-        glm::vec3 p1;
-        glm::vec3 p2;
+        int p0, p1, p2;
     };
 
-    struct Node
+    struct Vertex
     {
-        int leftNode;
-        int rightNode;
-        std::vector<unsigned int> triangles;
+        float x, y, z;
+        Vertex(float _x, float _y, float _z)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+        };
+        Vertex() : x(0), y(0), z(0){};
     };
 
 public:
@@ -52,7 +55,6 @@ public:
         other.OutX = 0;
         other.OutY = 0;
         other.OutZ = 0;
-        other.texInput_ = TextureSampler();
         other.texOutput_ = TextureSampler();
         other.data_ = std::vector<float>();
     }
@@ -66,12 +68,10 @@ public:
             std::swap(OutX, other.OutX);
             std::swap(OutY, other.OutY);
             std::swap(OutZ, other.OutZ);
-            std::swap(texInput_, other.texInput_);
             std::swap(texOutput_, other.texOutput_);
             std::swap(data_, other.data_);
         }
     }
 
-    void KDTree(pmp::SurfaceMesh &mesh);
     void Generate(std::vector<float> *data);
 };

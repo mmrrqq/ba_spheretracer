@@ -307,6 +307,16 @@ void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int t
     glUniform3f(getUniformLocation(name + ".dimensions"), sdField->Dimensions()[0], sdField->Dimensions()[1], sdField->Dimensions()[2]);
 }
 
+// TODO: to Buffer class
+void Shader::SetBuffer(unsigned int slot, float size, void *data)
+{
+    unsigned int ssbo;
+    glGenBuffers(1, &ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_STREAM_READ);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, ssbo);
+}
+
 int Shader::getUniformLocation(const std::string name)
 {
     if (!pid_)
