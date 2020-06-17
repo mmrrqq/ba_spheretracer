@@ -63,11 +63,12 @@ Window::Window(const char *title, int width, int height) : width_(width), height
         exit(1);
     }
     GLenum error = glGetError();
+    std::cerr << "Error initializing: " << error << std::endl;
 
     //define blending function
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_DEPTH_TEST); // this has to be enabled to write to gl_FragDepth as it seems
+    // glEnable(GL_DEPTH_TEST); // this has to be enabled to write to gl_FragDepth as it seems
 
     // debug: print GL and GLSL version
     std::cout << "GLEW   " << glewGetString(GLEW_VERSION) << std::endl;

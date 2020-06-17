@@ -23,11 +23,12 @@ private:
     Shader screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
-    bool mouseDown_, moving_, smooth_;
+    bool mouseDown_, moving_, smooth_, generated_, set_;
     unsigned int vao_, ibo_;
     float fovy_, normalEpsilon_, drawDistance_;
     TextureSampler sdFieldTexture_;
     SDField sdField_;
+    SDFGenerator sdfGenerator_;
 
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();

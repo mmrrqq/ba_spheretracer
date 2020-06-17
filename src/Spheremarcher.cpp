@@ -7,6 +7,8 @@ Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
       mouseDown_(false),
       moving_(false),
+      set_(false),
+      generated_(false),
       firstPassBuffer_(GetWidth() / 64, GetHeight() / 64),
       secondPassBuffer_(GetWidth() / 32, GetHeight() / 32),
       thirdPassBuffer_(GetWidth() / 8, GetHeight() / 8),
@@ -34,6 +36,23 @@ void Spheremarcher::initialize()
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("#version 130");
+
+    /////// SCENE TEST SETUP
+    pmp::SurfaceMesh mesh;
+    mesh.read("res/meshes/amo.off");
+    mesh.triangulate();
+
+    pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
+    glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
+    float bbMaximum = std::ceil(glm::compMax(dimensions));
+    float boxDim = bbMaximum + (bbMaximum / 2.0f);
+    boxDim = 256;
+
+    int scaleFactor = 2;
+
+    SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
+
+    sdfGenerator_ = std::move(sdfGenerator);
 
     std::vector<Material> materials;
     materials.push_back(
@@ -88,6 +107,7 @@ void Spheremarcher::initialize()
     lights.pointLights.push_back(whiteLight);
     lights.pointLights.push_back(redLight);
     /////// END SCENE TEST SETUP
+    // generateSDField();
 
     // TODO: create VertexArray class
     glGenVertexArrays(1, &vao_);
@@ -103,44 +123,26 @@ void Spheremarcher::initialize()
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
     screenShader_.Bind();
     // screenShader_.SetUniform("USDField", &field, 1);
-
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
-    generateSDField();
+
+    if (!generated_)
+    {
+        sdfGenerator_.Dispatch();
+        generated_ = true;
+    }
+
+    SDField field(glm::vec3(sdfGenerator_.OutX, sdfGenerator_.OutY, sdfGenerator_.OutZ), sdfGenerator_.GetOutputTexture());
+    field.Scale(0.009);
+    screenShader_.Bind();
+    screenShader_.SetUniform("USDField", &field, 8);
     screenShader_.Unbind();
 }
 
 void Spheremarcher::generateSDField()
 {
-    /////// SCENE TEST SETUP
-    pmp::SurfaceMesh mesh;
-    mesh.read("res/meshes/amo.off");
-    mesh.triangulate();
-
-    pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
-    glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
-    float bbMaximum = std::ceil(glm::compMax(dimensions));
-    float boxDim = bbMaximum + (bbMaximum / 2.0f);
-    // TODO: to next power of two!
-    boxDim = 256;
-
-    int scaleFactor = 1;
-
-    SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
-
-    sdfGenerator.Generate();
-
-    sdFieldTexture_ = std::move(*sdfGenerator.GetOutputTexture());
-
-    SDField field(glm::vec3(sdfGenerator.OutX, sdfGenerator.OutY, sdfGenerator.OutZ), &sdFieldTexture_);
-    field.Scale(0.009);
-
-    sdField_ = std::move(field);
-
-    screenShader_.Bind();
-    screenShader_.SetUniform("USDField", &sdField_, 1);
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -229,8 +231,6 @@ void Spheremarcher::draw()
     }
     ImGui::Render();
 
-    screenShader_.Bind();
-
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_ALWAYS);
@@ -239,6 +239,7 @@ void Spheremarcher::draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
 
     firstPassBuffer_.Bind(true);
+    screenShader_.Bind();
     // screenShader_.SetUniform("UScene", scene_);
     // screenShader_.SetUniform("USDField", &sdField_, 0U);
     screenShader_.SetUniform("UMaxDrawDistance", drawDistance_);

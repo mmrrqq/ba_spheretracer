@@ -16,9 +16,8 @@
 class SDFGenerator
 {
 private:
-    Shader computeShader_;
-    TextureSampler texOutput_;
-    std::vector<float> data_;
+    Shader computeShader_, copyShader_;
+    TextureSampler texOutput_, texTemp_;
 
     void release()
     {
@@ -55,11 +54,12 @@ public:
     SDFGenerator(SDFGenerator &&other)
     {
         other.computeShader_ = Shader();
+        other.copyShader_ = Shader();
         other.OutX = 0;
         other.OutY = 0;
         other.OutZ = 0;
         other.texOutput_ = TextureSampler();
-        other.data_ = std::vector<float>();
+        other.texTemp_ = TextureSampler();
         other.triangles_ = std::vector<Triangle>();
         other.vertices_ = std::vector<Vertex>();
     }
@@ -70,11 +70,12 @@ public:
         if (this != &other)
         {
             std::swap(computeShader_, other.computeShader_);
+            std::swap(copyShader_, other.copyShader_);
             std::swap(OutX, other.OutX);
             std::swap(OutY, other.OutY);
             std::swap(OutZ, other.OutZ);
             std::swap(texOutput_, other.texOutput_);
-            std::swap(data_, other.data_);
+            std::swap(texTemp_, other.texTemp_);
             std::swap(triangles_, other.triangles_);
             std::swap(vertices_, other.vertices_);
         }
@@ -82,5 +83,5 @@ public:
 
     TextureSampler *GetOutputTexture() { return &texOutput_; }
 
-    void Generate();
+    void Dispatch();
 };
