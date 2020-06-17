@@ -1,6 +1,4 @@
-#version 430
-
-#define MAX_TRIANGLES 2048
+#version 430 core
 
 struct Triangle
 {
@@ -14,9 +12,8 @@ struct Vertex
   float x, y, z;
 };
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-// layout(rgba32f, binding = 0) uniform image2D inTex;
-layout(rgba32f, binding = 0) uniform image3D outTex;
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 4) in;
+layout(r32f, binding = 0) uniform image3D outTex;
 layout(std430, binding = 1) readonly buffer inVertices
 {
   Vertex vertices[];
@@ -106,6 +103,14 @@ void main() {
   // get index in global work group i.e x,y position
   ivec3 voxelCoords = ivec3(gl_GlobalInvocationID.xyz);
 
+  ivec3 imgSize = imageSize(outTex);
+
+  if (voxelCoords.x >= imgSize.x || voxelCoords.y >= imgSize.y || voxelCoords.z >= imgSize.z) {
+    // memoryBarrierShared();
+    // barrier();
+    return;
+  }  
+
   //get distance to object
   float depth = 1000.0;  
   bool inside = false;
@@ -126,5 +131,8 @@ void main() {
   if (inside)
     depth = -depth;    
       
-  imageStore(outTex, ivec3(voxelCoords), vec4(depth, depth, depth, 1.0));
+  imageStore(outTex, voxelCoords, vec4(depth, 0, 0, 0));
+  
+  // memoryBarrierShared();
+  // barrier();
 }

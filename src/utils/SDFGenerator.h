@@ -6,6 +6,7 @@
 #include "glm/gtx/component_wise.hpp"
 #include "pmp/SurfaceMesh.h"
 #include "pmp/algorithms/TriangleKdTree.h"
+#include "glm/glm.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -40,6 +41,8 @@ private:
         };
         Vertex() : x(0), y(0), z(0){};
     };
+    std::vector<Triangle> triangles_;
+    std::vector<Vertex> vertices_;
 
 public:
     int OutX, OutY, OutZ;
@@ -57,6 +60,8 @@ public:
         other.OutZ = 0;
         other.texOutput_ = TextureSampler();
         other.data_ = std::vector<float>();
+        other.triangles_ = std::vector<Triangle>();
+        other.vertices_ = std::vector<Vertex>();
     }
 
     SDFGenerator &operator=(SDFGenerator &&other)
@@ -70,8 +75,12 @@ public:
             std::swap(OutZ, other.OutZ);
             std::swap(texOutput_, other.texOutput_);
             std::swap(data_, other.data_);
+            std::swap(triangles_, other.triangles_);
+            std::swap(vertices_, other.vertices_);
         }
     }
 
-    void Generate(std::vector<float> *data);
+    TextureSampler *GetOutputTexture() { return &texOutput_; }
+
+    void Generate();
 };

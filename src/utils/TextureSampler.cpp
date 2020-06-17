@@ -26,8 +26,8 @@ TextureSampler::TextureSampler(
     }
 
     glCreateTextures(GL_TEXTURE_2D, 1, &id_);
-    glTextureStorage2D(id_, 1, internalFormat_, width, height_);
     glBindTexture(GL_TEXTURE_2D, id_);
+    glTextureStorage2D(id_, 1, internalFormat_, width_, height_);
 
     glTextureParameteri(id_, GL_TEXTURE_WRAP_S, wrap);
     glTextureParameteri(id_, GL_TEXTURE_WRAP_T, wrap);
@@ -59,21 +59,19 @@ TextureSampler::TextureSampler(
         return;
     }
 
-    // glGenTextures(1, &id_);
-    glCreateTextures(GL_TEXTURE_3D, 1, &id_);
-    glTextureStorage3D(id_, 1, internalFormat_, width, height_, depth_);
-
-    // TODO: removing this seems to break the texture..
+    glGenTextures(1, &id_);
+    // glCreateTextures(GL_TEXTURE_3D, 1, &id_);
     glBindTexture(GL_TEXTURE_3D, id_);
+    // glTextureStorage3D(id_, 1, internalFormat_, width_, height_, depth_);
 
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, wrap);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, wrap);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_R, wrap);
-    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, filter);
-    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, filter);
-    // glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width_, height_, depth_, 0, format, type, data);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, wrap);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, wrap);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width_, height_, depth_, 0, format, type, nullptr);
 
-    // glBindTexture(GL_TEXTURE_3D, 0);
+    glBindTexture(GL_TEXTURE_3D, 0);
 }
 
 void TextureSampler::Bind(unsigned int slot)
@@ -83,6 +81,8 @@ void TextureSampler::Bind(unsigned int slot)
 
 void TextureSampler::BindImage(unsigned int slot, unsigned int mode, unsigned int format)
 {
+    // glActiveTexture(GL_TEXTURE0 + slot);
+    // glBindTextureUnit(slot, id_);
     if (depth_ == 0)
     {
         glBindImageTexture(slot, id_, 0, GL_FALSE, 0, mode, format);

@@ -123,19 +123,19 @@ void Spheremarcher::generateSDField()
     glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
     float bbMaximum = std::ceil(glm::compMax(dimensions));
     float boxDim = bbMaximum + (bbMaximum / 2.0f);
+    // TODO: to next power of two!
+    boxDim = 256;
 
-    float scaleFactor = 0.5;
+    int scaleFactor = 1;
 
     SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
-    sdfData_ = std::vector<float>(sdfGenerator.OutX * sdfGenerator.OutY * sdfGenerator.OutZ);
 
-    sdfGenerator.Generate(&sdfData_);
+    sdfGenerator.Generate();
 
-    SDField field(glm::vec3(sdfGenerator.OutX, sdfGenerator.OutY, sdfGenerator.OutZ));
-    field.SetData(&sdfData_);
-    field.Scale(0.02);
+    sdFieldTexture_ = std::move(*sdfGenerator.GetOutputTexture());
 
-    std::cout << sdfData_.size() << std::endl;
+    SDField field(glm::vec3(sdfGenerator.OutX, sdfGenerator.OutY, sdfGenerator.OutZ), &sdFieldTexture_);
+    field.Scale(0.009);
 
     sdField_ = std::move(field);
 
