@@ -23,12 +23,11 @@ private:
     Shader screenShader_;
     PrimitiveScene scene_;
     Camera camera_;
-    bool mouseDown_, moving_, smooth_, generated_, set_;
+    bool mouseDown_, moving_, smooth_;
     unsigned int vao_, ibo_;
-    float fovy_, normalEpsilon_, drawDistance_;
-    TextureSampler sdFieldTexture_;
-    SDField sdField_;
+    float fovy_, normalEpsilon_, drawDistance_, sdfScaling_;
     SDFGenerator sdfGenerator_;
+    SDFGenerator::EBoxSize sdfBoxSize_;
 
     /// function that is called on the creation of the widget for the initialisation of OpenGL
     virtual void initialize();
@@ -51,5 +50,9 @@ private:
     // /// mouse wheel
     // virtual void scroll(double xoffset, double yoffset);
 
-    void generateSDField();
+    // generate the sdField to the mesh specified at meshPath
+    void generateSdField();
+
+    // issue all Imgui related draw commands.
+    void drawImguiWindow();
 };

@@ -7,17 +7,16 @@ Spheremarcher::Spheremarcher(int width, int height)
     : Window("Spheremarcher", width, height),
       mouseDown_(false),
       moving_(false),
-      set_(false),
-      generated_(false),
       firstPassBuffer_(GetWidth() / 64, GetHeight() / 64),
       secondPassBuffer_(GetWidth() / 32, GetHeight() / 32),
       thirdPassBuffer_(GetWidth() / 8, GetHeight() / 8),
       fourthPassBuffer_(GetWidth() / 2, GetHeight() / 2),
       fovy_(90.0f),
-      sdField_(glm::vec3(0)),
       normalEpsilon_(0.005f),
       drawDistance_(27.0f),
-      smooth_(false)
+      smooth_(false),
+      sdfBoxSize_(SDFGenerator::B_64),
+      sdfScaling_(0.01)
 {
 }
 
@@ -38,22 +37,6 @@ void Spheremarcher::initialize()
     ImGui_ImplOpenGL3_Init("#version 130");
 
     /////// SCENE TEST SETUP
-    pmp::SurfaceMesh mesh;
-    mesh.read("res/meshes/amo.off");
-    mesh.triangulate();
-
-    pmp::Point bbDim = mesh.bounds().max() - mesh.bounds().min();
-    glm::vec3 dimensions = glm::vec3(bbDim[0], bbDim[1], bbDim[2]);
-    float bbMaximum = std::ceil(glm::compMax(dimensions));
-    float boxDim = bbMaximum + (bbMaximum / 2.0f);
-    boxDim = 256;
-
-    int scaleFactor = 2;
-
-    SDFGenerator sdfGenerator(mesh, boxDim, scaleFactor);
-
-    sdfGenerator_ = std::move(sdfGenerator);
-
     std::vector<Material> materials;
     materials.push_back(
         Material(
@@ -107,7 +90,6 @@ void Spheremarcher::initialize()
     lights.pointLights.push_back(whiteLight);
     lights.pointLights.push_back(redLight);
     /////// END SCENE TEST SETUP
-    // generateSDField();
 
     // TODO: create VertexArray class
     glGenVertexArrays(1, &vao_);
@@ -122,27 +104,32 @@ void Spheremarcher::initialize()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
     screenShader_.Bind();
-    // screenShader_.SetUniform("USDField", &field, 1);
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
-
-    if (!generated_)
-    {
-        sdfGenerator_.Dispatch();
-        generated_ = true;
-    }
-
-    SDField field(glm::vec3(sdfGenerator_.OutX, sdfGenerator_.OutY, sdfGenerator_.OutZ), sdfGenerator_.GetOutputTexture());
-    field.Scale(0.009);
-    screenShader_.Bind();
-    screenShader_.SetUniform("USDField", &field, 8);
     screenShader_.Unbind();
+
+    generateSdField();
 }
 
-void Spheremarcher::generateSDField()
+void Spheremarcher::generateSdField()
 {
+    pmp::SurfaceMesh mesh;
+    mesh.read("res/meshes/amo.off");
+    mesh.triangulate();
+
+    SDFGenerator sdfGenerator(mesh, sdfBoxSize_);
+    sdfGenerator_ = std::move(sdfGenerator);
+
+    sdfGenerator_.Dispatch();
+    SDField field(glm::vec3(sdfGenerator_.BoxSize), sdfGenerator_.GetOutputTexture());
+
+    field.Scale(sdfScaling_);
+
+    screenShader_.Bind();
+    screenShader_.SetUniform("USDField", &field, 2);
+    screenShader_.Unbind();
 }
 
 void Spheremarcher::resize(int width, int height)
@@ -208,12 +195,11 @@ void Spheremarcher::keyboard(int key, int scancode, int action, int mods)
 
 void Spheremarcher::motion(double xpos, double ypos)
 {
-
     if (mouseDown_)
         camera_.Rotate(xpos, ypos, GetWidth(), GetHeight());
 }
 
-void Spheremarcher::draw()
+void Spheremarcher::drawImguiWindow()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -221,19 +207,37 @@ void Spheremarcher::draw()
     {
         ImGui::Begin("debug");
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
-        ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.002f);
+        ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.01f);
         ImGui::SliderFloat("draw distance", &drawDistance_, 5.0f, 50.0f);
         ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
         ImGui::Checkbox("smoothing", &smooth_);
+
+        const char *eBoxSizeNames[] = {"32", "64", "128", "256"};
+        static int currentSize = 1;
+        if (ImGui::ListBox("sdField Box Size", &currentSize, eBoxSizeNames, IM_ARRAYSIZE(eBoxSizeNames), 4))
+            sdfBoxSize_ = static_cast<SDFGenerator::EBoxSize>(std::stoi(eBoxSizeNames[currentSize]));
+
+        if (ImGui::Button("regenerate SDF", ImVec2(100, 20)))
+        {
+            generateSdField();
+        }
+
+        if (ImGui::SliderFloat("field scaling", &sdfScaling_, 0.001, 1.0))
+        {
+            screenShader_.Bind();
+            screenShader_.SetUniform("USDField.dimensions", glm::vec3(sdfScaling_ * sdfBoxSize_));
+        }
 
         ImGui::Text("frame time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
     ImGui::Render();
+}
 
+void Spheremarcher::draw()
+{
+    drawImguiWindow();
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS);
 
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);

@@ -44,6 +44,9 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     // enable vsync
     glfwSwapInterval(1);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
+
     // this sets a reference to the window which can be retrieved in every callback
     // https://www.glfw.org/docs/latest/group__window.html#ga3d2fc6026e690ab31a13f78bc9fd3651
     glfwSetWindowUserPointer(window_, (void *)this);

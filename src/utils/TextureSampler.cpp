@@ -81,8 +81,6 @@ void TextureSampler::Bind(unsigned int slot)
 
 void TextureSampler::BindImage(unsigned int slot, unsigned int mode, unsigned int format)
 {
-    // glActiveTexture(GL_TEXTURE0 + slot);
-    // glBindTextureUnit(slot, id_);
     if (depth_ == 0)
     {
         glBindImageTexture(slot, id_, 0, GL_FALSE, 0, mode, format);
