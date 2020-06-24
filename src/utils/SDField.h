@@ -8,6 +8,7 @@ class SDField
 {
 public:
     SDField(glm::vec3 size);
+    SDField(glm::vec3 size, TextureSampler *fieldTexture);
     ~SDField() { release(); };
 
     SDField(const SDField &) = delete;
@@ -15,7 +16,7 @@ public:
 
     SDField(SDField &&other)
     {
-        other.field_ = TextureSampler();
+        other.field_ = nullptr;
         other.position_ = glm::vec3(0.0);
         other.dimensions_ = glm::vec3(0.0);
     }
@@ -33,17 +34,18 @@ public:
 
     void SetData(std::vector<float> *data);
     void Scale(float factor);
-    inline void Bind(unsigned int slot) { field_.Bind(slot); };
+    inline void Bind(unsigned int slot) { field_->Bind(slot); };
     inline glm::vec3 Dimensions() { return dimensions_; };
     inline glm::vec3 Position() { return position_; };
 
 private:
-    TextureSampler field_;
+    TextureSampler *field_;
     glm::vec3 position_;
     glm::vec3 dimensions_;
 
     void release()
     {
         position_ = dimensions_ = glm::vec3(0.0);
+        field_ = nullptr;
     };
 };

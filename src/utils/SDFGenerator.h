@@ -6,6 +6,7 @@
 #include "glm/gtx/component_wise.hpp"
 #include "pmp/SurfaceMesh.h"
 #include "pmp/algorithms/TriangleKdTree.h"
+#include "glm/glm.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -16,32 +17,44 @@ class SDFGenerator
 {
 private:
     Shader computeShader_;
-    TextureSampler texInput_, texOutput_;
-    std::vector<float> data_;
+    TextureSampler texOutput_;
 
-    void release()
-    {
-        OutX = OutY = OutZ = 0;
-    }
+    void release(){};
 
     struct Triangle
     {
-        glm::vec3 p0;
-        glm::vec3 p1;
-        glm::vec3 p2;
+        int p0, p1, p2;
     };
 
-    struct Node
+    struct Vertex
     {
-        int leftNode;
-        int rightNode;
-        std::vector<unsigned int> triangles;
+        float x, y, z;
+        Vertex(float _x, float _y, float _z)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+        };
+        Vertex() : x(0), y(0), z(0){};
     };
+    std::vector<Triangle> triangles_;
+    std::vector<Vertex> vertices_;
+
+    float getMeshMaxDimension(pmp::SurfaceMesh &mesh);
+    glm::vec3 getBarycenter(pmp::SurfaceMesh &mesh);
 
 public:
-    int OutX, OutY, OutZ;
+    enum EBoxSize
+    {
+        B_32 = 32,
+        B_64 = 64,
+        B_128 = 128,
+        B_256 = 256
+    };
+    // length of one bounding box side
+    EBoxSize BoxSize;
     SDFGenerator();
-    SDFGenerator(pmp::SurfaceMesh &mesh, float boxSize, float scaleFactor);
+    SDFGenerator(pmp::SurfaceMesh &mesh, EBoxSize boxSize);
     ~SDFGenerator() { release(); };
     SDFGenerator(const SDFGenerator &) = delete;
     SDFGenerator &operator=(const SDFGenerator &) = delete;
@@ -49,12 +62,10 @@ public:
     SDFGenerator(SDFGenerator &&other)
     {
         other.computeShader_ = Shader();
-        other.OutX = 0;
-        other.OutY = 0;
-        other.OutZ = 0;
-        other.texInput_ = TextureSampler();
+        other.BoxSize = B_32;
         other.texOutput_ = TextureSampler();
-        other.data_ = std::vector<float>();
+        other.triangles_ = std::vector<Triangle>();
+        other.vertices_ = std::vector<Vertex>();
     }
 
     SDFGenerator &operator=(SDFGenerator &&other)
@@ -63,15 +74,14 @@ public:
         if (this != &other)
         {
             std::swap(computeShader_, other.computeShader_);
-            std::swap(OutX, other.OutX);
-            std::swap(OutY, other.OutY);
-            std::swap(OutZ, other.OutZ);
-            std::swap(texInput_, other.texInput_);
+            std::swap(BoxSize, other.BoxSize);
             std::swap(texOutput_, other.texOutput_);
-            std::swap(data_, other.data_);
+            std::swap(triangles_, other.triangles_);
+            std::swap(vertices_, other.vertices_);
         }
     }
 
-    void KDTree(pmp::SurfaceMesh &mesh);
-    void Generate(std::vector<float> *data);
+    TextureSampler *GetOutputTexture() { return &texOutput_; };
+
+    void Dispatch();
 };

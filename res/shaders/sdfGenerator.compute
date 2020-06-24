@@ -1,38 +1,38 @@
-#version 430
-
-#define MAX_TRIANGLES 2048
+#version 430 core
 
 struct Triangle
 {
-  vec3 p1;
-  vec3 p2;
-  vec3 p3;
+  int v0;
+  int v1;
+  int v2;
 };
 
-struct Node 
+struct Vertex
 {
-  int leftNode;
-  int rightNode;
-  unsigned int triangles[MAX_TRIANGLES];
+  float x, y, z;
 };
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout(rgba32f, binding = 0) uniform image2D inTex;
-layout(rgba32f, binding = 1) uniform image3D outTex;
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 4) in;
+layout(r32f, binding = 0) restrict writeonly uniform image3D outTex;
+
+layout(std430, binding = 1) readonly buffer inVertices
+{
+  Vertex vertices[];
+};
 layout(std430, binding = 2) readonly buffer inTriangles
 {
   Triangle triangles[];
 };
-layout(std430, binding = 3) readonly buffer inNodes
-{
-  Node nodes[];
-};
 
 bool intersectTriangle(Triangle triangle, vec3 rayOrigin, vec3 rayDirection)
 {    
-    vec3 p0 = triangle.p1;
-    vec3 p1 = triangle.p2;
-    vec3 p2 = triangle.p3;
+    Vertex v0 = vertices[triangle.v0];
+    Vertex v1 = vertices[triangle.v1];
+    Vertex v2 = vertices[triangle.v2];
+
+    vec3 p0 = vec3(v0.x, v0.y, v0.z);
+    vec3 p1 = vec3(v1.x, v1.y, v1.z);
+    vec3 p2 = vec3(v2.x, v2.y, v2.z);
 
     vec3 vecA = p0 - p2;
     vec3 vecB = p1 - p2;
@@ -68,13 +68,21 @@ float dot2( in vec3 v ) { return dot(v,v); }
 
 float udTriangle(vec3 p, Triangle triangle)
 {
-  vec3 ba = triangle.p2 - triangle.p1; 
-  vec3 cb = triangle.p3 - triangle.p2; 
-  vec3 ac = triangle.p1 - triangle.p3; 
+  Vertex v0 = vertices[triangle.v0];
+  Vertex v1 = vertices[triangle.v1];
+  Vertex v2 = vertices[triangle.v2];
+      
+  vec3 p0 = vec3(v0.x, v0.y, v0.z);
+  vec3 p1 = vec3(v1.x, v1.y, v1.z);
+  vec3 p2 = vec3(v2.x, v2.y, v2.z);
 
-  vec3 pa = p - triangle.p1;
-  vec3 pb = p - triangle.p2;
-  vec3 pc = p - triangle.p3;
+  vec3 ba = p1 - p0; 
+  vec3 cb = p2 - p1; 
+  vec3 ac = p0 - p2; 
+
+  vec3 pa = p - p0;
+  vec3 pb = p - p1;
+  vec3 pc = p - p2;
 
   vec3 nor = cross(ba, ac);
 
@@ -93,19 +101,27 @@ float udTriangle(vec3 p, Triangle triangle)
 }
 
 void main() {  
-  // get index in global work group i.e x,y position
+  memoryBarrier();
+  barrier();
+  // get index in global work group i.e x,y position    
   ivec3 voxelCoords = ivec3(gl_GlobalInvocationID.xyz);
+
+  ivec3 imgSize = ivec3(gl_NumWorkGroups * gl_WorkGroupSize);
+
+  if (voxelCoords.x >= imgSize.x || voxelCoords.y >= imgSize.y || voxelCoords.z >= imgSize.z) {    
+    return;
+  }  
+
+  int id = voxelCoords.x + imgSize.y * (voxelCoords.y + imgSize.z * voxelCoords.z);
 
   //get distance to object
   float depth = 1000.0;  
   bool inside = false;
   vec3 rayDirection = normalize(vec3(0.0, 1.0, 0.0));
-  for (int i = 0; i < imageSize(inTex).x; i += 3)
+
+  for (int i = 0; i < triangles.length(); i++)
   {
-    Triangle triangle;
-    triangle.p1 = imageLoad(inTex, ivec2(i, 0)).xyz;
-    triangle.p2 = imageLoad(inTex, ivec2(i + 1, 0)).xyz;
-    triangle.p3 = imageLoad(inTex, ivec2(i + 2, 0)).xyz;
+    Triangle triangle = triangles[i];    
         
     float tempDepth = udTriangle(voxelCoords, triangle);
     if (tempDepth < depth)
@@ -113,10 +129,16 @@ void main() {
 
     if (intersectTriangle(triangle, voxelCoords, rayDirection))
       inside = !inside;
-  }
+  }  
 
   if (inside)
     depth = -depth;    
-      
-  imageStore(outTex, ivec3(voxelCoords), vec4(depth, depth, depth, 1.0));
+
+  memoryBarrier();
+  barrier();
+
+  imageStore(outTex, voxelCoords, vec4(depth, 0, 0, 0));      
+
+  memoryBarrier();
+  barrier();
 }

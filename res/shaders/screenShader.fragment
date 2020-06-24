@@ -154,7 +154,7 @@ float distanceToField(SDField field, vec3 position)
         
         return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
     }    
-    return distanceBox + 0.5;
+    return distanceBox + 0.1 * field.dimensions.x;
 }
 
 vec4 hardMin(vec4 dist1, vec4 dist2)
@@ -286,12 +286,10 @@ vec3 getNormal(vec3 position)
 float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
 {
     vec3 lightVec = lightPosition - position;
-    float maxDist = length(lightVec);    
     vec3 rayDir = normalize(lightVec); 
-    float dist = 0.0;    
-    float minDist = 1.0;
-    float depth = 0.001;    
-
+    float maxDist = length(lightVec);    
+    float dist = 0.0, minDist = 1.0, depth = 0.001;        
+    
     for(int i = 0; i < UMarchingSteps; i++)
     {                        
         dist = distanceToScene(position + depth * rayDir);  
@@ -352,59 +350,60 @@ vec3 applyFog(vec3 color, float depth)
         * exp(-0.00005*depth*depth*depth);
 }
 
-void main()
+vec4 traceDepth(vec4 rayDirection, float depth)
 {
-    vec3 cameraRayDir = getRayDir();
-    vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);       
-    float dist = 0;
-    
-    vec3 position;
-    vec4 eyePosition = UEyePosition;
-
-    float depth = 0.0;
-
-    if (UUseDepthTexture)
-    {
-        depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                
-    }    
-    
-    // https://www.scratchapixel.com/lessons/advanced-rendering/rendering-distance-fields/basic-sphere-tracer
-    // Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces, John C. Hart, 1996.
+    vec3 position;    
     float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
 
     for(int i = 0; i < UMarchingSteps; i++)
     {                
-        position = vec3(eyePosition + depth * rayDirection);        
-        vec4 distMat = distanceToSceneColor(position);
-        dist = distMat.x; 
+        position = vec3(UEyePosition + depth * rayDirection);
+        float dist = distanceToScene(position);        
         float coneRadius = depth * coneRadiusCoeff;   
-        if (dist < coneRadius)        
-        {
-            gl_FragDepth = (depth - (coneRadius - dist)) / UMaxDrawDistance;            
 
-            if (UWriteColor)
-            {
-                vec3 phongColor = getPhongColor(position, getNormal(position), distMat.yzw, rayDirection);
-                color = vec4(
-                    applyFog(phongColor, depth), 
-                    1.0
-                );            
-            }
-            return;
-        }                   
+        if (dist < coneRadius)                
+            return vec4(position, depth - (coneRadius - dist));                    
 
         depth += dist;
 
         if (depth > UMaxDrawDistance)
-        {
-            gl_FragDepth = 1.0;            
-            if (UWriteColor)
-                color = vec4(applyFog(vec3(0.1, 0.1, 0.1), depth), 1.0);
-            return;
-        }
-    }  
+            break;
+    }
+    return vec4(position, depth);
+}
 
-    gl_FragDepth = depth / UMaxDrawDistance; 
+void setColor(vec4 rayDirection, vec3 position, float depth)
+{
+    if (depth > UMaxDrawDistance)
+    {                         
+        color = vec4(applyFog(vec3(0.1, 0.1, 0.1), UMaxDrawDistance), 1.0);
+        return;
+    }    
+
+    vec4 distMat = distanceToSceneColor(position);        
+
+    vec3 phongColor = getPhongColor(position, getNormal(position), distMat.yzw, rayDirection);
+    color = vec4(        
+        applyFog(phongColor, depth), 
+        1.0
+    ); 
+}
+
+void main()
+{
+    vec3 cameraRayDir = getRayDir();
+    vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);        
+
+    float depth = UUseDepthTexture 
+        ? texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance
+        : 0.0;
+
+    vec4 posAndDepth = traceDepth(rayDirection, depth);
+    depth = posAndDepth.w;
+    vec3 position = posAndDepth.xyz;
+
     if (UWriteColor)
-        color = vec4(applyFog(vec3(0.4, 0.1, 0.1), depth), 1.0);
+        setColor(rayDirection, position, depth);
+
+    gl_FragDepth = depth / UMaxDrawDistance;       
 }

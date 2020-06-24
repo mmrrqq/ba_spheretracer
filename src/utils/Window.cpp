@@ -24,7 +24,7 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     // request core profile and OpenGL version 3.2
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     // TODO: am I allowed to request 4.3? error callback got introduced there..
@@ -43,6 +43,9 @@ Window::Window(const char *title, int width, int height) : width_(width), height
 
     // enable vsync
     glfwSwapInterval(1);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
 
     // this sets a reference to the window which can be retrieved in every callback
     // https://www.glfw.org/docs/latest/group__window.html#ga3d2fc6026e690ab31a13f78bc9fd3651
@@ -63,11 +66,12 @@ Window::Window(const char *title, int width, int height) : width_(width), height
         exit(1);
     }
     GLenum error = glGetError();
+    std::cerr << "Error initializing: " << error << std::endl;
 
     //define blending function
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_DEPTH_TEST); // this has to be enabled to write to gl_FragDepth as it seems
+    // glEnable(GL_DEPTH_TEST); // this has to be enabled to write to gl_FragDepth as it seems
 
     // debug: print GL and GLSL version
     std::cout << "GLEW   " << glewGetString(GLEW_VERSION) << std::endl;

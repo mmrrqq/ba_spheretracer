@@ -101,6 +101,8 @@ public:
     /// \param sdField the value for the uniform
     void SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot);
 
+    void SetBuffer(unsigned int slot, float size, void *data);
+
 private:
     /// loads a vertex/fragmend/geometry shader from a file and compiles it
     /// \param filename the location and name of the shader
