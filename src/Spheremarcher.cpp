@@ -266,13 +266,13 @@ void Spheremarcher::draw()
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     thirdPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 60);
+    screenShader_.SetUniform("UMarchingSteps", 200);
     screenShader_.SetUniform("UImageDim", glm::vec2(thirdPassBuffer_.GetWidth(), thirdPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     fourthPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 60);
+    screenShader_.SetUniform("UMarchingSteps", 200);
     screenShader_.SetUniform("UImageDim", glm::vec2(fourthPassBuffer_.GetWidth(), fourthPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
