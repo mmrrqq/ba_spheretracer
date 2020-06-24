@@ -394,10 +394,9 @@ void main()
     vec3 cameraRayDir = getRayDir();
     vec4 rayDirection = UInvView * vec4(cameraRayDir, 0.0);        
 
-    float depth = 0.0;
-
-    if (UUseDepthTexture)    
-        depth = texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance;                        
+    float depth = UUseDepthTexture 
+        ? texture(UDepthTexture, TexCoords.xy).r * UMaxDrawDistance
+        : 0.0;
 
     vec4 posAndDepth = traceDepth(rayDirection, depth);
     depth = posAndDepth.w;
