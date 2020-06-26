@@ -225,32 +225,6 @@ uninstall/fast:
 .PHONY : uninstall/fast
 
 #=============================================================================
-# Target rules for targets named visualinfo
-
-# Build rule for target.
-visualinfo: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 visualinfo
-.PHONY : visualinfo
-
-# fast build rule for target.
-visualinfo/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/visualinfo.dir/build.make dependency/glew/build/cmake/CMakeFiles/visualinfo.dir/build
-.PHONY : visualinfo/fast
-
-#=============================================================================
-# Target rules for targets named glewinfo
-
-# Build rule for target.
-glewinfo: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glewinfo
-.PHONY : glewinfo
-
-# fast build rule for target.
-glewinfo/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glewinfo.dir/build.make dependency/glew/build/cmake/CMakeFiles/glewinfo.dir/build
-.PHONY : glewinfo/fast
-
-#=============================================================================
 # Target rules for targets named glew_s
 
 # Build rule for target.
@@ -290,6 +264,32 @@ glfw/fast:
 .PHONY : glfw/fast
 
 #=============================================================================
+# Target rules for targets named docs
+
+# Build rule for target.
+docs: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs
+.PHONY : docs
+
+# fast build rule for target.
+docs/fast:
+	$(MAKE) $(MAKESILENT) -f docs/CMakeFiles/docs.dir/build.make docs/CMakeFiles/docs.dir/build
+.PHONY : docs/fast
+
+#=============================================================================
+# Target rules for targets named doxygen
+
+# Build rule for target.
+doxygen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 doxygen
+.PHONY : doxygen
+
+# fast build rule for target.
+doxygen/fast:
+	$(MAKE) $(MAKESILENT) -f docs/CMakeFiles/doxygen.dir/build.make docs/CMakeFiles/doxygen.dir/build
+.PHONY : doxygen/fast
+
+#=============================================================================
 # Target rules for targets named stb_image
 
 # Build rule for target.
@@ -327,58 +327,6 @@ pmp: cmake_check_build_system
 pmp/fast:
 	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build.make dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build
 .PHONY : pmp/fast
-
-#=============================================================================
-# Target rules for targets named docs
-
-# Build rule for target.
-docs: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs
-.PHONY : docs
-
-# fast build rule for target.
-docs/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/docs/CMakeFiles/docs.dir/build.make dependency/pmp-library/docs/CMakeFiles/docs.dir/build
-.PHONY : docs/fast
-
-#=============================================================================
-# Target rules for targets named doxygen
-
-# Build rule for target.
-doxygen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 doxygen
-.PHONY : doxygen
-
-# fast build rule for target.
-doxygen/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/docs/CMakeFiles/doxygen.dir/build.make dependency/pmp-library/docs/CMakeFiles/doxygen.dir/build
-.PHONY : doxygen/fast
-
-#=============================================================================
-# Target rules for targets named gtest_runner
-
-# Build rule for target.
-gtest_runner: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gtest_runner
-.PHONY : gtest_runner
-
-# fast build rule for target.
-gtest_runner/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/tests/CMakeFiles/gtest_runner.dir/build.make dependency/pmp-library/tests/CMakeFiles/gtest_runner.dir/build
-.PHONY : gtest_runner/fast
-
-#=============================================================================
-# Target rules for targets named googletest
-
-# Build rule for target.
-googletest: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest
-.PHONY : googletest
-
-# fast build rule for target.
-googletest/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/tests/CMakeFiles/googletest.dir/build.make dependency/pmp-library/tests/CMakeFiles/googletest.dir/build
-.PHONY : googletest/fast
 
 dependency/imgui/imgui.o: dependency/imgui/imgui.cpp.o
 
@@ -886,14 +834,10 @@ help:
 	@echo "... Spheremarcher"
 	@echo "... glew"
 	@echo "... glew_s"
-	@echo "... glewinfo"
 	@echo "... glfw"
-	@echo "... googletest"
-	@echo "... gtest_runner"
 	@echo "... pmp"
 	@echo "... rply"
 	@echo "... stb_image"
-	@echo "... visualinfo"
 	@echo "... dependency/imgui/imgui.o"
 	@echo "... dependency/imgui/imgui.i"
 	@echo "... dependency/imgui/imgui.s"

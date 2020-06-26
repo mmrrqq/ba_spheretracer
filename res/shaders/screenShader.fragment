@@ -353,7 +353,8 @@ vec3 applyFog(vec3 color, float depth)
 vec4 traceDepth(vec4 rayDirection, float depth)
 {
     vec3 position;    
-    float coneRadiusCoeff = 2 * tan(radians(UFovY/2))/ UImageDim.y;
+    // WO ZUM GEIER KOMMT DIE 2
+    float coneRadiusCoeff = 2 * tan(radians(UFovY / 2)) / UImageDim.y;
 
     for(int i = 0; i < UMarchingSteps; i++)
     {                
