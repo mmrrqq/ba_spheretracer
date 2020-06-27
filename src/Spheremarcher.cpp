@@ -249,7 +249,7 @@ void Spheremarcher::draw()
     screenShader_.SetUniform("UMaxDrawDistance", drawDistance_);
     screenShader_.SetUniform("UNormalEpsilon", normalEpsilon_);
     screenShader_.SetUniform("UFovY", fovy_);
-    screenShader_.SetUniform("UMarchingSteps", 100);
+    screenShader_.SetUniform("UMarchingSteps", 200);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
     screenShader_.SetUniform("UImageDim", glm::vec2(firstPassBuffer_.GetWidth(), firstPassBuffer_.GetHeight()));
@@ -266,13 +266,13 @@ void Spheremarcher::draw()
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     thirdPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 200);
+    screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UImageDim", glm::vec2(thirdPassBuffer_.GetWidth(), thirdPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     fourthPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 200);
+    screenShader_.SetUniform("UMarchingSteps", 50);
     screenShader_.SetUniform("UImageDim", glm::vec2(fourthPassBuffer_.GetWidth(), fourthPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -283,7 +283,7 @@ void Spheremarcher::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
     screenShader_.SetUniform("UWriteColor", true);
-    screenShader_.SetUniform("UMarchingSteps", 100);
+    screenShader_.SetUniform("UMarchingSteps", 50);
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
 
