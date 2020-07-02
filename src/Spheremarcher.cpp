@@ -15,8 +15,8 @@ Spheremarcher::Spheremarcher(int width, int height)
       normalEpsilon_(0.005f),
       drawDistance_(27.0f),
       smooth_(false),
-      sdfBoxSize_(SDFGenerator::B_64),
-      sdfScaling_(0.01)
+      sdfBoxSize_(SDFGenerator::B_128),
+      sdfScaling_(0.04)
 {
 }
 
@@ -54,41 +54,75 @@ void Spheremarcher::initialize()
 
     materials.push_back(
         Material(
-            glm::vec3(0.1, 0.3, 0.0),
-            glm::vec3(0.2, 0.8, 0.0),
-            glm::vec3(0.1, 0.7, 0.0),
+            glm::vec3(0.9, 0.9, 0.0),
+            glm::vec3(0.9, 0.9, 0.0),
+            glm::vec3(0.9, 0.9, 0.0),
+            10.0f));
+
+    materials.push_back(
+        Material(
+            glm::vec3(0.05, 0.2, 0.0),
+            glm::vec3(0.05, 0.2, 0.0),
+            glm::vec3(0.05, 0.2, 0.0),
             10.0f));
 
     Sphere sphere1;
-    sphere1.position = glm::vec3(1.5, 0.5, 0.0);
-    sphere1.radius = 0.4f;
-    sphere1.materialId = 1;
+    sphere1.position = glm::vec3(-4, 0.5, 5.0);
+    sphere1.radius = 0.9f;
+    sphere1.materialId = 0;
     Sphere sphere2;
-    sphere2.position = glm::vec3(0.0, 0.5, 0.0);
+    sphere2.position = glm::vec3(-5.0, 0.5, 5.0);
     sphere2.radius = 0.3f;
     sphere2.materialId = 0;
-    Sphere sphere3;
-    sphere3.position = glm::vec3(1.5, 0.5, -1.7);
-    sphere3.radius = 0.6f;
-    sphere3.materialId = 2;
+    // Sphere sphere3;
+    // sphere3.position = glm::vec3(2.5, 0.5, 5.7);
+    // sphere3.radius = 0.6f;
+    // sphere3.materialId = 2;
 
-    scene_.AddSphere(sphere1);
-    scene_.AddSphere(sphere2);
-    scene_.AddSphere(sphere3);
+    Torus torus1;
+    torus1.position = glm::vec3(0.0, 4.5, 0.0);
+    torus1.materialId = 2;
+    torus1.radius = 2;
+    torus1.tubeRadius = 0.2;
+
+    // Torus torus2;
+    // torus2.position = glm::vec3(0.0, 4.0, 0.0);
+    // torus2.materialId = 0;
+    // torus2.radius = 1;
+    // torus2.tubeRadius = 0.2;
+
+    // scene_.AddSphere(sphere1);
+    // scene_.AddSphere(sphere2);
+    // scene_.AddSphere(sphere3);
+
+    scene_.AddTorus(torus1);
+    // scene_.AddTorus(torus2);
 
     SceneLights lights;
     PointLight whiteLight;
-    whiteLight.position = glm::vec3(-4, 6, 0);
-    whiteLight.size = 0.03;
-    whiteLight.color = glm::vec3(0.8, 0.8, 0.8);
+    whiteLight.position = glm::vec3(4, 6, 5);
+    whiteLight.size = 0.01;
+    whiteLight.color = glm::vec3(0.9, 0.9, 0.9);
+
+    PointLight blueLight;
+    blueLight.position = glm::vec3(-1, 5, 0);
+    blueLight.size = 0.01;
+    blueLight.color = glm::vec3(0.2, 0.4, 0.9);
 
     PointLight redLight;
-    redLight.position = glm::vec3(0, 5, -4);
-    redLight.size = 0.005;
-    redLight.color = glm::vec3(0.7, 0.5, 0.1);
+    redLight.position = glm::vec3(4, 5, 2);
+    redLight.size = 0.01;
+    redLight.color = glm::vec3(1.0, 0.3, 0.1);
+
+    PointLight yellowLight;
+    redLight.position = glm::vec3(0, 5, 0);
+    redLight.size = 0.01;
+    redLight.color = glm::vec3(1.0, 1.0, 0.0);
 
     lights.pointLights.push_back(whiteLight);
-    lights.pointLights.push_back(redLight);
+    lights.pointLights.push_back(yellowLight);
+    // lights.pointLights.push_back(redLight);
+    // lights.pointLights.push_back(blueLight);
     /////// END SCENE TEST SETUP
 
     // TODO: create VertexArray class
@@ -102,7 +136,7 @@ void Spheremarcher::initialize()
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
+    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/titleScene.fragment");
     screenShader_.Bind();
     screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetUniform("ULights", lights);
@@ -209,7 +243,7 @@ void Spheremarcher::drawImguiWindow()
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
         ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.01f);
         ImGui::SliderFloat("draw distance", &drawDistance_, 5.0f, 50.0f);
-        ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
+        // ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
         ImGui::Checkbox("smoothing", &smooth_);
 
         const char *eBoxSizeNames[] = {"32", "64", "128", "256"};
@@ -228,6 +262,13 @@ void Spheremarcher::drawImguiWindow()
             screenShader_.SetUniform("USDField.dimensions", glm::vec3(sdfScaling_ * sdfBoxSize_));
         }
 
+        float lightSize = 0.01;
+        if (ImGui::SliderFloat("light size", &lightSize, 0.001, 0.5))
+        {
+            screenShader_.Bind();
+            screenShader_.SetUniform("ULights.pointLights[0].size", lightSize);
+        }
+
         ImGui::Text("frame time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
@@ -237,6 +278,7 @@ void Spheremarcher::drawImguiWindow()
 void Spheremarcher::draw()
 {
     drawImguiWindow();
+
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     glBindVertexArray(vao_);
@@ -272,7 +314,7 @@ void Spheremarcher::draw()
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     fourthPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 50);
+    screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UImageDim", glm::vec2(fourthPassBuffer_.GetWidth(), fourthPassBuffer_.GetHeight()));
     screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -283,10 +325,9 @@ void Spheremarcher::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 1920, 1080);
     screenShader_.SetUniform("UWriteColor", true);
-    screenShader_.SetUniform("UMarchingSteps", 50);
+    screenShader_.SetUniform("UMarchingSteps", 100);
     screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
     screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
-
     glDrawArrays(GL_TRIANGLES, 0, 3);
     screenShader_.Unbind();
 

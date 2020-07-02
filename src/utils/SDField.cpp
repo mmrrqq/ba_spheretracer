@@ -1,14 +1,14 @@
 #include "SDField.h"
 
 SDField::SDField(glm::vec3 size)
-    : position_(glm::vec3(0.0, 1.0, 0.0)),
+    : position_(glm::vec3(0.0, 2.0, 0.0)),
       field_(nullptr),
       dimensions_(size)
 {
 }
 
 SDField::SDField(glm::vec3 size, TextureSampler *fieldTexture)
-    : position_(glm::vec3(0.0, 1.0, 0.0)),
+    : position_(glm::vec3(0.0, 2.0, 0.0)),
       field_(fieldTexture),
       dimensions_(size)
 {

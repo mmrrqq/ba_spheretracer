@@ -199,31 +199,6 @@ float minFn(float prevDist, float dist)
     return min(prevDist, dist);
 }
 
-float distanceToScene(vec3 position) 
-{    
-    float res = 1000;
-    
-    for (int i = 0; i < UScene.numSpheres; i++)
-    {
-        Sphere sphere = UScene.spheres[i];
-        res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
-    }    
-
-    // for (int i = 0; i < UScene.numTori; i++)
-    // {
-    //     Torus torus = UScene.tori[i];
-    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-    //     res = hardMin(res, vec2(d, torus.materialId));             
-    // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
-    
-    res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
-
-    res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
-
-    return res;
-}
-
 vec4 minColorFn(vec4 prevDist, float dist, int materialId)
 {
     if (USmooth)
@@ -231,33 +206,24 @@ vec4 minColorFn(vec4 prevDist, float dist, int materialId)
     return hardMin(prevDist, vec4(dist, materialId, -1, -1));
 }
 
+float distanceToScene(vec3 position) 
+{    
+    float res = distanceToBox(position, vec3(2, 0.5, 1));
+
+    res = max(res, distanceToSphere(vec3(0, 0.2, 0), 0.7, position));
+
+    return res;
+}
+
+
 // yzw are either the diffuse color value or y is the materialID and others are -1
 vec4 distanceToSceneColor(vec3 position)
 {
-    vec4 res = vec4(1000, -1, -1, -1);
+    float res = distanceToBox(position, vec3(2, 0.5 ,1));
 
-    for (int i = 0; i < UScene.numSpheres; i++)
-    {
-        Sphere sphere = UScene.spheres[i];
-        float d = distanceToSphere(sphere.position, sphere.radius, position);        
-        res = minColorFn(res, d, sphere.materialId);
-    }
+    res = max(res, distanceToSphere(vec3(0, 0.2 ,0), 0.7, position));
 
-    // for (int i = 0; i < UScene.numTori; i++)
-    // {
-    //     Torus torus = UScene.tori[i];
-    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-    //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
-    // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
-
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
-    res = minColorFn(res, fieldDistance, 0);
-
-    float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
-    res = minColorFn(res, planeDistance, 0);
-
-    return res;
+    return vec4(res, 0, -1, -1);
 }
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
@@ -291,13 +257,13 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
     for(int i = 0; i < UMarchingSteps; i++)
     {                        
         dist = distanceToScene(position + depth * rayDir);          
-        minDist = min(0.5 + 0.5 * dist / (lightSize*depth), minDist);                                      
+        minDist = min(0.5 + 0.5 * dist / (depth*lightSize), minDist);                                      
         
-        depth += clamp(dist, 0.05, 10.0);
+        depth += clamp(dist, 0.005, 0.5);
         if (depth > maxDist || minDist < 0.001)
             break;
     }        
-    return smoothstep(0.0, 1.0, minDist);     
+    return max(minDist, 0.0);       
 }
 
 vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
@@ -339,8 +305,8 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 vec3 applyFog(vec3 color, float depth)
 {
     //https://iquilezles.org/www/articles/fog/fog.htm
-    vec3 fogColor = vec3(0.5,0.6,0.7);
-    return mix(color, fogColor, 1.0 - exp(-depth * 0.05)) 
+    vec3 fogColor = vec3(0.2,0.2,0.3);
+    return mix(color, fogColor, 1.0 - exp(-depth * 0.005)) 
         * exp(-0.00005*depth*depth*depth);
 }
 

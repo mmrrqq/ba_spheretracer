@@ -6,7 +6,7 @@ Camera::Camera()
       lastY_(-1),
       lookAt_(0, 0, 0, 1),
       up_(0, 1, 0, 0),
-      eye_(1.5, 1, 4, 1),
+      eye_(0, 1, 4, 1),
       yaw_(0),
       camHeight_(eyeRoot_.y),
       eyeRoot_(1.5, 1, 4, 1){};
@@ -25,9 +25,6 @@ void Camera::Rotate(const double posX, const double posY, const int width, const
     camHeight_ += (posY - lastY_) / (float)width * 5.0;
 
     eye_ = glm::translate(glm::vec3(glm::vec3(0, camHeight_, 0))) * glm::translate(glm::vec3(lookAt_)) * glm::rotate(yaw_, glm::vec3(0, 1, 0)) * glm::translate(glm::vec3(-lookAt_)) * eyeRoot_;
-    // up_ = glm::rotate(-deltaPitch, glm::vec3(1, 0, 0)) * up_
-    // eye_ = glm::translate(glm::vec3(lookAt_)) * glm::rotate(glm::rotate(-deltaYaw, glm::vec3(0, 1, 0)), deltaPitch, glm::vec3(1, 0, 0)) * glm::translate(glm::vec3(-lookAt_)) * eye_;
-    // up_ = glm::rotate(-deltaPitch, glm::vec3(1, 0, 0)) * up_;
 
     lastX_ = posX;
     lastY_ = posY;

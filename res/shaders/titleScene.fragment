@@ -166,6 +166,11 @@ vec2 hardMin(vec2 dist1, vec2 dist2)
     return dist1.x < dist2.x ? dist1 : dist2;    
 }
 
+vec4 hardMax(vec4 dist1, vec4 dist2)
+{
+    return dist1.x > dist2.x ? dist1 : dist2;
+}
+
 vec4 smoothColorMin(vec4 distMatColor, vec2 distMat, float k)
 {
     vec4 minVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMat.x, distMatColor.x));
@@ -209,17 +214,22 @@ float distanceToScene(vec3 position)
         res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
     }    
 
-    // for (int i = 0; i < UScene.numTori; i++)
-    // {
-    //     Torus torus = UScene.tori[i];
-    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-    //     res = hardMin(res, vec2(d, torus.materialId));             
-    // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];        
+        res = minFn(res, distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position));             
+    }
+    vec3 rep = vec3(10.0, 1000.0, 20.0);
     
-    res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
+    res = smoothMin(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep), 0.5);
 
-    res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
+    res = smoothMin(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position), 0.5);
+    
+    float distanceConstruct = max(distanceToBox(position - vec3(3.5, 0.0, 7), vec3(0.5, 0.5, 0.5)), -distanceToSphere(vec3(3.5, 0.0, 7), 0.7, position));
+    
+    res = min(res, distanceConstruct);
+
+    res = min(res, distanceToMandelbrot2(position - vec3(-3.5, 0.0, 7)));
 
     return res;
 }
@@ -243,19 +253,26 @@ vec4 distanceToSceneColor(vec3 position)
         res = minColorFn(res, d, sphere.materialId);
     }
 
-    // for (int i = 0; i < UScene.numTori; i++)
-    // {
-    //     Torus torus = UScene.tori[i];
-    //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
-    //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
-    // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    for (int i = 0; i < UScene.numTori; i++)
+    {
+        Torus torus = UScene.tori[i];
+        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        res = minColorFn(res, d, torus.materialId);             
+    }
 
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
-    res = minColorFn(res, fieldDistance, 0);
+    vec3 rep = vec3(10.0, 1000.0, 20.0);
+
+    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);        
+    res = smoothColorMin(res, vec2(fieldDistance, 3), 0.5);    
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
-    res = minColorFn(res, planeDistance, 0);
+    res = smoothColorMin(res, vec2(planeDistance, 0), 0.5);
+
+    float distanceConstruct = max(distanceToBox(position - vec3(3.5, 0.0, 7), vec3(0.5, 0.5, 0.5)), -distanceToSphere(vec3(3.5, 0.0, 7), 0.7, position));
+
+    res = minColorFn(res, distanceConstruct, 0);    
+
+    res = minColorFn(res, distanceToMandelbrot2(position - vec3(-3.5, 0.0, 7)), 1);    
 
     return res;
 }
@@ -281,6 +298,7 @@ vec3 getNormal(vec3 position)
     );
 }
 
+// https://www.shadertoy.com/view/WdyXRD
 float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
 {
     vec3 lightVec = lightPosition - position;
@@ -293,11 +311,11 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
         dist = distanceToScene(position + depth * rayDir);          
         minDist = min(0.5 + 0.5 * dist / (lightSize*depth), minDist);                                      
         
-        depth += clamp(dist, 0.05, 10.0);
-        if (depth > maxDist || minDist < 0.001)
+        depth += clamp(dist, 0.05, 0.5);
+        if (depth > maxDist || minDist < 0.0001)
             break;
     }        
-    return smoothstep(0.0, 1.0, minDist);     
+    return smoothstep(0.0, 1.0, minDist);             
 }
 
 vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
@@ -306,9 +324,10 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
     if (matCol.y < 0)     
         material = UMaterials[int(matCol.x)];    
     else
-    {        
-        material = UMaterials[0];        
-        material.diffuseColor = matCol;        
+    {                
+        material.diffuseColor = matCol;    
+        material.specularColor = matCol * 0.8;    
+        material.ambientColor = matCol * 0.2;
     }
     
     vec3 phongColor = vec3(0.0, 0.0, 0.0);    
@@ -318,8 +337,7 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         PointLight light = ULights.pointLights[i];
         phongColor += material.ambientColor * light.color;
         vec3 lightDir = normalize(light.position - position);
-        float diffuseContribution = dot(normal, lightDir);    
-        // float shadow = 1.0;
+        float diffuseContribution = dot(normal, lightDir);            
         float shadow = getPointLightShadowFactor(position, light.position, light.size);        
 
         if (shadow < 0.01 || diffuseContribution < 0.0)    
@@ -339,9 +357,10 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 vec3 applyFog(vec3 color, float depth)
 {
     //https://iquilezles.org/www/articles/fog/fog.htm
-    vec3 fogColor = vec3(0.5,0.6,0.7);
-    return mix(color, fogColor, 1.0 - exp(-depth * 0.05)) 
-        * exp(-0.00005*depth*depth*depth);
+    float fallFactor = 1 / (100*UMaxDrawDistance);
+    float fogAmount = 1.0 - exp(-depth * 0.02);
+    vec3 fogColor = vec3(0.9,0.9,1.0);
+    return mix(color * exp(-fallFactor*depth*depth*depth), fogColor, fogAmount);        
 }
 
 vec4 traceDepth(vec4 rayDirection, float depth)
