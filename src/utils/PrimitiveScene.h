@@ -15,6 +15,7 @@ struct SceneLights
     std::vector<PointLight> pointLights;
 };
 
+// align as 16 byte for ssbo
 struct alignas(16) Sphere
 {
     glm::vec3 position;
@@ -22,12 +23,12 @@ struct alignas(16) Sphere
     int materialId;
 };
 
-struct Torus
+struct alignas(16) Torus
 {
-    int materialId;
     glm::vec3 position;
     float radius;
     float tubeRadius;
+    int materialId;
 };
 
 class PrimitiveScene

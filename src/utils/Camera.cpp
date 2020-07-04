@@ -4,9 +4,9 @@
 Camera::Camera()
     : lastX_(-1),
       lastY_(-1),
-      lookAt_(4, 0, 4, 1),
+      lookAt_(0, 1, 0, 1),
       up_(0, 1, 0, 0),
-      eye_(0, 10, 0, 1),
+      eye_(1, 5, 1, 1),
       yaw_(0),
       eyeRoot_(eye_),
       camHeight_(eyeRoot_.y){};

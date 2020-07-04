@@ -16,7 +16,7 @@ Spheremarcher::Spheremarcher(int width, int height)
       drawDistance_(27.0f),
       smooth_(false),
       sdfBoxSize_(SDFGenerator::B_128),
-      sdfScaling_(0.04),
+      sdfScaling_(0.01),
       drawShadows_(true)
 {
 }
@@ -68,25 +68,23 @@ void Spheremarcher::initialize()
             10.0f));
 
     Sphere sphere1;
-    sphere1.position = glm::vec3(3.5, 0.5, 0.5);
-    sphere1.radius = 0.2f;
+    sphere1.position = glm::vec3(1.9, 0.5, 2.0);
+    sphere1.radius = 0.4f;
     sphere1.materialId = 1;
     Sphere sphere2;
-    sphere2.position = glm::vec3(1.5, 0.5, 2.5);
-    sphere2.radius = 0.3f;
+    sphere2.position = glm::vec3(0.5, 0.5, 0.5);
+    sphere2.radius = 0.6f;
     sphere2.materialId = 0;
     Sphere sphere3;
-    sphere3.position = glm::vec3(1.5, 0.5, 1.5);
+    sphere3.position = glm::vec3(1.7, 0.0, 1.5);
     sphere3.radius = 0.6f;
-    sphere3.materialId = 2;
+    sphere3.materialId = 3;
 
-    std::vector<Sphere> spheres;
-
-    // Torus torus1;
-    // torus1.position = glm::vec3(0.0, 4.5, 0.0);
-    // torus1.materialId = 2;
-    // torus1.radius = 2;
-    // torus1.tubeRadius = 0.2;
+    Torus torus1;
+    torus1.position = glm::vec3(0.5, 0.5, 0.5);
+    torus1.materialId = 2;
+    torus1.radius = 1;
+    torus1.tubeRadius = 0.2;
 
     // Torus torus2;
     // torus2.position = glm::vec3(0.0, 4.0, 0.0);
@@ -98,7 +96,7 @@ void Spheremarcher::initialize()
     scene_.AddSphere(sphere2);
     scene_.AddSphere(sphere3);
 
-    // scene_.AddTorus(torus1);
+    scene_.AddTorus(torus1);
     // scene_.AddTorus(torus2);
 
     SceneLights lights;
@@ -110,22 +108,22 @@ void Spheremarcher::initialize()
     PointLight blueLight;
     blueLight.position = glm::vec3(-1, 5, 0);
     blueLight.size = 0.01;
-    blueLight.color = glm::vec3(0.2, 0.4, 0.9);
+    blueLight.color = glm::vec3(0.2, 0.3, 0.8);
 
     PointLight redLight;
-    redLight.position = glm::vec3(4, 5, 2);
-    redLight.size = 0.01;
-    redLight.color = glm::vec3(1.0, 0.3, 0.1);
+    redLight.position = glm::vec3(4, 5, -2);
+    redLight.size = 0.1;
+    redLight.color = glm::vec3(0.6, 0.2, 0.1);
 
     PointLight yellowLight;
     redLight.position = glm::vec3(0, 5, 0);
     redLight.size = 0.01;
-    redLight.color = glm::vec3(1.0, 1.0, 0.0);
+    redLight.color = glm::vec3(0.5, 0.5, 0.0);
 
     lights.pointLights.push_back(whiteLight);
+    lights.pointLights.push_back(redLight);
+    lights.pointLights.push_back(blueLight);
     // lights.pointLights.push_back(yellowLight);
-    // lights.pointLights.push_back(redLight);
-    // lights.pointLights.push_back(blueLight);
     /////// END SCENE TEST SETUP
 
     // TODO: create VertexArray class
@@ -139,10 +137,10 @@ void Spheremarcher::initialize()
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/performanceTest.fragment");
+    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/screenShader.fragment");
     screenShader_.Bind();
-    // screenShader_.SetUniform("UScene", scene_);
     screenShader_.SetBuffer(3, sizeof(Sphere) * scene_.Spheres.size(), scene_.Spheres.data());
+    screenShader_.SetBuffer(4, sizeof(Torus) * scene_.Tori.size(), scene_.Tori.data());
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
