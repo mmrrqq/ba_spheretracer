@@ -16,7 +16,8 @@ Spheremarcher::Spheremarcher(int width, int height)
       drawDistance_(27.0f),
       smooth_(false),
       sdfBoxSize_(SDFGenerator::B_128),
-      sdfScaling_(0.04)
+      sdfScaling_(0.04),
+      drawShadows_(true)
 {
 }
 
@@ -67,23 +68,25 @@ void Spheremarcher::initialize()
             10.0f));
 
     Sphere sphere1;
-    sphere1.position = glm::vec3(-4, 0.5, 5.0);
-    sphere1.radius = 0.9f;
-    sphere1.materialId = 0;
+    sphere1.position = glm::vec3(3.5, 0.5, 0.5);
+    sphere1.radius = 0.2f;
+    sphere1.materialId = 1;
     Sphere sphere2;
-    sphere2.position = glm::vec3(-5.0, 0.5, 5.0);
+    sphere2.position = glm::vec3(1.5, 0.5, 2.5);
     sphere2.radius = 0.3f;
     sphere2.materialId = 0;
-    // Sphere sphere3;
-    // sphere3.position = glm::vec3(2.5, 0.5, 5.7);
-    // sphere3.radius = 0.6f;
-    // sphere3.materialId = 2;
+    Sphere sphere3;
+    sphere3.position = glm::vec3(1.5, 0.5, 1.5);
+    sphere3.radius = 0.6f;
+    sphere3.materialId = 2;
 
-    Torus torus1;
-    torus1.position = glm::vec3(0.0, 4.5, 0.0);
-    torus1.materialId = 2;
-    torus1.radius = 2;
-    torus1.tubeRadius = 0.2;
+    std::vector<Sphere> spheres;
+
+    // Torus torus1;
+    // torus1.position = glm::vec3(0.0, 4.5, 0.0);
+    // torus1.materialId = 2;
+    // torus1.radius = 2;
+    // torus1.tubeRadius = 0.2;
 
     // Torus torus2;
     // torus2.position = glm::vec3(0.0, 4.0, 0.0);
@@ -91,11 +94,11 @@ void Spheremarcher::initialize()
     // torus2.radius = 1;
     // torus2.tubeRadius = 0.2;
 
-    // scene_.AddSphere(sphere1);
-    // scene_.AddSphere(sphere2);
-    // scene_.AddSphere(sphere3);
+    scene_.AddSphere(sphere1);
+    scene_.AddSphere(sphere2);
+    scene_.AddSphere(sphere3);
 
-    scene_.AddTorus(torus1);
+    // scene_.AddTorus(torus1);
     // scene_.AddTorus(torus2);
 
     SceneLights lights;
@@ -120,7 +123,7 @@ void Spheremarcher::initialize()
     redLight.color = glm::vec3(1.0, 1.0, 0.0);
 
     lights.pointLights.push_back(whiteLight);
-    lights.pointLights.push_back(yellowLight);
+    // lights.pointLights.push_back(yellowLight);
     // lights.pointLights.push_back(redLight);
     // lights.pointLights.push_back(blueLight);
     /////// END SCENE TEST SETUP
@@ -136,15 +139,17 @@ void Spheremarcher::initialize()
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/titleScene.fragment");
+    screenShader_.Load("res/shaders/marching.vertex", "res/shaders/performanceTest.fragment");
     screenShader_.Bind();
-    screenShader_.SetUniform("UScene", scene_);
+    // screenShader_.SetUniform("UScene", scene_);
+    screenShader_.SetBuffer(3, sizeof(Sphere) * scene_.Spheres.size(), scene_.Spheres.data());
     screenShader_.SetUniform("ULights", lights);
     screenShader_.SetUniform("UMaterials", materials);
     screenShader_.SetUniform("UMarchingSteps", 100);
+    screenShader_.SetUniform("UDrawShadows", drawShadows_);
     screenShader_.Unbind();
 
-    generateSdField();
+    // generateSdField();
 }
 
 void Spheremarcher::generateSdField()
@@ -239,6 +244,7 @@ void Spheremarcher::drawImguiWindow()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     {
+        screenShader_.Bind();
         ImGui::Begin("debug");
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
         ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.01f);
@@ -258,16 +264,42 @@ void Spheremarcher::drawImguiWindow()
 
         if (ImGui::SliderFloat("field scaling", &sdfScaling_, 0.001, 1.0))
         {
-            screenShader_.Bind();
             screenShader_.SetUniform("USDField.dimensions", glm::vec3(sdfScaling_ * sdfBoxSize_));
         }
 
         float lightSize = 0.01;
         if (ImGui::SliderFloat("light size", &lightSize, 0.001, 0.5))
         {
-            screenShader_.Bind();
             screenShader_.SetUniform("ULights.pointLights[0].size", lightSize);
         }
+
+        int spherecount = scene_.Spheres.size();
+        if (ImGui::SliderInt("sphere count", &spherecount, 1, 100))
+        {
+            int countDiff = spherecount - scene_.Spheres.size();
+            if (countDiff > 0)
+            {
+                for (int i = 0; i < countDiff; i++)
+                {
+                    Sphere s;
+                    s.materialId = std::rand() % 3;
+                    s.position = glm::vec3(std::rand() / (RAND_MAX / 8.0), std::rand() / (RAND_MAX / 2.0), std::rand() / (RAND_MAX / 8.0));
+                    s.radius = std::rand() / (float)RAND_MAX;
+                    scene_.Spheres.push_back(s);
+                }
+            }
+            else
+            {
+                scene_.Spheres.erase(
+                    scene_.Spheres.end() + countDiff,
+                    scene_.Spheres.end());
+            }
+
+            screenShader_.SetBuffer(3, sizeof(Sphere) * scene_.Spheres.size(), scene_.Spheres.data());
+        }
+
+        if (ImGui::Checkbox("draw shadows", &drawShadows_))
+            screenShader_.SetUniform("UDrawShadows", drawShadows_);
 
         ImGui::Text("frame time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();

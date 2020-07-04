@@ -1,5 +1,4 @@
-#version 410 core
-#define MAX_OBJECTS 256
+#version 430 core
 #define MAX_MATERIALS 5
 #define MAX_LIGHTS 5
 #define UNumLights 2
@@ -12,9 +11,9 @@ struct PointLight
 
 struct Sphere 
 {
-    int materialId;
     vec3 position;
-    float radius;        
+    float radius;    
+    int materialId;
 };
 
 struct Torus
@@ -31,14 +30,6 @@ struct Material
     vec3 diffuseColor;
     vec3 specularColor;
     float shininess;
-};
-
-struct PrimitiveScene 
-{
-    Sphere spheres[MAX_OBJECTS];
-    // Torus tori[MAX_OBJECTS];        
-    int numSpheres;
-    int numTori;
 };
 
 struct SceneLights
@@ -64,14 +55,19 @@ uniform float UMaxDrawDistance;
 uniform bool UUseDepthTexture;
 uniform bool UWriteColor;
 uniform bool USmooth;
+uniform bool UDrawShadows;
 
 uniform sampler2D UDepthTexture;
 
-uniform PrimitiveScene UScene;
 uniform SceneLights ULights;
 uniform Material UMaterials[MAX_MATERIALS];
 uniform mat4 UInvView;
 uniform SDField USDField;
+
+layout(std430, binding = 3) readonly buffer inSpheres
+{
+  Sphere spheres[];
+};
 
 in vec2 TexCoords;
 out vec4 color;
@@ -203,9 +199,9 @@ float distanceToScene(vec3 position)
 {    
     float res = 1000;
     
-    for (int i = 0; i < UScene.numSpheres; i++)
+    for (int i = 0; i < spheres.length(); i++)
     {
-        Sphere sphere = UScene.spheres[i];
+        Sphere sphere = spheres[i];
         res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
     }    
 
@@ -215,9 +211,9 @@ float distanceToScene(vec3 position)
     //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
     //     res = hardMin(res, vec2(d, torus.materialId));             
     // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    // vec3 rep = vec3(10.0, 1000.0, 10.0);
     
-    res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
+    // res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
 
     res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
 
@@ -236,9 +232,9 @@ vec4 distanceToSceneColor(vec3 position)
 {
     vec4 res = vec4(1000, -1, -1, -1);
 
-    for (int i = 0; i < UScene.numSpheres; i++)
+    for (int i = 0; i < spheres.length(); i++)
     {
-        Sphere sphere = UScene.spheres[i];
+        Sphere sphere = spheres[i];
         float d = distanceToSphere(sphere.position, sphere.radius, position);        
         res = minColorFn(res, d, sphere.materialId);
     }
@@ -249,10 +245,10 @@ vec4 distanceToSceneColor(vec3 position)
     //     float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
     //     res = hardMin(res, vec4(d, torus.materialId, -1, -1));             
     // }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    // vec3 rep = vec3(10.0, 1000.0, 10.0);
 
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
-    res = minColorFn(res, fieldDistance, 0);
+    // float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
+    // res = minColorFn(res, fieldDistance, 0);
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
     res = minColorFn(res, planeDistance, 0);
@@ -307,8 +303,9 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         material = UMaterials[int(matCol.x)];    
     else
     {        
-        material = UMaterials[0];        
-        material.diffuseColor = matCol;        
+        material.diffuseColor = matCol;    
+        material.specularColor = matCol * 0.8;    
+        material.ambientColor = matCol * 0.2;   
     }
     
     vec3 phongColor = vec3(0.0, 0.0, 0.0);    
@@ -319,8 +316,10 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         phongColor += material.ambientColor * light.color;
         vec3 lightDir = normalize(light.position - position);
         float diffuseContribution = dot(normal, lightDir);    
-        // float shadow = 1.0;
-        float shadow = getPointLightShadowFactor(position, light.position, light.size);        
+        
+        float shadow = 1.0;
+        if (UDrawShadows)
+            shadow = getPointLightShadowFactor(position, light.position, light.size);        
 
         if (shadow < 0.01 || diffuseContribution < 0.0)    
             continue;        

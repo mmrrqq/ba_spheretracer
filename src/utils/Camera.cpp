@@ -4,12 +4,12 @@
 Camera::Camera()
     : lastX_(-1),
       lastY_(-1),
-      lookAt_(0, 0, 0, 1),
+      lookAt_(4, 0, 4, 1),
       up_(0, 1, 0, 0),
-      eye_(0, 1, 4, 1),
+      eye_(0, 10, 0, 1),
       yaw_(0),
-      camHeight_(eyeRoot_.y),
-      eyeRoot_(1.5, 1, 4, 1){};
+      eyeRoot_(eye_),
+      camHeight_(eyeRoot_.y){};
 Camera::~Camera(){};
 
 void Camera::Rotate(const double posX, const double posY, const int width, const int height)

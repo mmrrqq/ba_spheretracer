@@ -15,11 +15,11 @@ struct SceneLights
     std::vector<PointLight> pointLights;
 };
 
-struct Sphere
+struct alignas(16) Sphere
 {
-    int materialId;
-    float radius;
     glm::vec3 position;
+    float radius;
+    int materialId;
 };
 
 struct Torus
