@@ -15,6 +15,10 @@ public:
     {
         return eye_;
     };
+    glm::vec4 GetLookAt()
+    {
+        return lookAt_;
+    };
     glm::mat4 GetView()
     {
         return glm::lookAt(glm::vec3(eye_), glm::vec3(lookAt_), glm::vec3(up_));

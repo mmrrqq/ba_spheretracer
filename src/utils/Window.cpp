@@ -41,7 +41,7 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     glfwMakeContextCurrent(window_);
 
     // enable vsync
-    // glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_ALWAYS);

@@ -17,7 +17,8 @@ Spheremarcher::Spheremarcher(int width, int height)
       smooth_(false),
       sdfBoxSize_(SDFGenerator::B_128),
       sdfScaling_(0.01),
-      drawShadows_(true)
+      drawShadows_(true),
+      coneTracing_(true)
 {
 }
 
@@ -55,20 +56,20 @@ void Spheremarcher::initialize()
 
     materials.push_back(
         Material(
+            glm::vec3(0.1, 0.1, 0.0),
             glm::vec3(0.9, 0.9, 0.0),
-            glm::vec3(0.9, 0.9, 0.0),
-            glm::vec3(0.9, 0.9, 0.0),
+            glm::vec3(0.6, 0.6, 0.0),
             10.0f));
 
     materials.push_back(
         Material(
-            glm::vec3(0.05, 0.2, 0.0),
+            glm::vec3(0.01, 0.1, 0.0),
             glm::vec3(0.05, 0.2, 0.0),
             glm::vec3(0.05, 0.2, 0.0),
             10.0f));
 
     Sphere sphere1;
-    sphere1.position = glm::vec3(1.9, 0.5, 2.0);
+    sphere1.position = glm::vec3(0.5, 0.9, 1.2);
     sphere1.radius = 0.4f;
     sphere1.materialId = 1;
     Sphere sphere2;
@@ -86,17 +87,17 @@ void Spheremarcher::initialize()
     torus1.radius = 1;
     torus1.tubeRadius = 0.2;
 
-    // Torus torus2;
-    // torus2.position = glm::vec3(0.0, 4.0, 0.0);
-    // torus2.materialId = 0;
-    // torus2.radius = 1;
-    // torus2.tubeRadius = 0.2;
+    Torus torus2;
+    torus2.position = glm::vec3(0.0, 4.0, 0.0);
+    torus2.materialId = 0;
+    torus2.radius = 1;
+    torus2.tubeRadius = 0.2;
 
-    scene_.AddSphere(sphere1);
-    scene_.AddSphere(sphere2);
-    scene_.AddSphere(sphere3);
+    // scene_.AddSphere(sphere1);
+    // scene_.AddSphere(sphere2);
+    // scene_.AddSphere(sphere3);
 
-    scene_.AddTorus(torus1);
+    // scene_.AddTorus(torus1);
     // scene_.AddTorus(torus2);
 
     SceneLights lights;
@@ -121,8 +122,8 @@ void Spheremarcher::initialize()
     redLight.color = glm::vec3(0.5, 0.5, 0.0);
 
     lights.pointLights.push_back(whiteLight);
-    lights.pointLights.push_back(redLight);
-    lights.pointLights.push_back(blueLight);
+    // lights.pointLights.push_back(redLight);
+    // lights.pointLights.push_back(blueLight);
     // lights.pointLights.push_back(yellowLight);
     /////// END SCENE TEST SETUP
 
@@ -147,7 +148,7 @@ void Spheremarcher::initialize()
     screenShader_.SetUniform("UDrawShadows", drawShadows_);
     screenShader_.Unbind();
 
-    // generateSdField();
+    generateSdField();
 }
 
 void Spheremarcher::generateSdField()
@@ -260,7 +261,7 @@ void Spheremarcher::drawImguiWindow()
             generateSdField();
         }
 
-        if (ImGui::SliderFloat("field scaling", &sdfScaling_, 0.001, 1.0))
+        if (ImGui::SliderFloat("field scaling", &sdfScaling_, 0.001, 0.2))
         {
             screenShader_.SetUniform("USDField.dimensions", glm::vec3(sdfScaling_ * sdfBoxSize_));
         }
@@ -299,7 +300,11 @@ void Spheremarcher::drawImguiWindow()
         if (ImGui::Checkbox("draw shadows", &drawShadows_))
             screenShader_.SetUniform("UDrawShadows", drawShadows_);
 
+        ImGui::Checkbox("use cone tracing", &coneTracing_);
+
         ImGui::Text("frame time avg %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("eye position: (%.3f, %.3f, %.3f)", camera_.GetEye()[0], camera_.GetEye()[1], camera_.GetEye()[2]);
+        ImGui::Text("look at position: (%.3f, %.3f, %.3f)", camera_.GetLookAt()[0], camera_.GetLookAt()[1], camera_.GetLookAt()[2]);
         ImGui::End();
     }
     ImGui::Render();
@@ -314,51 +319,66 @@ void Spheremarcher::draw()
     glBindVertexArray(vao_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
 
-    firstPassBuffer_.Bind(true);
     screenShader_.Bind();
-    // screenShader_.SetUniform("UScene", scene_);
     // screenShader_.SetUniform("USDField", &sdField_, 0U);
     screenShader_.SetUniform("UMaxDrawDistance", drawDistance_);
     screenShader_.SetUniform("UNormalEpsilon", normalEpsilon_);
     screenShader_.SetUniform("UFovY", fovy_);
-    screenShader_.SetUniform("UMarchingSteps", 200);
     screenShader_.SetUniform("UInvView", glm::inverse(camera_.GetView()));
     screenShader_.SetUniform("UEyePosition", camera_.GetEye());
-    screenShader_.SetUniform("UImageDim", glm::vec2(firstPassBuffer_.GetWidth(), firstPassBuffer_.GetHeight()));
-    screenShader_.SetUniform("UUseDepthTexture", false);
-    screenShader_.SetUniform("UWriteColor", false);
     screenShader_.SetUniform("USmooth", smooth_);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    secondPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 100);
-    screenShader_.SetUniform("UUseDepthTexture", true);
-    screenShader_.SetUniform("UImageDim", glm::vec2(secondPassBuffer_.GetWidth(), secondPassBuffer_.GetHeight()));
-    screenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 0U);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    if (coneTracing_)
+    {
+        firstPassBuffer_.Bind(true);
+        screenShader_.SetUniform("UUseDepthTexture", false);
+        screenShader_.SetUniform("UMarchingSteps", 200);
+        screenShader_.SetUniform("UImageDim", glm::vec2(firstPassBuffer_.GetWidth(), firstPassBuffer_.GetHeight()));
+        screenShader_.SetUniform("UWriteColor", false);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    thirdPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 100);
-    screenShader_.SetUniform("UImageDim", glm::vec2(thirdPassBuffer_.GetWidth(), thirdPassBuffer_.GetHeight()));
-    screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+        secondPassBuffer_.Bind(true);
+        screenShader_.SetUniform("UMarchingSteps", 100);
+        screenShader_.SetUniform("UUseDepthTexture", true);
+        screenShader_.SetUniform("UImageDim", glm::vec2(secondPassBuffer_.GetWidth(), secondPassBuffer_.GetHeight()));
+        screenShader_.SetUniform("UDepthTexture", firstPassBuffer_.GetDepthTexture(), 0U);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    fourthPassBuffer_.Bind(true);
-    screenShader_.SetUniform("UMarchingSteps", 100);
-    screenShader_.SetUniform("UImageDim", glm::vec2(fourthPassBuffer_.GetWidth(), fourthPassBuffer_.GetHeight()));
-    screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+        thirdPassBuffer_.Bind(true);
+        screenShader_.SetUniform("UMarchingSteps", 100);
+        screenShader_.SetUniform("UImageDim", glm::vec2(thirdPassBuffer_.GetWidth(), thirdPassBuffer_.GetHeight()));
+        screenShader_.SetUniform("UDepthTexture", secondPassBuffer_.GetDepthTexture(), 0U);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    // DRAW TO SCREEN
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1920, 1080);
-    screenShader_.SetUniform("UWriteColor", true);
-    screenShader_.SetUniform("UMarchingSteps", 100);
-    screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
-    screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+        fourthPassBuffer_.Bind(true);
+        screenShader_.SetUniform("UMarchingSteps", 100);
+        screenShader_.SetUniform("UImageDim", glm::vec2(fourthPassBuffer_.GetWidth(), fourthPassBuffer_.GetHeight()));
+        screenShader_.SetUniform("UDepthTexture", thirdPassBuffer_.GetDepthTexture(), 0U);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // DRAW TO SCREEN
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, 1920, 1080);
+        screenShader_.SetUniform("UWriteColor", true);
+        screenShader_.SetUniform("UMarchingSteps", 100);
+        screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
+        screenShader_.SetUniform("UDepthTexture", fourthPassBuffer_.GetDepthTexture(), 0U);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+    else
+    {
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, 1920, 1080);
+        screenShader_.SetUniform("UUseDepthTexture", false);
+        screenShader_.SetUniform("UWriteColor", true);
+        screenShader_.SetUniform("UMarchingSteps", 200);
+        screenShader_.SetUniform("UImageDim", glm::vec2(1920, 1080));
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
     screenShader_.Unbind();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

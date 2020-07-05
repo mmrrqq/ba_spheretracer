@@ -652,33 +652,6 @@ src/utils/Material.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Material.cpp.s
 .PHONY : src/utils/Material.cpp.s
 
-src/utils/PrimitiveScene.o: src/utils/PrimitiveScene.cpp.o
-
-.PHONY : src/utils/PrimitiveScene.o
-
-# target to build an object file
-src/utils/PrimitiveScene.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/PrimitiveScene.cpp.o
-.PHONY : src/utils/PrimitiveScene.cpp.o
-
-src/utils/PrimitiveScene.i: src/utils/PrimitiveScene.cpp.i
-
-.PHONY : src/utils/PrimitiveScene.i
-
-# target to preprocess a source file
-src/utils/PrimitiveScene.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/PrimitiveScene.cpp.i
-.PHONY : src/utils/PrimitiveScene.cpp.i
-
-src/utils/PrimitiveScene.s: src/utils/PrimitiveScene.cpp.s
-
-.PHONY : src/utils/PrimitiveScene.s
-
-# target to generate assembly for a file
-src/utils/PrimitiveScene.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/PrimitiveScene.cpp.s
-.PHONY : src/utils/PrimitiveScene.cpp.s
-
 src/utils/SDFGenerator.o: src/utils/SDFGenerator.cpp.o
 
 .PHONY : src/utils/SDFGenerator.o
@@ -874,9 +847,6 @@ help:
 	@echo "... src/utils/Material.o"
 	@echo "... src/utils/Material.i"
 	@echo "... src/utils/Material.s"
-	@echo "... src/utils/PrimitiveScene.o"
-	@echo "... src/utils/PrimitiveScene.i"
-	@echo "... src/utils/PrimitiveScene.s"
 	@echo "... src/utils/SDFGenerator.o"
 	@echo "... src/utils/SDFGenerator.i"
 	@echo "... src/utils/SDFGenerator.s"

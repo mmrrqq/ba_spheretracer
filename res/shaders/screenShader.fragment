@@ -56,6 +56,7 @@ uniform float UMaxDrawDistance;
 uniform bool UUseDepthTexture;
 uniform bool UWriteColor;
 uniform bool USmooth;
+uniform bool UDrawShadows;
 
 uniform sampler2D UDepthTexture;
 
@@ -219,6 +220,7 @@ float distanceToScene(vec3 position)
     vec3 rep = vec3(10.0, 1000.0, 10.0);
     
     // res = minFn(res, distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep));
+    res = minFn(res, distanceToField(USDField, position));
 
     res = minFn(res, distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position));
 
@@ -250,9 +252,10 @@ vec4 distanceToSceneColor(vec3 position)
         float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
         res = minColorFn(res, d, torus.materialId);             
     }
-    vec3 rep = vec3(10.0, 1000.0, 10.0);
+    // vec3 rep = vec3(10.0, 1000.0, 10.0);
 
-    float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
+    // float fieldDistance = distanceToField(USDField, mod(position + 0.5 * rep, rep) - 0.5 * rep);    
+    float fieldDistance = distanceToField(USDField, position);    
     res = minColorFn(res, fieldDistance, 0);
 
     float planeDistance = distanceToGroundPlane(vec3(0.0, -0.5, 0.0), vec4(0.0, 1.0, 0.0, 0.0), position);        
@@ -268,7 +271,6 @@ vec3 getRayDir()
     return  normalize(vec3(uv, -1));                
 }
 
-// http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/#surface-normals-and-lighting
 vec3 getNormal(vec3 position)
 {
     vec2 epsilon = vec2(UNormalEpsilon, 0.0);    
@@ -320,9 +322,10 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
         PointLight light = ULights.pointLights[i];
         phongColor += material.ambientColor * light.color;
         vec3 lightDir = normalize(light.position - position);
-        float diffuseContribution = dot(normal, lightDir);    
-        // float shadow = 1.0;
-        float shadow = getPointLightShadowFactor(position, light.position, light.size);        
+        float diffuseContribution = dot(normal, lightDir);            
+        float shadow = 1.0;
+        if (UDrawShadows)
+            shadow = getPointLightShadowFactor(position, light.position, light.size);        
 
         if (shadow < 0.01 || diffuseContribution < 0.0)    
             continue;        

@@ -34,20 +34,17 @@ struct alignas(16) Torus
 class PrimitiveScene
 {
 public:
-    PrimitiveScene();
-    ~PrimitiveScene();
+    PrimitiveScene() = default;
+    ~PrimitiveScene() = default;
     inline void AddSphere(Sphere sphere)
     {
         Spheres.push_back(sphere);
-        NumSpheres++;
     };
     inline void AddTorus(Torus torus)
     {
         Tori.push_back(torus);
-        NumTori++;
     };
-    int NumSpheres;
-    int NumTori;
+
     std::vector<Sphere> Spheres;
     std::vector<Torus> Tori;
 };
