@@ -212,58 +212,6 @@ Spheremarcher/fast:
 .PHONY : Spheremarcher/fast
 
 #=============================================================================
-# Target rules for targets named uninstall
-
-# Build rule for target.
-uninstall: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
-.PHONY : uninstall
-
-# fast build rule for target.
-uninstall/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build.make dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build
-.PHONY : uninstall/fast
-
-#=============================================================================
-# Target rules for targets named glew_s
-
-# Build rule for target.
-glew_s: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew_s
-.PHONY : glew_s
-
-# fast build rule for target.
-glew_s/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build
-.PHONY : glew_s/fast
-
-#=============================================================================
-# Target rules for targets named glew
-
-# Build rule for target.
-glew: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew
-.PHONY : glew
-
-# fast build rule for target.
-glew/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/build
-.PHONY : glew/fast
-
-#=============================================================================
-# Target rules for targets named glfw
-
-# Build rule for target.
-glfw: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glfw
-.PHONY : glfw
-
-# fast build rule for target.
-glfw/fast:
-	$(MAKE) $(MAKESILENT) -f dependency/glfw/src/CMakeFiles/glfw.dir/build.make dependency/glfw/src/CMakeFiles/glfw.dir/build
-.PHONY : glfw/fast
-
-#=============================================================================
 # Target rules for targets named docs
 
 # Build rule for target.
@@ -290,6 +238,32 @@ doxygen/fast:
 .PHONY : doxygen/fast
 
 #=============================================================================
+# Target rules for targets named uninstall
+
+# Build rule for target.
+uninstall: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
+.PHONY : uninstall
+
+# fast build rule for target.
+uninstall/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/CMakeFiles/uninstall.dir/build.make dependency/pmp-library/CMakeFiles/uninstall.dir/build
+.PHONY : uninstall/fast
+
+#=============================================================================
+# Target rules for targets named glew
+
+# Build rule for target.
+glew: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glew
+.PHONY : glew
+
+# fast build rule for target.
+glew/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/CMakeFiles/glew.dir/build.make dependency/pmp-library/CMakeFiles/glew.dir/build
+.PHONY : glew/fast
+
+#=============================================================================
 # Target rules for targets named stb_image
 
 # Build rule for target.
@@ -301,6 +275,32 @@ stb_image: cmake_check_build_system
 stb_image/fast:
 	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/external/stb_image/CMakeFiles/stb_image.dir/build.make dependency/pmp-library/external/stb_image/CMakeFiles/stb_image.dir/build
 .PHONY : stb_image/fast
+
+#=============================================================================
+# Target rules for targets named glfw
+
+# Build rule for target.
+glfw: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 glfw
+.PHONY : glfw
+
+# fast build rule for target.
+glfw/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/external/glew/src/CMakeFiles/glfw.dir/build.make dependency/pmp-library/external/glew/src/CMakeFiles/glfw.dir/build
+.PHONY : glfw/fast
+
+#=============================================================================
+# Target rules for targets named imgui
+
+# Build rule for target.
+imgui: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 imgui
+.PHONY : imgui
+
+# fast build rule for target.
+imgui/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/external/imgui/CMakeFiles/imgui.dir/build.make dependency/pmp-library/external/imgui/CMakeFiles/imgui.dir/build
+.PHONY : imgui/fast
 
 #=============================================================================
 # Target rules for targets named rply
@@ -328,167 +328,180 @@ pmp/fast:
 	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build.make dependency/pmp-library/src/pmp/CMakeFiles/pmp.dir/build
 .PHONY : pmp/fast
 
-dependency/imgui/imgui.o: dependency/imgui/imgui.cpp.o
+#=============================================================================
+# Target rules for targets named pmp_vis
 
-.PHONY : dependency/imgui/imgui.o
+# Build rule for target.
+pmp_vis: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 pmp_vis
+.PHONY : pmp_vis
 
-# target to build an object file
-dependency/imgui/imgui.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui.cpp.o
-.PHONY : dependency/imgui/imgui.cpp.o
+# fast build rule for target.
+pmp_vis/fast:
+	$(MAKE) $(MAKESILENT) -f dependency/pmp-library/src/pmp/visualization/CMakeFiles/pmp_vis.dir/build.make dependency/pmp-library/src/pmp/visualization/CMakeFiles/pmp_vis.dir/build
+.PHONY : pmp_vis/fast
 
-dependency/imgui/imgui.i: dependency/imgui/imgui.cpp.i
+dependency/pmp-library/external/imgui/imgui.o: dependency/pmp-library/external/imgui/imgui.cpp.o
 
-.PHONY : dependency/imgui/imgui.i
-
-# target to preprocess a source file
-dependency/imgui/imgui.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui.cpp.i
-.PHONY : dependency/imgui/imgui.cpp.i
-
-dependency/imgui/imgui.s: dependency/imgui/imgui.cpp.s
-
-.PHONY : dependency/imgui/imgui.s
-
-# target to generate assembly for a file
-dependency/imgui/imgui.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui.cpp.s
-.PHONY : dependency/imgui/imgui.cpp.s
-
-dependency/imgui/imgui_demo.o: dependency/imgui/imgui_demo.cpp.o
-
-.PHONY : dependency/imgui/imgui_demo.o
+.PHONY : dependency/pmp-library/external/imgui/imgui.o
 
 # target to build an object file
-dependency/imgui/imgui_demo.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_demo.cpp.o
-.PHONY : dependency/imgui/imgui_demo.cpp.o
+dependency/pmp-library/external/imgui/imgui.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui.cpp.o
 
-dependency/imgui/imgui_demo.i: dependency/imgui/imgui_demo.cpp.i
+dependency/pmp-library/external/imgui/imgui.i: dependency/pmp-library/external/imgui/imgui.cpp.i
 
-.PHONY : dependency/imgui/imgui_demo.i
+.PHONY : dependency/pmp-library/external/imgui/imgui.i
 
 # target to preprocess a source file
-dependency/imgui/imgui_demo.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_demo.cpp.i
-.PHONY : dependency/imgui/imgui_demo.cpp.i
+dependency/pmp-library/external/imgui/imgui.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui.cpp.i
 
-dependency/imgui/imgui_demo.s: dependency/imgui/imgui_demo.cpp.s
+dependency/pmp-library/external/imgui/imgui.s: dependency/pmp-library/external/imgui/imgui.cpp.s
 
-.PHONY : dependency/imgui/imgui_demo.s
+.PHONY : dependency/pmp-library/external/imgui/imgui.s
 
 # target to generate assembly for a file
-dependency/imgui/imgui_demo.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_demo.cpp.s
-.PHONY : dependency/imgui/imgui_demo.cpp.s
+dependency/pmp-library/external/imgui/imgui.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui.cpp.s
 
-dependency/imgui/imgui_draw.o: dependency/imgui/imgui_draw.cpp.o
+dependency/pmp-library/external/imgui/imgui_demo.o: dependency/pmp-library/external/imgui/imgui_demo.cpp.o
 
-.PHONY : dependency/imgui/imgui_draw.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.o
 
 # target to build an object file
-dependency/imgui/imgui_draw.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_draw.cpp.o
-.PHONY : dependency/imgui/imgui_draw.cpp.o
+dependency/pmp-library/external/imgui/imgui_demo.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_demo.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.cpp.o
 
-dependency/imgui/imgui_draw.i: dependency/imgui/imgui_draw.cpp.i
+dependency/pmp-library/external/imgui/imgui_demo.i: dependency/pmp-library/external/imgui/imgui_demo.cpp.i
 
-.PHONY : dependency/imgui/imgui_draw.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.i
 
 # target to preprocess a source file
-dependency/imgui/imgui_draw.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_draw.cpp.i
-.PHONY : dependency/imgui/imgui_draw.cpp.i
+dependency/pmp-library/external/imgui/imgui_demo.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_demo.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.cpp.i
 
-dependency/imgui/imgui_draw.s: dependency/imgui/imgui_draw.cpp.s
+dependency/pmp-library/external/imgui/imgui_demo.s: dependency/pmp-library/external/imgui/imgui_demo.cpp.s
 
-.PHONY : dependency/imgui/imgui_draw.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.s
 
 # target to generate assembly for a file
-dependency/imgui/imgui_draw.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_draw.cpp.s
-.PHONY : dependency/imgui/imgui_draw.cpp.s
+dependency/pmp-library/external/imgui/imgui_demo.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_demo.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_demo.cpp.s
 
-dependency/imgui/imgui_impl_glfw.o: dependency/imgui/imgui_impl_glfw.cpp.o
+dependency/pmp-library/external/imgui/imgui_draw.o: dependency/pmp-library/external/imgui/imgui_draw.cpp.o
 
-.PHONY : dependency/imgui/imgui_impl_glfw.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.o
 
 # target to build an object file
-dependency/imgui/imgui_impl_glfw.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_glfw.cpp.o
-.PHONY : dependency/imgui/imgui_impl_glfw.cpp.o
+dependency/pmp-library/external/imgui/imgui_draw.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_draw.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.cpp.o
 
-dependency/imgui/imgui_impl_glfw.i: dependency/imgui/imgui_impl_glfw.cpp.i
+dependency/pmp-library/external/imgui/imgui_draw.i: dependency/pmp-library/external/imgui/imgui_draw.cpp.i
 
-.PHONY : dependency/imgui/imgui_impl_glfw.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.i
 
 # target to preprocess a source file
-dependency/imgui/imgui_impl_glfw.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_glfw.cpp.i
-.PHONY : dependency/imgui/imgui_impl_glfw.cpp.i
+dependency/pmp-library/external/imgui/imgui_draw.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_draw.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.cpp.i
 
-dependency/imgui/imgui_impl_glfw.s: dependency/imgui/imgui_impl_glfw.cpp.s
+dependency/pmp-library/external/imgui/imgui_draw.s: dependency/pmp-library/external/imgui/imgui_draw.cpp.s
 
-.PHONY : dependency/imgui/imgui_impl_glfw.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.s
 
 # target to generate assembly for a file
-dependency/imgui/imgui_impl_glfw.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_glfw.cpp.s
-.PHONY : dependency/imgui/imgui_impl_glfw.cpp.s
+dependency/pmp-library/external/imgui/imgui_draw.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_draw.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_draw.cpp.s
 
-dependency/imgui/imgui_impl_opengl3.o: dependency/imgui/imgui_impl_opengl3.cpp.o
+dependency/pmp-library/external/imgui/imgui_impl_glfw.o: dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.o
 
-.PHONY : dependency/imgui/imgui_impl_opengl3.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.o
 
 # target to build an object file
-dependency/imgui/imgui_impl_opengl3.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_opengl3.cpp.o
-.PHONY : dependency/imgui/imgui_impl_opengl3.cpp.o
+dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.o
 
-dependency/imgui/imgui_impl_opengl3.i: dependency/imgui/imgui_impl_opengl3.cpp.i
+dependency/pmp-library/external/imgui/imgui_impl_glfw.i: dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.i
 
-.PHONY : dependency/imgui/imgui_impl_opengl3.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.i
 
 # target to preprocess a source file
-dependency/imgui/imgui_impl_opengl3.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_opengl3.cpp.i
-.PHONY : dependency/imgui/imgui_impl_opengl3.cpp.i
+dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.i
 
-dependency/imgui/imgui_impl_opengl3.s: dependency/imgui/imgui_impl_opengl3.cpp.s
+dependency/pmp-library/external/imgui/imgui_impl_glfw.s: dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.s
 
-.PHONY : dependency/imgui/imgui_impl_opengl3.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.s
 
 # target to generate assembly for a file
-dependency/imgui/imgui_impl_opengl3.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_impl_opengl3.cpp.s
-.PHONY : dependency/imgui/imgui_impl_opengl3.cpp.s
+dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_glfw.cpp.s
 
-dependency/imgui/imgui_widgets.o: dependency/imgui/imgui_widgets.cpp.o
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.o: dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.o
 
-.PHONY : dependency/imgui/imgui_widgets.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.o
 
 # target to build an object file
-dependency/imgui/imgui_widgets.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_widgets.cpp.o
-.PHONY : dependency/imgui/imgui_widgets.cpp.o
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.o
 
-dependency/imgui/imgui_widgets.i: dependency/imgui/imgui_widgets.cpp.i
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.i: dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.i
 
-.PHONY : dependency/imgui/imgui_widgets.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.i
 
 # target to preprocess a source file
-dependency/imgui/imgui_widgets.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_widgets.cpp.i
-.PHONY : dependency/imgui/imgui_widgets.cpp.i
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.i
 
-dependency/imgui/imgui_widgets.s: dependency/imgui/imgui_widgets.cpp.s
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.s: dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.s
 
-.PHONY : dependency/imgui/imgui_widgets.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.s
 
 # target to generate assembly for a file
-dependency/imgui/imgui_widgets.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/imgui/imgui_widgets.cpp.s
-.PHONY : dependency/imgui/imgui_widgets.cpp.s
+dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_impl_opengl3.cpp.s
+
+dependency/pmp-library/external/imgui/imgui_widgets.o: dependency/pmp-library/external/imgui/imgui_widgets.cpp.o
+
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.o
+
+# target to build an object file
+dependency/pmp-library/external/imgui/imgui_widgets.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_widgets.cpp.o
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.cpp.o
+
+dependency/pmp-library/external/imgui/imgui_widgets.i: dependency/pmp-library/external/imgui/imgui_widgets.cpp.i
+
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.i
+
+# target to preprocess a source file
+dependency/pmp-library/external/imgui/imgui_widgets.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_widgets.cpp.i
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.cpp.i
+
+dependency/pmp-library/external/imgui/imgui_widgets.s: dependency/pmp-library/external/imgui/imgui_widgets.cpp.s
+
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.s
+
+# target to generate assembly for a file
+dependency/pmp-library/external/imgui/imgui_widgets.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/dependency/pmp-library/external/imgui/imgui_widgets.cpp.s
+.PHONY : dependency/pmp-library/external/imgui/imgui_widgets.cpp.s
 
 src/Spheremarcher.o: src/Spheremarcher.cpp.o
 
@@ -806,29 +819,30 @@ help:
 	@echo "... uninstall"
 	@echo "... Spheremarcher"
 	@echo "... glew"
-	@echo "... glew_s"
 	@echo "... glfw"
+	@echo "... imgui"
 	@echo "... pmp"
+	@echo "... pmp_vis"
 	@echo "... rply"
 	@echo "... stb_image"
-	@echo "... dependency/imgui/imgui.o"
-	@echo "... dependency/imgui/imgui.i"
-	@echo "... dependency/imgui/imgui.s"
-	@echo "... dependency/imgui/imgui_demo.o"
-	@echo "... dependency/imgui/imgui_demo.i"
-	@echo "... dependency/imgui/imgui_demo.s"
-	@echo "... dependency/imgui/imgui_draw.o"
-	@echo "... dependency/imgui/imgui_draw.i"
-	@echo "... dependency/imgui/imgui_draw.s"
-	@echo "... dependency/imgui/imgui_impl_glfw.o"
-	@echo "... dependency/imgui/imgui_impl_glfw.i"
-	@echo "... dependency/imgui/imgui_impl_glfw.s"
-	@echo "... dependency/imgui/imgui_impl_opengl3.o"
-	@echo "... dependency/imgui/imgui_impl_opengl3.i"
-	@echo "... dependency/imgui/imgui_impl_opengl3.s"
-	@echo "... dependency/imgui/imgui_widgets.o"
-	@echo "... dependency/imgui/imgui_widgets.i"
-	@echo "... dependency/imgui/imgui_widgets.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui_demo.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui_demo.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui_demo.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui_draw.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui_draw.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui_draw.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_glfw.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_glfw.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_glfw.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_opengl3.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_opengl3.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui_impl_opengl3.s"
+	@echo "... dependency/pmp-library/external/imgui/imgui_widgets.o"
+	@echo "... dependency/pmp-library/external/imgui/imgui_widgets.i"
+	@echo "... dependency/pmp-library/external/imgui/imgui_widgets.s"
 	@echo "... src/Spheremarcher.o"
 	@echo "... src/Spheremarcher.i"
 	@echo "... src/Spheremarcher.s"

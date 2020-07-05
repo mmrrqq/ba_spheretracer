@@ -1,0 +1,4 @@
+[submodule "dependency/pmp-library"]
+	path = dependency/pmp-library
+	url = git@github.com:pmp-library/pmp-library.git
+	ignore = all
