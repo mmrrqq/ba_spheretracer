@@ -100,32 +100,22 @@ float udTriangle(vec3 p, Triangle triangle)
   );
 }
 
-void main() {  
-  memoryBarrier();
-  barrier();
-  // get index in global work group i.e x,y position    
+void main() {      
   ivec3 voxelCoords = ivec3(gl_GlobalInvocationID.xyz);
-
   ivec3 imgSize = ivec3(gl_NumWorkGroups * gl_WorkGroupSize);
 
   if (voxelCoords.x >= imgSize.x || voxelCoords.y >= imgSize.y || voxelCoords.z >= imgSize.z) {    
     return;
-  }  
-
-  int id = voxelCoords.x + imgSize.y * (voxelCoords.y + imgSize.z * voxelCoords.z);
-
-  //get distance to object
+  }    
+  
   float depth = 1000.0;  
   bool inside = false;
   vec3 rayDirection = normalize(vec3(0.0, 1.0, 0.0));
 
   for (int i = 0; i < triangles.length(); i++)
   {
-    Triangle triangle = triangles[i];    
-        
-    float tempDepth = udTriangle(voxelCoords, triangle);
-    if (tempDepth < depth)
-      depth = tempDepth;
+    Triangle triangle = triangles[i];                
+    depth = min(depth, udTriangle(voxelCoords, triangle));
 
     if (intersectTriangle(triangle, voxelCoords, rayDirection))
       inside = !inside;
@@ -134,11 +124,5 @@ void main() {
   if (inside)
     depth = -depth;    
 
-  memoryBarrier();
-  barrier();
-
-  imageStore(outTex, voxelCoords, vec4(depth, 0, 0, 0));      
-
-  memoryBarrier();
-  barrier();
+  imageStore(outTex, voxelCoords, vec4(depth, 0, 0, 0));
 }

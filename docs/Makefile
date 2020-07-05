@@ -168,14 +168,14 @@ package/fast: package
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/markus/dev/ba_spheremarcher && $(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/ba_spheremarcher/CMakeFiles /home/markus/dev/ba_spheremarcher/dependency/glew/build/cmake/CMakeFiles/progress.marks
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/all
+	cd /home/markus/dev/ba_spheremarcher && $(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/ba_spheremarcher/CMakeFiles /home/markus/dev/ba_spheremarcher/docs/CMakeFiles/progress.marks
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/markus/dev/ba_spheremarcher/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/clean
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/clean
 .PHONY : clean
 
 # The main clean target
@@ -185,12 +185,12 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/preinstall
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/preinstall
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
@@ -199,79 +199,34 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-dependency/glew/build/cmake/CMakeFiles/uninstall.dir/rule:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/CMakeFiles/uninstall.dir/rule
-.PHONY : dependency/glew/build/cmake/CMakeFiles/uninstall.dir/rule
+docs/CMakeFiles/docs.dir/rule:
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/CMakeFiles/docs.dir/rule
+.PHONY : docs/CMakeFiles/docs.dir/rule
 
 # Convenience name for target.
-uninstall: dependency/glew/build/cmake/CMakeFiles/uninstall.dir/rule
+docs: docs/CMakeFiles/docs.dir/rule
 
-.PHONY : uninstall
+.PHONY : docs
 
 # fast build rule for target.
-uninstall/fast:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build.make dependency/glew/build/cmake/CMakeFiles/uninstall.dir/build
-.PHONY : uninstall/fast
+docs/fast:
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f docs/CMakeFiles/docs.dir/build.make docs/CMakeFiles/docs.dir/build
+.PHONY : docs/fast
 
 # Convenience name for target.
-dependency/glew/build/cmake/CMakeFiles/glew_s.dir/rule:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/CMakeFiles/glew_s.dir/rule
-.PHONY : dependency/glew/build/cmake/CMakeFiles/glew_s.dir/rule
+docs/CMakeFiles/doxygen.dir/rule:
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 docs/CMakeFiles/doxygen.dir/rule
+.PHONY : docs/CMakeFiles/doxygen.dir/rule
 
 # Convenience name for target.
-glew_s: dependency/glew/build/cmake/CMakeFiles/glew_s.dir/rule
+doxygen: docs/CMakeFiles/doxygen.dir/rule
 
-.PHONY : glew_s
+.PHONY : doxygen
 
 # fast build rule for target.
-glew_s/fast:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build
-.PHONY : glew_s/fast
-
-# Convenience name for target.
-dependency/glew/build/cmake/CMakeFiles/glew.dir/rule:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dependency/glew/build/cmake/CMakeFiles/glew.dir/rule
-.PHONY : dependency/glew/build/cmake/CMakeFiles/glew.dir/rule
-
-# Convenience name for target.
-glew: dependency/glew/build/cmake/CMakeFiles/glew.dir/rule
-
-.PHONY : glew
-
-# fast build rule for target.
-glew/fast:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/build
-.PHONY : glew/fast
-
-__/__/src/glew.o: __/__/src/glew.c.o
-
-.PHONY : __/__/src/glew.o
-
-# target to build an object file
-__/__/src/glew.c.o:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/__/__/src/glew.c.o
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/__/__/src/glew.c.o
-.PHONY : __/__/src/glew.c.o
-
-__/__/src/glew.i: __/__/src/glew.c.i
-
-.PHONY : __/__/src/glew.i
-
-# target to preprocess a source file
-__/__/src/glew.c.i:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/__/__/src/glew.c.i
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/__/__/src/glew.c.i
-.PHONY : __/__/src/glew.c.i
-
-__/__/src/glew.s: __/__/src/glew.c.s
-
-.PHONY : __/__/src/glew.s
-
-# target to generate assembly for a file
-__/__/src/glew.c.s:
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew_s.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew_s.dir/__/__/src/glew.c.s
-	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f dependency/glew/build/cmake/CMakeFiles/glew.dir/build.make dependency/glew/build/cmake/CMakeFiles/glew.dir/__/__/src/glew.c.s
-.PHONY : __/__/src/glew.c.s
+doxygen/fast:
+	cd /home/markus/dev/ba_spheremarcher && $(MAKE) $(MAKESILENT) -f docs/CMakeFiles/doxygen.dir/build.make docs/CMakeFiles/doxygen.dir/build
+.PHONY : doxygen/fast
 
 # Help Target
 help:
@@ -287,12 +242,8 @@ help:
 	@echo "... package"
 	@echo "... package_source"
 	@echo "... rebuild_cache"
-	@echo "... uninstall"
-	@echo "... glew"
-	@echo "... glew_s"
-	@echo "... __/__/src/glew.o"
-	@echo "... __/__/src/glew.i"
-	@echo "... __/__/src/glew.s"
+	@echo "... docs"
+	@echo "... doxygen"
 .PHONY : help
 
 

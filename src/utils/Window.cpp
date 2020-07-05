@@ -21,13 +21,12 @@ Window::Window(const char *title, int width, int height) : width_(width), height
         exit(EXIT_FAILURE);
     }
 
-    // request core profile and OpenGL version 3.2
+    // request core profile and OpenGL version 4.5
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     // glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    // TODO: am I allowed to request 4.3? error callback got introduced there..
 
     // try to create window
     window_ = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -42,7 +41,7 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     glfwMakeContextCurrent(window_);
 
     // enable vsync
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_ALWAYS);

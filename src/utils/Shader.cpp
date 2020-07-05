@@ -232,33 +232,6 @@ void Shader::SetUniform(const char *name, const glm::mat4 &mat)
     glUniformMatrix4fv(getUniformLocation(name), 1, false, &mat[0][0]);
 }
 
-void Shader::SetUniform(const std::string name, const PrimitiveScene &scene)
-{
-    glUniform1i(getUniformLocation(name + ".numSpheres"), scene.NumSpheres);
-    glUniform1i(getUniformLocation(name + ".numTori"), scene.NumTori);
-
-    for (int i = 0; i < scene.NumSpheres; i++)
-    {
-        Sphere sphere = scene.Spheres[i];
-        glUniform1i(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].materialId"), sphere.materialId);
-        glUniform1f(getUniformLocation(name + ".spheres[" + std::to_string(i) + "].radius"), sphere.radius);
-        glUniform3f(
-            getUniformLocation(name + ".spheres[" + std::to_string(i) + "].position"),
-            sphere.position[0], sphere.position[1], sphere.position[2]);
-    }
-
-    for (int i = 0; i < scene.NumTori; i++)
-    {
-        Torus torus = scene.Tori[i];
-        glUniform1i(getUniformLocation(name + ".tori[" + std::to_string(i) + "].materialId"), torus.materialId);
-        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].radius"), torus.radius);
-        glUniform1f(getUniformLocation(name + ".tori[" + std::to_string(i) + "].tubeRadius"), torus.tubeRadius);
-        glUniform3f(
-            getUniformLocation(name + ".tori[" + std::to_string(i) + "].position"),
-            torus.position[0], torus.position[1], torus.position[2]);
-    }
-}
-
 void Shader::SetUniform(const std::string name, const SceneLights lights)
 {
     glUniform1i(getUniformLocation(name + ".numPointLights"), (int)lights.pointLights.size());

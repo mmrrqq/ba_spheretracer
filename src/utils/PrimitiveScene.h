@@ -15,38 +15,36 @@ struct SceneLights
     std::vector<PointLight> pointLights;
 };
 
-struct Sphere
+// align as 16 byte for ssbo
+struct alignas(16) Sphere
 {
-    int materialId;
-    float radius;
     glm::vec3 position;
+    float radius;
+    int materialId;
 };
 
-struct Torus
+struct alignas(16) Torus
 {
-    int materialId;
     glm::vec3 position;
     float radius;
     float tubeRadius;
+    int materialId;
 };
 
 class PrimitiveScene
 {
 public:
-    PrimitiveScene();
-    ~PrimitiveScene();
+    PrimitiveScene() = default;
+    ~PrimitiveScene() = default;
     inline void AddSphere(Sphere sphere)
     {
         Spheres.push_back(sphere);
-        NumSpheres++;
     };
     inline void AddTorus(Torus torus)
     {
         Tori.push_back(torus);
-        NumTori++;
     };
-    int NumSpheres;
-    int NumTori;
+
     std::vector<Sphere> Spheres;
     std::vector<Torus> Tori;
 };
