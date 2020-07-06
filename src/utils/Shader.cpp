@@ -232,40 +232,6 @@ void Shader::SetUniform(const char *name, const glm::mat4 &mat)
     glUniformMatrix4fv(getUniformLocation(name), 1, false, &mat[0][0]);
 }
 
-void Shader::SetUniform(const std::string name, const SceneLights lights)
-{
-    glUniform1i(getUniformLocation(name + ".numPointLights"), (int)lights.pointLights.size());
-    for (int i = 0; i < lights.pointLights.size(); i++)
-    {
-        PointLight light = lights.pointLights[i];
-        glUniform1f(getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].size"), light.size);
-        glUniform3f(
-            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].color"),
-            light.color[0], light.color[1], light.color[2]);
-        glUniform3f(
-            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].position"),
-            light.position[0], light.position[1], light.position[2]);
-    }
-}
-
-void Shader::SetUniform(const std::string name, const std::vector<Material> &materials)
-{
-    for (int i = 0; i < materials.size(); i++)
-    {
-        Material material = materials[i];
-        glUniform1f(getUniformLocation(name + "[" + std::to_string(i) + "].shininess"), material.Shininess);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].ambientColor"),
-            material.AmbientColor[0], material.AmbientColor[1], material.AmbientColor[2]);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].diffuseColor"),
-            material.DiffuseColor[0], material.DiffuseColor[1], material.DiffuseColor[2]);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].specularColor"),
-            material.SpecularColor[0], material.SpecularColor[1], material.SpecularColor[2]);
-    }
-}
-
 void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
 {
     texture.Bind(slot);
@@ -281,6 +247,7 @@ void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int t
 }
 
 // TODO: to Buffer class
+// TODO: to named buffer
 void Shader::SetBuffer(unsigned int slot, float size, void *data)
 {
     unsigned int ssbo;

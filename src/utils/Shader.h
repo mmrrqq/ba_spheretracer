@@ -10,7 +10,6 @@
 //=============================================================================
 
 #include "PrimitiveScene.h"
-#include "Material.h"
 #include "TextureSampler.h"
 #include "SDField.h"
 
@@ -77,10 +76,7 @@ public:
     /// \param name string of the uniform name
     /// \param mat the value for the uniform
     void SetUniform(const char *name, const glm::mat4 &mat);
-    /// upload PrimitiveScene uniform
-    /// \param name string of the uniform name
-    /// \param scene the value for the uniform
-    void SetUniform(const std::string, const PrimitiveScene &scene);
+
     /// upload Materials vector uniform
     /// \param name string of the uniform name
     /// \param materials the value for the uniform
@@ -91,16 +87,12 @@ public:
     /// \param texture the value for the uniform
     void SetUniform(const std::string, TextureSampler &texture, unsigned int slot);
 
-    /// upload scene lights struct uniform
-    /// \param name string of the uniform name
-    /// \param lights the value for the uniform
-    void SetUniform(const std::string name, const SceneLights lights);
-
     /// upload sd field struct uniform
     /// \param name string of the uniform name
     /// \param sdField the value for the uniform
     void SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot);
 
+    /// set ssbo
     void SetBuffer(unsigned int slot, float size, void *data);
 
 private:

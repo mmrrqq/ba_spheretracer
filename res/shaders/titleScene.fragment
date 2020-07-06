@@ -1,50 +1,32 @@
-#version 410 core
-#define MAX_OBJECTS 10
-#define MAX_MATERIALS 5
-#define MAX_LIGHTS 5
-#define UNumLights 2
-struct PointLight
+#version 430 core
+struct AreaLight
 {
-    vec3 position;
-    vec3 color;
+    vec4 position;
+    vec4 color;
     float size;
 };
 
 struct Sphere 
 {
+    vec4 position;
+    float radius;    
     int materialId;
-    vec3 position;
-    float radius;        
 };
 
 struct Torus
 {
-    int materialId;
-    vec3 position;
+    vec4 position;
     float radius;
     float tubeRadius;
+    int materialId;
 };
 
 struct Material
 {
-    vec3 ambientColor;    
-    vec3 diffuseColor;
-    vec3 specularColor;
+    vec4 ambientColor;    
+    vec4 diffuseColor;
+    vec4 specularColor;
     float shininess;
-};
-
-struct PrimitiveScene 
-{
-    Sphere spheres[MAX_OBJECTS];
-    Torus tori[MAX_OBJECTS];        
-    int numSpheres;
-    int numTori;
-};
-
-struct SceneLights
-{
-    PointLight pointLights[MAX_LIGHTS];
-    int numPointLights;
 };
 
 struct SDField
@@ -64,14 +46,29 @@ uniform float UMaxDrawDistance;
 uniform bool UUseDepthTexture;
 uniform bool UWriteColor;
 uniform bool USmooth;
+uniform bool UDrawShadows;
 
 uniform sampler2D UDepthTexture;
 
-uniform PrimitiveScene UScene;
-uniform SceneLights ULights;
-uniform Material UMaterials[MAX_MATERIALS];
 uniform mat4 UInvView;
 uniform SDField USDField;
+
+layout(std430, binding = 3) readonly buffer inSpheres
+{
+  Sphere spheres[];
+};
+layout(std430, binding = 4) readonly buffer inTori
+{
+  Torus tori[];
+};
+layout(std430, binding = 5) readonly buffer inLights
+{
+    AreaLight areaLights[];
+};
+layout(std430, binding = 6) readonly buffer inMaterials
+{
+    Material materials[];
+};
 
 in vec2 TexCoords;
 out vec4 color;
@@ -176,8 +173,8 @@ vec4 smoothColorMin(vec4 distMatColor, vec2 distMat, float k)
     vec4 minVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMat.x, distMatColor.x));
     vec4 maxVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMatColor.x, distMat.x));
 
-    vec3 minDiffCol = minVec.z < 0 ? UMaterials[int(minVec.y)].diffuseColor : minVec.yzw;
-    vec3 maxDiffCol = maxVec.z < 0 ? UMaterials[int(maxVec.y)].diffuseColor : maxVec.yzw;
+    vec3 minDiffCol = minVec.z < 0 ? materials[int(minVec.y)].diffuseColor.xyz : minVec.yzw;
+    vec3 maxDiffCol = maxVec.z < 0 ? materials[int(maxVec.y)].diffuseColor.xyz : maxVec.yzw;
 
     float h = max(k - abs(distMat.x - distMatColor.x), 0.0)/k;
     float dist = min(distMat.x, distMatColor.x) - h*h*k*(1.0/4.0);
@@ -208,16 +205,16 @@ float distanceToScene(vec3 position)
 {    
     float res = 1000;
     
-    for (int i = 0; i < UScene.numSpheres; i++)
+    for (int i = 0; i < spheres.length(); i++)
     {
-        Sphere sphere = UScene.spheres[i];
-        res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
+        Sphere sphere = spheres[i];
+        res = minFn(res, distanceToSphere(sphere.position.xyz, sphere.radius, position));                
     }    
 
-    for (int i = 0; i < UScene.numTori; i++)
+    for (int i = 0; i < tori.length(); i++)
     {
-        Torus torus = UScene.tori[i];        
-        res = minFn(res, distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position));             
+        Torus torus = tori[i];        
+        res = minFn(res, distanceToTorus(torus.position.xyz, torus.radius, torus.tubeRadius, position));             
     }
     vec3 rep = vec3(10.0, 1000.0, 20.0);
     
@@ -246,17 +243,17 @@ vec4 distanceToSceneColor(vec3 position)
 {
     vec4 res = vec4(1000, -1, -1, -1);
 
-    for (int i = 0; i < UScene.numSpheres; i++)
+    for (int i = 0; i < spheres.length(); i++)
     {
-        Sphere sphere = UScene.spheres[i];
-        float d = distanceToSphere(sphere.position, sphere.radius, position);        
+        Sphere sphere = spheres[i];
+        float d = distanceToSphere(sphere.position.xyz, sphere.radius, position);        
         res = minColorFn(res, d, sphere.materialId);
     }
 
-    for (int i = 0; i < UScene.numTori; i++)
+    for (int i = 0; i < tori.length(); i++)
     {
-        Torus torus = UScene.tori[i];
-        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        Torus torus = tori[i];
+        float d = distanceToTorus(torus.position.xyz, torus.radius, torus.tubeRadius, position);
         res = minColorFn(res, d, torus.materialId);             
     }
 
@@ -299,7 +296,7 @@ vec3 getNormal(vec3 position)
 }
 
 // https://www.shadertoy.com/view/WdyXRD
-float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
+float getAreaLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
 {
     vec3 lightVec = lightPosition - position;
     vec3 rayDir = normalize(lightVec); 
@@ -311,43 +308,46 @@ float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSi
         dist = distanceToScene(position + depth * rayDir);          
         minDist = min(0.5 + 0.5 * dist / (lightSize*depth), minDist);                                      
         
-        depth += clamp(dist, 0.05, 0.5);
-        if (depth > maxDist || minDist < 0.0001)
+        depth += clamp(dist, 0.05, 10.0);
+        if (depth > maxDist || minDist < 0.001)
             break;
     }        
-    return smoothstep(0.0, 1.0, minDist);             
+    return smoothstep(0.0, 1.0, minDist);     
 }
 
 vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 {   
     Material material;
     if (matCol.y < 0)     
-        material = UMaterials[int(matCol.x)];    
+        material = materials[int(matCol.x)];    
     else
-    {                
-        material.diffuseColor = matCol;    
-        material.specularColor = matCol * 0.8;    
-        material.ambientColor = matCol * 0.2;
+    {        
+        material.diffuseColor = vec4(matCol, 1);    
+        material.specularColor = vec4(matCol, 1) * 0.8;    
+        material.ambientColor = vec4(matCol, 1) * 0.2;  
+        material.shininess = 32.0;
     }
     
     vec3 phongColor = vec3(0.0, 0.0, 0.0);    
     
-    for (int i = 0; i < ULights.numPointLights; i++)
+    for (int i = 0; i < areaLights.length(); i++)
     {
-        PointLight light = ULights.pointLights[i];
-        phongColor += material.ambientColor * light.color;
-        vec3 lightDir = normalize(light.position - position);
+        AreaLight light = areaLights[i];
+        phongColor += (material.ambientColor * light.color).xyz;
+        vec3 lightDir = normalize(light.position.xyz - position);
         float diffuseContribution = dot(normal, lightDir);            
-        float shadow = getPointLightShadowFactor(position, light.position, light.size);        
+        float shadow = 1.0;
+        if (UDrawShadows)
+            shadow = getAreaLightShadowFactor(position, light.position.xyz, light.size);        
 
-        if (shadow < 0.01 || diffuseContribution < 0.0)    
+        if (shadow < 0.001 || diffuseContribution < 0.0)    
             continue;        
             
         vec3 reflected = reflect(lightDir, normal);
-        float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
+        float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), material.shininess);
                 
         phongColor += shadow * (diffuseContribution * material.diffuseColor * light.color
-            + specularContribution * material.specularColor * light.color);
+            + specularContribution * material.specularColor * light.color).xyz;
 
     }        
     
@@ -366,7 +366,6 @@ vec3 applyFog(vec3 color, float depth)
 vec4 traceDepth(vec4 rayDirection, float depth)
 {
     vec3 position;    
-    // WO ZUM GEIER KOMMT DIE 2
     float coneRadiusCoeff = 2 * tan(radians(UFovY / 2)) / UImageDim.y;
 
     for(int i = 0; i < UMarchingSteps; i++)

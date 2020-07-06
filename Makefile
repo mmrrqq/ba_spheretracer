@@ -557,33 +557,6 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
-src/utils/Application.o: src/utils/Application.cpp.o
-
-.PHONY : src/utils/Application.o
-
-# target to build an object file
-src/utils/Application.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Application.cpp.o
-.PHONY : src/utils/Application.cpp.o
-
-src/utils/Application.i: src/utils/Application.cpp.i
-
-.PHONY : src/utils/Application.i
-
-# target to preprocess a source file
-src/utils/Application.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Application.cpp.i
-.PHONY : src/utils/Application.cpp.i
-
-src/utils/Application.s: src/utils/Application.cpp.s
-
-.PHONY : src/utils/Application.s
-
-# target to generate assembly for a file
-src/utils/Application.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Application.cpp.s
-.PHONY : src/utils/Application.cpp.s
-
 src/utils/Camera.o: src/utils/Camera.cpp.o
 
 .PHONY : src/utils/Camera.o
@@ -637,33 +610,6 @@ src/utils/FrameBuffer.s: src/utils/FrameBuffer.cpp.s
 src/utils/FrameBuffer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/FrameBuffer.cpp.s
 .PHONY : src/utils/FrameBuffer.cpp.s
-
-src/utils/Material.o: src/utils/Material.cpp.o
-
-.PHONY : src/utils/Material.o
-
-# target to build an object file
-src/utils/Material.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Material.cpp.o
-.PHONY : src/utils/Material.cpp.o
-
-src/utils/Material.i: src/utils/Material.cpp.i
-
-.PHONY : src/utils/Material.i
-
-# target to preprocess a source file
-src/utils/Material.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Material.cpp.i
-.PHONY : src/utils/Material.cpp.i
-
-src/utils/Material.s: src/utils/Material.cpp.s
-
-.PHONY : src/utils/Material.s
-
-# target to generate assembly for a file
-src/utils/Material.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Spheremarcher.dir/build.make CMakeFiles/Spheremarcher.dir/src/utils/Material.cpp.s
-.PHONY : src/utils/Material.cpp.s
 
 src/utils/SDFGenerator.o: src/utils/SDFGenerator.cpp.o
 
@@ -849,18 +795,12 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
-	@echo "... src/utils/Application.o"
-	@echo "... src/utils/Application.i"
-	@echo "... src/utils/Application.s"
 	@echo "... src/utils/Camera.o"
 	@echo "... src/utils/Camera.i"
 	@echo "... src/utils/Camera.s"
 	@echo "... src/utils/FrameBuffer.o"
 	@echo "... src/utils/FrameBuffer.i"
 	@echo "... src/utils/FrameBuffer.s"
-	@echo "... src/utils/Material.o"
-	@echo "... src/utils/Material.i"
-	@echo "... src/utils/Material.s"
 	@echo "... src/utils/SDFGenerator.o"
 	@echo "... src/utils/SDFGenerator.i"
 	@echo "... src/utils/SDFGenerator.s"
