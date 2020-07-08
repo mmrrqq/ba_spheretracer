@@ -45,21 +45,13 @@ include_directories(dependency/pmp-library/external/glfw/include)
 include_directories(dependency/pmp-library/external/imgui)
 
 add_executable(Spheremarcher ${app_src} ${utils_src} ${imgui_src} ${raytrace_src})
-add_custom_command(
-    TARGET Spheremarcher PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/res/meshes/)
-add_custom_command(
-    TARGET Spheremarcher PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/res/shaders/)
-add_custom_command(
-    TARGET Spheremarcher POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/res/meshes/*
-            ${CMAKE_CURRENT_SOURCE_DIR}/build/res/meshes/)
-add_custom_command(
-    TARGET Spheremarcher POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/res/shaders/*
-            ${CMAKE_CURRENT_SOURCE_DIR}/build/res/shaders/)
+
+add_custom_target(copy-res ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/res
+    ${CMAKE_BINARY_DIR}/res
+    )
+
+add_dependencies(Spheremarcher copy-res)
 
 target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL pmp)
