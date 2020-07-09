@@ -1,7 +1,6 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include <vector>
+#include "Shader.h"
 
 // align all structs as 16 byte for ssbo
 struct alignas(16) AreaLight
@@ -34,14 +33,21 @@ struct alignas(16) Material
     float shininess;
 };
 
+/**
+ * @brief Class holding scene informations. 
+ */
 class PrimitiveScene
 {
 public:
-    PrimitiveScene() = default;
-    ~PrimitiveScene() = default;
+    PrimitiveScene();
+    ~PrimitiveScene();
+
+    void SetData();
 
     std::vector<Sphere> Spheres;
     std::vector<Torus> Tori;
     std::vector<Material> Materials;
     std::vector<AreaLight> AreaLights;
+    SDField sdField;
+    Shader Shader;
 };

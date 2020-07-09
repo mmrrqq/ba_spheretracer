@@ -31,15 +31,16 @@ private:
     void initializeScene();
     void drawImgui();
 
-    void generateSdField();
+    void generateSdField(std::string meshPath);
 
     FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_, fourthPassBuffer_;
-    Shader screenShader_;
+    Shader shader_;
     Camera camera_;
-    PrimitiveScene scene_;
     SDFGenerator sdfGenerator_;
     SDFGenerator::EBoxSize sdfBoxSize_;
     bool mouseDown_, moving_, smooth_, drawShadows_, coneTracing_;
     unsigned int vao_, ibo_;
     float fovy_, normalEpsilon_, drawDistance_, sdfScaling_;
+    std::vector<PrimitiveScene> scenes_;
+    PrimitiveScene *activeScene_;
 };

@@ -24,6 +24,12 @@ layout(std430, binding = 2) readonly buffer inTriangles
   Triangle triangles[];
 };
 
+/**
+  * Taken from own implementation of the ray tracer from cg_raytracer 
+  * course project. Checks wether an intersection between the triangle 
+  * and a ray from rayOrigin in rayDirection does exist.
+  * returns true if so, else false.
+**/
 bool intersectTriangle(Triangle triangle, vec3 rayOrigin, vec3 rayDirection)
 {    
     Vertex v0 = vertices[triangle.v0];
@@ -66,6 +72,11 @@ bool intersectTriangle(Triangle triangle, vec3 rayOrigin, vec3 rayDirection)
 
 float dot2( in vec3 v ) { return dot(v,v); }
 
+/**
+  * Compute the unsigned distance from point p to a triangle.
+  * Credit to 
+  * https://www.iquilezles.org/www/articles/triangledistance/triangledistance.htm
+**/
 float udTriangle(vec3 p, Triangle triangle)
 {
   Vertex v0 = vertices[triangle.v0];
@@ -100,6 +111,14 @@ float udTriangle(vec3 p, Triangle triangle)
   );
 }
 
+/**
+  * Function that is called on dispatch. 
+  * Uses the gl_GlobalInvocationID to determine the voxel to
+  * compute the distance for. 
+  * Iterates through all triangles in buffer triangles, calculates
+  * the unsigned distance and the sign. Lastly, it writes the min 
+  * distance to the output image.   
+**/
 void main() {      
   ivec3 voxelCoords = ivec3(gl_GlobalInvocationID.xyz);
   ivec3 imgSize = ivec3(gl_NumWorkGroups * gl_WorkGroupSize);

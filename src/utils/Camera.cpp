@@ -6,7 +6,7 @@ Camera::Camera()
       lastY_(-1),
       lookAt_(0, 1, 0, 1),
       up_(0, 1, 0, 0),
-      eye_(1, 1, 1, 1),
+      eye_(0, 1, 8, 1),
       yaw_(0),
       eyeRoot_(eye_),
       camHeight_(eyeRoot_.y){};

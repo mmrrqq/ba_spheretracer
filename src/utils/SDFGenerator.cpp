@@ -4,6 +4,14 @@ SDFGenerator::SDFGenerator()
 {
 }
 
+/**
+ * @brief Construct a new SDFGenerator::SDFGenerator object.
+ * This sets up the output texture and moves/scales the mesh vertices to fill
+ * out the box properly. Then loads the compute shader to be ready for
+ * dispatching. 
+ * @param mesh pmp::SurfaceMesh to be processed.
+ * @param boxSize Enum of powers of two to set the 3D-Texture dimensions.
+ */
 SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, EBoxSize boxSize)
     : texOutput_(boxSize,
                  boxSize,
@@ -46,6 +54,10 @@ SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, EBoxSize boxSize)
     computeShader_.Load("res/shaders/sdfGenerator.compute");
 }
 
+/**
+ * @brief Dispatches the compute shader instances.
+ * Requires a local compute shader size of 16 for x and y and 4 for z.
+ */
 void SDFGenerator::Dispatch()
 {
     computeShader_.Bind();
