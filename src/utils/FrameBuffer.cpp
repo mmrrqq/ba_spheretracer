@@ -2,6 +2,13 @@
 
 FrameBuffer::FrameBuffer() { glGenFramebuffers(1, &id_); }
 
+/**
+ * @brief Construct a new Frame Buffer:: Frame Buffer object
+ * Creates a new FrameBuffer Object and initializes the color and depth
+ * textures with the specified size.
+ * @param width
+ * @param height
+ */
 FrameBuffer::FrameBuffer(int width, int height)
     : width_(width),
       height_(height),
@@ -12,10 +19,13 @@ FrameBuffer::FrameBuffer(int width, int height)
 {
     glGenFramebuffers(1, &id_);
     Bind();
-    AttachTexture(colorTexture_, GL_COLOR_ATTACHMENT0);
-    AttachTexture(depthTexture_, GL_DEPTH_ATTACHMENT);
 
-    CheckStatus();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           colorTexture_.ID(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                           depthTexture_.ID(), 0);
+
+    checkStatus();
 }
 
 FrameBuffer::~FrameBuffer() { glDeleteFramebuffers(1, &id_); }
@@ -29,14 +39,7 @@ void FrameBuffer::Bind(bool clearDepth)
 
 void FrameBuffer::Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
-void FrameBuffer::AttachTexture(TextureSampler &texture,
-                                unsigned int attachmentType)
-{
-    glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D,
-                           texture.ID(), 0);
-}
-
-unsigned int FrameBuffer::CheckStatus()
+unsigned int FrameBuffer::checkStatus()
 {
     if (unsigned int status =
             glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)

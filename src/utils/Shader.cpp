@@ -8,7 +8,9 @@
 //=============================================================================
 
 #include "Shader.h"
+
 #include <assert.h>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -19,45 +21,45 @@ Shader::Shader() : pid_(0), vid_(0), fid_(0), cid_(0) {}
 
 //-----------------------------------------------------------------------------
 
-Shader::~Shader() { Cleanup(); }
+Shader::~Shader() { cleanup(); }
 
 //-----------------------------------------------------------------------------
 
-void Shader::Cleanup()
+void Shader::cleanup()
 {
-    if (pid_)
-        glDeleteProgram(pid_);
-    if (vid_)
-        glDeleteShader(vid_);
-    if (fid_)
-        glDeleteShader(fid_);
-    if (cid_)
-        glDeleteShader(cid_);
+    if (pid_) glDeleteProgram(pid_);
+    if (vid_) glDeleteShader(vid_);
+    if (fid_) glDeleteShader(fid_);
+    if (cid_) glDeleteShader(cid_);
 
     pid_ = vid_ = fid_ = cid_ = 0;
     locations.clear();
 }
 
 //-----------------------------------------------------------------------------
-
+/**
+ * @brief Loads the vertex and fragment shader code.
+ * @param vertexShaderFilePath path to vertex shader source code.
+ * @param fragmentShaderFilePath path to fragment shader source code.
+ * @return true loading, compiling and linking successfull.
+ * @return false any of loading, compiling and linking failed.
+ */
 bool Shader::Load(const char *vertexShaderFilePath,
                   const char *fragmentShaderFilePath)
 {
     // cleanup existing shaders first
-    Cleanup();
+    cleanup();
 
     // create program
     pid_ = glCreateProgram();
 
     // vertex shader
     vid_ = loadAndCompile(vertexShaderFilePath, GL_VERTEX_SHADER);
-    if (vid_)
-        glAttachShader(pid_, vid_);
+    if (vid_) glAttachShader(pid_, vid_);
 
     // fragment shader
     fid_ = loadAndCompile(fragmentShaderFilePath, GL_FRAGMENT_SHADER);
-    if (fid_)
-        glAttachShader(pid_, fid_);
+    if (fid_) glAttachShader(pid_, fid_);
 
     // link program
     glLinkProgram(pid_);
@@ -73,7 +75,7 @@ bool Shader::Load(const char *vertexShaderFilePath,
         std::cerr << "Shader: Cannot link program:\n" << info << std::endl;
         delete[] info;
 
-        Cleanup();
+        cleanup();
 
         return false;
     }
@@ -81,10 +83,16 @@ bool Shader::Load(const char *vertexShaderFilePath,
     return true;
 }
 
+/**
+ * @brief Loads compute shader source code.
+ * @param computeShaderFilePath path to compute shader source code.
+ * @return true loading, compiling and linking successfull.
+ * @return false any of loading, compiling and linking failed.
+ */
 bool Shader::Load(const char *computeShaderFilePath)
 {
     // cleanup existing shaders first
-    Cleanup();
+    cleanup();
 
     pid_ = glCreateProgram();
     cid_ = loadAndCompile(computeShaderFilePath, GL_COMPUTE_SHADER);
@@ -162,8 +170,7 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
 
 void Shader::Bind()
 {
-    if (pid_)
-        glUseProgram(pid_);
+    if (pid_) glUseProgram(pid_);
 }
 
 //-----------------------------------------------------------------------------
@@ -256,15 +263,13 @@ void Shader::SetBuffer(unsigned int slot, float size, void *data)
 
 int Shader::getUniformLocation(const std::string name)
 {
-    if (!pid_)
-        return -1;
+    if (!pid_) return -1;
 
     auto cachedLocation = locations.find(name);
     if (cachedLocation != locations.end())
     {
         auto location = cachedLocation->second;
-        if (location != -1)
-            return location;
+        if (location != -1) return location;
     }
 
     int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());

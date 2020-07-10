@@ -9,19 +9,22 @@
 #pragma once
 //=============================================================================
 
-#include "PrimitiveScene.h"
-#include "SDField.h"
-#include "TextureSampler.h"
-
-#include "GLUtils.h"
-#include "glm/glm.hpp"
 #include <map>
 #include <string>
 #include <vector>
 
+#include "GLUtils.h"
+#include "PrimitiveScene.h"
+#include "SDField.h"
+#include "TextureSampler.h"
+#include "glm/glm.hpp"
+
 //=============================================================================
 
-/// shader class for easy handling of the shader
+/**
+ * @brief Shader class.
+ * Can hold vertex+fragment shader or compute shader.
+ */
 class Shader
 {
 public:
@@ -36,9 +39,6 @@ public:
     bool Load(const char *vertexShaderFilePath,
               const char *fragmentShaderFilePath);
     bool Load(const char *computeShaderFilePath);
-
-    /// deletes all shader and frees GPU shader capacities
-    void Cleanup();
 
     /// enable/bind this shader program
     void Bind();
@@ -105,6 +105,9 @@ private:
     unsigned int loadAndCompile(const char *filename, GLenum type);
 
     int getUniformLocation(std::string name);
+
+    /// deletes all shader and frees GPU shader capacities
+    void cleanup();
 
     unsigned int pid_, vid_, fid_, cid_;
 

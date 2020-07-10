@@ -1,10 +1,10 @@
-#include "Spheremarcher.h"
+#include "Spheretracer.h"
 
 #include "FrameBuffer.h"
 #include "TextureSampler.h"
 
-Spheremarcher::Spheremarcher(int width, int height)
-    : Window("Spheremarcher", width, height),
+Sphertracer::Sphertracer(int width, int height)
+    : Window("Spheretracer", width, height),
       mouseDown_(false),
       moving_(false),
       firstPassBuffer_(Width() / 64, Height() / 64),
@@ -15,21 +15,21 @@ Spheremarcher::Spheremarcher(int width, int height)
       normalEpsilon_(0.005f),
       drawDistance_(27.0f),
       smooth_(false),
-      sdfBoxSize_(SDFGenerator::B_128),
+      sdfBoxSize_(SDFGenerator::B_64),
       sdfScaling_(0.01),
       drawShadows_(true),
       coneTracing_(true)
 {
 }
 
-Spheremarcher::~Spheremarcher() {}
+Sphertracer::~Sphertracer() {}
 
 /**
  * @brief Initialize the Application Window.
  * Sets up the VertexArray, the IndexBuffer, Imgui and the scene and loads the
  * shader.
  */
-void Spheremarcher::initialize()
+void Sphertracer::initialize()
 {
     initializeImgui();
 
@@ -55,7 +55,7 @@ void Spheremarcher::initialize()
 /**
  * @brief creates the imgui context
  */
-void Spheremarcher::initializeImgui()
+void Sphertracer::initializeImgui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -69,7 +69,7 @@ void Spheremarcher::initializeImgui()
  * @brief Sets the scene data on the shader.
  * Sets the buffer data for all scene data.
  */
-void Spheremarcher::setShaderData()
+void Sphertracer::setShaderData()
 {
     camera_.SetEye(scene_.Eye);
     camera_.SetLookAt(scene_.LookAt);
@@ -104,7 +104,7 @@ void Spheremarcher::setShaderData()
  * @param width Window width after resize
  * @param height Window height after resize
  */
-void Spheremarcher::resize(int width, int height)
+void Sphertracer::resize(int width, int height)
 {
     // glViewport(0, 0, width, height);
     // SetHeight(height);
@@ -122,7 +122,7 @@ void Spheremarcher::resize(int width, int height)
  * @param action
  * @param mods
  */
-void Spheremarcher::mouse(int button, int action, int mods)
+void Sphertracer::mouse(int button, int action, int mods)
 {
     ImGuiIO &io = ImGui::GetIO();
     if (io.WantCaptureMouse)
@@ -152,7 +152,7 @@ void Spheremarcher::mouse(int button, int action, int mods)
  * @param action
  * @param mods
  */
-void Spheremarcher::keyboard(int key, int scancode, int action, int mods)
+void Sphertracer::keyboard(int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS) moving_ = true;
     if (action == GLFW_RELEASE) moving_ = false;
@@ -181,7 +181,7 @@ void Spheremarcher::keyboard(int key, int scancode, int action, int mods)
  * @param xpos New window coordinate of the cursor on the x axis
  * @param ypos New window coordinate of the cursor on the y axis
  */
-void Spheremarcher::motion(double xpos, double ypos)
+void Sphertracer::motion(double xpos, double ypos)
 {
     if (mouseDown_) camera_.Rotate(xpos, ypos, Width(), Height());
 }
@@ -192,7 +192,7 @@ void Spheremarcher::motion(double xpos, double ypos)
  * Called every frame.
  * ARGH! so bloated, sorry for that :(
  */
-void Spheremarcher::drawImgui()
+void Sphertracer::drawImgui()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -202,7 +202,7 @@ void Spheremarcher::drawImgui()
         ImGui::Begin("debug");
         static int scene;
         const char *sceneNames[] = {"csg", "title", "test"};
-        if (ImGui::ListBox("scene_select", &scene, sceneNames,
+        if (ImGui::ListBox("scene selection", &scene, sceneNames,
                            IM_ARRAYSIZE(sceneNames), 3))
         {
             shader_.Load(
@@ -284,7 +284,7 @@ void Spheremarcher::drawImgui()
  * Sets neccessary shader data and either performs a single draw call or
  * multipass conetracing, depending on the class member coneTracing_.
  */
-void Spheremarcher::draw()
+void Sphertracer::draw()
 {
     drawImgui();
 

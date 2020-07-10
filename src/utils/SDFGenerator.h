@@ -1,5 +1,11 @@
 #pragma once
 
+#include <bits/stdc++.h>
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include "GLUtils.h"
 #include "SDField.h"
 #include "Shader.h"
@@ -8,11 +14,11 @@
 #include "pmp/SurfaceMesh.h"
 #include "pmp/algorithms/TriangleKdTree.h"
 
-#include <bits/stdc++.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
+/**
+ * @brief Class to calculate signed distance fields from meshes.
+ * Holds and controls the compute shader for generating distance fields from
+ * meshes. Does all the computation to fill the texture properly.
+ */
 class SDFGenerator
 {
 public:

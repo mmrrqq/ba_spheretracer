@@ -44,7 +44,7 @@ include_directories(dependency/pmp-library/external/glew)
 include_directories(dependency/pmp-library/external/glfw/include)
 include_directories(dependency/pmp-library/external/imgui)
 
-add_executable(Spheremarcher ${app_src} ${utils_src} ${imgui_src} ${raytrace_src})
+add_executable(Spheretracer ${app_src} ${utils_src} ${imgui_src} ${raytrace_src})
 
 add_custom_target(copy-res ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -52,6 +52,6 @@ add_custom_target(copy-res ALL
     ${CMAKE_BINARY_DIR}/res
     )
 
-add_dependencies(Spheremarcher copy-res)
+add_dependencies(Spheretracer copy-res)
 
-target_link_libraries(Spheremarcher glew glfw glm OpenGL::GL pmp)
+target_link_libraries(Spheretracer glew glfw glm OpenGL::GL pmp)

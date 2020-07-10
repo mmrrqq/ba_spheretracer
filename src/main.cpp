@@ -1,8 +1,8 @@
-#include "Spheremarcher.h"
+#include "Spheretracer.h"
 
 int main(void)
 {
-    Spheremarcher application(1920, 1080);
+    Sphertracer application(1920, 1080);
 
     application.run();
 

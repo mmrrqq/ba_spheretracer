@@ -1,10 +1,16 @@
 #pragma once
 
+#include <vector>
+
 #include "TextureSampler.h"
 #include "glm/glm.hpp"
 #include "pmp/SurfaceMesh.h"
-#include <vector>
 
+/**
+ * @brief SDField class.
+ * Holds the 3D texture of an signed distance field and the position and size
+ * properties.
+ */
 class SDField
 {
 public:
@@ -75,8 +81,8 @@ inline std::istream &operator>>(std::istream &is, SDField &f)
     glm::vec3 position, dimensions;
     int materialId;
 
-    is >> fileName >> position[0] >> position[1] >> position[2] >> //
-        dimensions[0] >> dimensions[1] >> dimensions[2] >>         //
+    is >> fileName >> position[0] >> position[1] >> position[2] >>  //
+        dimensions[0] >> dimensions[1] >> dimensions[2] >>          //
         materialId >> uniformName;
 
     f.SetFilename(fileName);

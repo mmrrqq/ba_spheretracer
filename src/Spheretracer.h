@@ -12,11 +12,14 @@
 #include "utils/Shader.h"
 #include "utils/Window.h"
 
-class Spheremarcher : public Window
+/**
+ * @brief Main application window class.
+ */
+class Sphertracer : public Window
 {
 public:
-    Spheremarcher(int width, int height);
-    ~Spheremarcher();
+    Sphertracer(int width, int height);
+    ~Sphertracer();
 
 private:
     virtual void initialize();

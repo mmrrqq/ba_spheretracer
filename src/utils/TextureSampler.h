@@ -1,9 +1,14 @@
 #pragma once
 
-#include "GLUtils.h"
 #include <iostream>
 
-// mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture class
+#include "GLUtils.h"
+
+// mostly from https://www.khronos.org/opengl/wiki/Common_Mistakes texture
+/**
+ * @brief Class to represent an OpenGL texture sampler.
+ * Both 2D and 3D textures can be represented.
+ */
 class TextureSampler
 {
 public:
