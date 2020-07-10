@@ -1,12 +1,10 @@
-#include "Spheremarcher.h"
-#include "utils/Application.h"
+#include "Spheretracer.h"
 
 int main(void)
 {
-    Spheremarcher marcher(1920, 1080);
-    Application app((char *)"Spheremarcher", &marcher);
+    Sphertracer application(1920, 1080);
 
-    app.run();
+    application.run();
 
     exit(EXIT_SUCCESS);
 }

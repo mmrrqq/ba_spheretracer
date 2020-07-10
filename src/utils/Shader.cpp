@@ -8,60 +8,58 @@
 //=============================================================================
 
 #include "Shader.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
+
 #include <assert.h>
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 //=============================================================================
 
-Shader::Shader()
-    : pid_(0), vid_(0), fid_(0), cid_(0)
-{
-}
+Shader::Shader() : pid_(0), vid_(0), fid_(0), cid_(0) {}
 
 //-----------------------------------------------------------------------------
 
-Shader::~Shader()
-{
-    Cleanup();
-}
+Shader::~Shader() { cleanup(); }
 
 //-----------------------------------------------------------------------------
 
-void Shader::Cleanup()
+void Shader::cleanup()
 {
-    if (pid_)
-        glDeleteProgram(pid_);
-    if (vid_)
-        glDeleteShader(vid_);
-    if (fid_)
-        glDeleteShader(fid_);
-    if (cid_)
-        glDeleteShader(cid_);
+    if (pid_) glDeleteProgram(pid_);
+    if (vid_) glDeleteShader(vid_);
+    if (fid_) glDeleteShader(fid_);
+    if (cid_) glDeleteShader(cid_);
 
     pid_ = vid_ = fid_ = cid_ = 0;
+    locations.clear();
 }
 
 //-----------------------------------------------------------------------------
-
-bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFilePath)
+/**
+ * @brief Loads the vertex and fragment shader code.
+ * @param vertexShaderFilePath path to vertex shader source code.
+ * @param fragmentShaderFilePath path to fragment shader source code.
+ * @return true loading, compiling and linking successfull.
+ * @return false any of loading, compiling and linking failed.
+ */
+bool Shader::Load(const char *vertexShaderFilePath,
+                  const char *fragmentShaderFilePath)
 {
     // cleanup existing shaders first
-    Cleanup();
+    cleanup();
 
     // create program
     pid_ = glCreateProgram();
 
     // vertex shader
     vid_ = loadAndCompile(vertexShaderFilePath, GL_VERTEX_SHADER);
-    if (vid_)
-        glAttachShader(pid_, vid_);
+    if (vid_) glAttachShader(pid_, vid_);
 
     // fragment shader
     fid_ = loadAndCompile(fragmentShaderFilePath, GL_FRAGMENT_SHADER);
-    if (fid_)
-        glAttachShader(pid_, fid_);
+    if (fid_) glAttachShader(pid_, fid_);
 
     // link program
     glLinkProgram(pid_);
@@ -74,11 +72,10 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
 
         GLchar *info = new GLchar[length + 1];
         glGetProgramInfoLog(pid_, length, NULL, info);
-        std::cerr << "Shader: Cannot link program:\n"
-                  << info << std::endl;
+        std::cerr << "Shader: Cannot link program:\n" << info << std::endl;
         delete[] info;
 
-        Cleanup();
+        cleanup();
 
         return false;
     }
@@ -86,10 +83,16 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
     return true;
 }
 
+/**
+ * @brief Loads compute shader source code.
+ * @param computeShaderFilePath path to compute shader source code.
+ * @return true loading, compiling and linking successfull.
+ * @return false any of loading, compiling and linking failed.
+ */
 bool Shader::Load(const char *computeShaderFilePath)
 {
     // cleanup existing shaders first
-    Cleanup();
+    cleanup();
 
     pid_ = glCreateProgram();
     cid_ = loadAndCompile(computeShaderFilePath, GL_COMPUTE_SHADER);
@@ -106,8 +109,7 @@ bool Shader::Load(const char *computeShaderFilePath)
 
         GLchar *info = new GLchar[length + 1];
         glGetProgramInfoLog(pid_, length, NULL, info);
-        std::cerr << "Shader: Cannot link program:\n"
-                  << info << std::endl;
+        std::cerr << "Shader: Cannot link program:\n" << info << std::endl;
         delete[] info;
     }
 }
@@ -133,7 +135,8 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
     GLint id = glCreateShader(type);
     if (!id)
     {
-        std::cerr << "Shader: Cannot create " << type << " shader object for \"" << filename << "\"\n";
+        std::cerr << "Shader: Cannot create " << type << " shader object for \""
+                  << filename << "\"\n";
         return 0;
     }
 
@@ -167,16 +170,12 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
 
 void Shader::Bind()
 {
-    if (pid_)
-        glUseProgram(pid_);
+    if (pid_) glUseProgram(pid_);
 }
 
 //-----------------------------------------------------------------------------
 
-void Shader::Unbind()
-{
-    glUseProgram(0);
-}
+void Shader::Unbind() { glUseProgram(0); }
 
 //-----------------------------------------------------------------------------
 
@@ -232,55 +231,27 @@ void Shader::SetUniform(const char *name, const glm::mat4 &mat)
     glUniformMatrix4fv(getUniformLocation(name), 1, false, &mat[0][0]);
 }
 
-void Shader::SetUniform(const std::string name, const SceneLights lights)
-{
-    glUniform1i(getUniformLocation(name + ".numPointLights"), (int)lights.pointLights.size());
-    for (int i = 0; i < lights.pointLights.size(); i++)
-    {
-        PointLight light = lights.pointLights[i];
-        glUniform1f(getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].size"), light.size);
-        glUniform3f(
-            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].color"),
-            light.color[0], light.color[1], light.color[2]);
-        glUniform3f(
-            getUniformLocation(name + ".pointLights[" + std::to_string(i) + "].position"),
-            light.position[0], light.position[1], light.position[2]);
-    }
-}
-
-void Shader::SetUniform(const std::string name, const std::vector<Material> &materials)
-{
-    for (int i = 0; i < materials.size(); i++)
-    {
-        Material material = materials[i];
-        glUniform1f(getUniformLocation(name + "[" + std::to_string(i) + "].shininess"), material.Shininess);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].ambientColor"),
-            material.AmbientColor[0], material.AmbientColor[1], material.AmbientColor[2]);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].diffuseColor"),
-            material.DiffuseColor[0], material.DiffuseColor[1], material.DiffuseColor[2]);
-        glUniform3f(
-            getUniformLocation(name + "[" + std::to_string(i) + "].specularColor"),
-            material.SpecularColor[0], material.SpecularColor[1], material.SpecularColor[2]);
-    }
-}
-
-void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
+void Shader::SetUniform(const std::string name, TextureSampler &texture,
+                        unsigned int slot)
 {
     texture.Bind(slot);
     // glUniform1i(getUniformLocation(name), slot);
 }
 
-void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot)
+void Shader::SetUniform(const std::string name, SDField *sdField,
+                        unsigned int textureSlot)
 {
     sdField->Bind(textureSlot);
     glUniform1i(getUniformLocation(name + ".field"), textureSlot);
-    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0], sdField->Position()[1], sdField->Position()[2]);
-    glUniform3f(getUniformLocation(name + ".dimensions"), sdField->Dimensions()[0], sdField->Dimensions()[1], sdField->Dimensions()[2]);
+    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0],
+                sdField->Position()[1], sdField->Position()[2]);
+    glUniform3f(getUniformLocation(name + ".dimensions"),
+                sdField->Dimensions()[0], sdField->Dimensions()[1],
+                sdField->Dimensions()[2]);
 }
 
 // TODO: to Buffer class
+// TODO: to named buffer
 void Shader::SetBuffer(unsigned int slot, float size, void *data)
 {
     unsigned int ssbo;
@@ -292,15 +263,13 @@ void Shader::SetBuffer(unsigned int slot, float size, void *data)
 
 int Shader::getUniformLocation(const std::string name)
 {
-    if (!pid_)
-        return -1;
+    if (!pid_) return -1;
 
     auto cachedLocation = locations.find(name);
     if (cachedLocation != locations.end())
     {
         auto location = cachedLocation->second;
-        if (location != -1)
-            return location;
+        if (location != -1) return location;
     }
 
     int location = glGetUniformLocation(pid_, (const GLchar *)name.c_str());

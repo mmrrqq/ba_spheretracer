@@ -1,9 +1,14 @@
 #pragma once
 
-#include "GLUtils.h"
-#include "TextureSampler.h"
 #include <iostream>
 
+#include "GLUtils.h"
+#include "TextureSampler.h"
+
+/**
+ * @brief Framebuffer class.
+ * Holds the framebuffers color and depth textures.
+ */
 class FrameBuffer
 {
 public:
@@ -14,16 +19,15 @@ public:
     void Bind(bool clearDepth = false);
     void Unbind();
 
-    int GetWidth() { return width_; };
-    int GetHeight() { return height_; };
+    int Width() { return width_; };
+    int Height() { return height_; };
 
-    void AttachTexture(TextureSampler &texture, unsigned int attachmentType);
-    unsigned int CheckStatus();
-
-    TextureSampler &GetColorTexture() { return colorTexture_; };
-    TextureSampler &GetDepthTexture() { return depthTexture_; };
+    TextureSampler &ColorTexture() { return colorTexture_; };
+    TextureSampler &DepthTexture() { return depthTexture_; };
 
 private:
+    unsigned int checkStatus();
+
     unsigned int id_, width_, height_;
 
     TextureSampler colorTexture_;

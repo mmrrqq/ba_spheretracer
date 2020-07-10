@@ -1,25 +1,21 @@
 #version 430 core
-#define MAX_OBJECTS 256
-#define MAX_MATERIALS 5
-#define MAX_LIGHTS 5
-#define UNumLights 2
-struct PointLight
+struct AreaLight
 {
-    vec3 position;
-    vec3 color;
-    float size;
+  vec4 position;
+  vec4 color;
+  float size;
 };
 
 struct Sphere 
 {
-    vec3 position;
-    float radius;    
-    int materialId;
+  vec4 position;
+  float radius;    
+  int materialId;
 };
 
 struct Torus
 {
-    vec3 position;
+    vec4 position;
     float radius;
     float tubeRadius;
     int materialId;
@@ -27,16 +23,10 @@ struct Torus
 
 struct Material
 {
-    vec3 ambientColor;    
-    vec3 diffuseColor;
-    vec3 specularColor;
+    vec4 ambientColor;    
+    vec4 diffuseColor;
+    vec4 specularColor;
     float shininess;
-};
-
-struct SceneLights
-{
-    PointLight pointLights[MAX_LIGHTS];
-    int numPointLights;
 };
 
 struct SDField
@@ -59,9 +49,6 @@ uniform bool USmooth;
 uniform bool UDrawShadows;
 
 uniform sampler2D UDepthTexture;
-
-uniform SceneLights ULights;
-uniform Material UMaterials[MAX_MATERIALS];
 uniform mat4 UInvView;
 uniform SDField USDField;
 
@@ -69,25 +56,36 @@ layout(std430, binding = 3) readonly buffer inSpheres
 {
   Sphere spheres[];
 };
-
 layout(std430, binding = 4) readonly buffer inTori
 {
   Torus tori[];
+};
+layout(std430, binding = 5) readonly buffer inLights
+{
+    AreaLight areaLights[];
+};
+layout(std430, binding = 6) readonly buffer inMaterials
+{
+    Material materials[];
 };
 
 in vec2 TexCoords;
 out vec4 color;
 
-// credit iquilez
+//-----------------------------------------------------------------------------
+// distance functions
+//-----------------------------------------------------------------------------
+/**
+  * Approximates the signed distance to a Mandelbrot fractal.
+  * credit to
+  * https://www.iquilezles.org/www/articles/mandelbulb/mandelbulb.htm
+**/
 float distanceToMandelbrot2(vec3 pos)
 {
     vec3 w = pos;
-    float m = dot(w,w);
-
-    vec4 trap = vec4(abs(w),m);
+    float m = dot(w,w);    
 	float dz = 1.0;
-    
-    
+        
 	for( int i=0; i<4; i++ )
     {
         float m2 = m*m;
@@ -105,9 +103,7 @@ float distanceToMandelbrot2(vec3 pos)
 
         w.x = pos.x +  64.0*x*y*z*(x2-z2)*k4*(x4-6.0*x2*z2+z4)*k1*k2;
         w.y = pos.y + -16.0*y2*k3*k4*k4 + k1*k1;
-        w.z = pos.z +  -8.0*y*k4*(x4*x4 - 28.0*x4*x2*z2 + 70.0*x4*z4 - 28.0*x2*z2*z4 + z4*z4)*k1*k2; 
-        
-        trap = min( trap, vec4(abs(w),m) );
+        w.z = pos.z +  -8.0*y*k4*(x4*x4 - 28.0*x4*x2*z2 + 70.0*x4*z4 - 28.0*x2*z2*z4 + z4*z4)*k1*k2;             
 
         m = dot(w,w);
 		if( m > 256.0 )
@@ -117,22 +113,47 @@ float distanceToMandelbrot2(vec3 pos)
     return 0.25*log(m)*sqrt(m)/dz;
 }
 
-float distanceToBox(vec3 p, vec3 dimensions)
+/**
+  * Compute the signed distance from p to a Box at point pBox
+  * with the size of dimensions. 
+  * credit to
+  * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm  
+**/
+float distanceToBox(vec3 p, vec3 pBox, vec3 dimensions)
 {
-  vec3 q = abs(p) - dimensions;
-  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+  vec3 q = abs(p - pBox) - dimensions;
+  return length(max(q, 0.0)) 
+    + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
+/**
+  * Compute the signed distance from position to a Plane at point planePosition
+  * with the surface normal in planeNormal. 
+  * credit to
+  * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm  
+**/
 float distanceToGroundPlane(vec3 planePosition, vec4 planeNormal, vec3 position)
 {
 	return dot(position - planePosition, planeNormal.xyz) + planeNormal.w;
 }
 
+/**
+  * Compute the signed distance from position to a Sphere at point spherePosition
+  * witht the radius sphereRadius.
+  * credit to
+  * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm  
+**/
 float distanceToSphere(vec3 spherePosition, float sphereRadius, vec3 position)
 {
     return length(position - spherePosition) - sphereRadius;
 }
 
+/**
+  * Compute the signed distance from position to a Torus at point torusPosition
+  * witht the radius radius and a tube radius of tubeRadius.
+  * credit to
+  * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm  
+**/
 float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 position)
 {
     vec3 torusToPosition = position - torusPosition;
@@ -140,9 +161,12 @@ float distanceToTorus(vec3 torusPosition, float radius, float tubeRadius, vec3 p
     return length(q) - tubeRadius;
 }
 
+/**
+  * Compute the signed distance from position to a 3D texture distance field.
+**/
 float distanceToField(SDField field, vec3 position)
 {
-    float distanceBox = distanceToBox(position - field.position, field.dimensions);    
+    float distanceBox = distanceToBox(position, field.position, field.dimensions);    
 
     if (distanceBox < 0.0)
     {
@@ -155,9 +179,13 @@ float distanceToField(SDField field, vec3 position)
         
         return (texture(field.field, voxelCoords).x / texSize.x) * field.dimensions.x;
     }    
+    // ten percent border
     return distanceBox + 0.1 * field.dimensions.x;
 }
 
+//-----------------------------------------------------------------------------
+// operators
+//-----------------------------------------------------------------------------
 vec4 hardMin(vec4 dist1, vec4 dist2)
 {
     return dist1.x < dist2.x ? dist1 : dist2;
@@ -173,12 +201,19 @@ vec4 smoothColorMin(vec4 distMatColor, vec2 distMat, float k)
     vec4 minVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMat.x, distMatColor.x));
     vec4 maxVec = mix(distMatColor, vec4(distMat, -1, -1), step(distMatColor.x, distMat.x));
 
-    vec3 minDiffCol = minVec.z < 0 ? UMaterials[int(minVec.y)].diffuseColor : minVec.yzw;
-    vec3 maxDiffCol = maxVec.z < 0 ? UMaterials[int(maxVec.y)].diffuseColor : maxVec.yzw;
+    vec3 minDiffCol = minVec.z < 0 ? materials[int(minVec.y)].diffuseColor.xyz : minVec.yzw;
+    vec3 maxDiffCol = maxVec.z < 0 ? materials[int(maxVec.y)].diffuseColor.xyz : maxVec.yzw;
 
     float h = max(k - abs(distMat.x - distMatColor.x), 0.0)/k;
     float dist = min(distMat.x, distMatColor.x) - h*h*k*(1.0/4.0);
     return vec4(dist, mix(minDiffCol, maxDiffCol, h/2.0));
+}
+
+vec4 minColorFn(vec4 prevDist, float dist, int materialId)
+{
+    if (USmooth)
+        return smoothColorMin(prevDist, vec2(dist, materialId), 0.5);
+    return hardMin(prevDist, vec4(dist, materialId, -1, -1));
 }
 
 vec2 smoothMin(vec2 dist1, vec2 dist2, float k)
@@ -201,20 +236,25 @@ float minFn(float prevDist, float dist)
     return min(prevDist, dist);
 }
 
+//-----------------------------------------------------------------------------
+// distance to scene
+//-----------------------------------------------------------------------------
 float distanceToScene(vec3 position) 
 {    
-    float res = 1000;
+    // https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.40.pdf
+    // results in properly signed inf value
+    float res = 1.0/0.0;
     
     for (int i = 0; i < spheres.length(); i++)
     {
         Sphere sphere = spheres[i];
-        res = minFn(res, distanceToSphere(sphere.position, sphere.radius, position));                
+        res = minFn(res, distanceToSphere(sphere.position.xyz, sphere.radius, position));                
     }    
 
     for (int i = 0; i < tori.length(); i++)
     {
         Torus torus = tori[i];        
-        res = minFn(res, distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position));             
+        res = minFn(res, distanceToTorus(torus.position.xyz, torus.radius, torus.tubeRadius, position));             
     }
 
     vec3 rep = vec3(10.0, 1000.0, 10.0);
@@ -227,29 +267,23 @@ float distanceToScene(vec3 position)
     return res;
 }
 
-vec4 minColorFn(vec4 prevDist, float dist, int materialId)
-{
-    if (USmooth)
-        return smoothColorMin(prevDist, vec2(dist, materialId), 0.5);
-    return hardMin(prevDist, vec4(dist, materialId, -1, -1));
-}
-
 // yzw are either the diffuse color value or y is the materialID and others are -1
 vec4 distanceToSceneColor(vec3 position)
 {
-    vec4 res = vec4(1000, -1, -1, -1);
+    // results in properly signed inf value
+    vec4 res = vec4(1.0/0.0, -1, -1, -1);
 
     for (int i = 0; i < spheres.length(); i++)
     {
         Sphere sphere = spheres[i];
-        float d = distanceToSphere(sphere.position, sphere.radius, position);        
+        float d = distanceToSphere(sphere.position.xyz, sphere.radius, position);        
         res = minColorFn(res, d, sphere.materialId);
     }
 
     for (int i = 0; i < tori.length(); i++)
     {
         Torus torus = tori[i];
-        float d = distanceToTorus(torus.position, torus.radius, torus.tubeRadius, position);
+        float d = distanceToTorus(torus.position.xyz, torus.radius, torus.tubeRadius, position);
         res = minColorFn(res, d, torus.materialId);             
     }
     // vec3 rep = vec3(10.0, 1000.0, 10.0);
@@ -264,6 +298,9 @@ vec4 distanceToSceneColor(vec3 position)
     return res;
 }
 
+//-----------------------------------------------------------------------------
+// helper functions
+//-----------------------------------------------------------------------------
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
 vec3 getRayDir()
 {
@@ -284,7 +321,7 @@ vec3 getNormal(vec3 position)
     );
 }
 
-float getPointLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
+float getAreaLightShadowFactor(vec3 position, vec3 lightPosition, float lightSize)
 {
     vec3 lightVec = lightPosition - position;
     vec3 rayDir = normalize(lightVec); 
@@ -307,34 +344,35 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 {   
     Material material;
     if (matCol.y < 0)     
-        material = UMaterials[int(matCol.x)];    
+        material = materials[int(matCol.x)];    
     else
     {        
-        material.diffuseColor = matCol;    
-        material.specularColor = matCol * 0.8;    
-        material.ambientColor = matCol * 0.2;  
+        material.diffuseColor = vec4(matCol, 1);    
+        material.specularColor = vec4(matCol, 1) * 0.8;    
+        material.ambientColor = vec4(matCol, 1) * 0.2;  
+        material.shininess = 32.0;
     }
     
     vec3 phongColor = vec3(0.0, 0.0, 0.0);    
     
-    for (int i = 0; i < ULights.numPointLights; i++)
+    for (int i = 0; i < areaLights.length(); i++)
     {
-        PointLight light = ULights.pointLights[i];
-        phongColor += material.ambientColor * light.color;
-        vec3 lightDir = normalize(light.position - position);
-        float diffuseContribution = dot(normal, lightDir);            
+        AreaLight light = areaLights[i];
+        phongColor += (material.ambientColor * light.color).xyz;
+        vec3 lightDir = normalize(light.position.xyz - position);
+        float diffuseContribution = max(0.0, dot(normal, lightDir));            
         float shadow = 1.0;
         if (UDrawShadows)
-            shadow = getPointLightShadowFactor(position, light.position, light.size);        
+            shadow = getAreaLightShadowFactor(position, light.position.xyz, light.size);        
 
-        if (shadow < 0.01 || diffuseContribution < 0.0)    
+        if (shadow < 0.01)    
             continue;        
             
         vec3 reflected = reflect(lightDir, normal);
-        float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), 32);
+        float specularContribution = pow(max(dot(vec3(rayDir), reflected), 0.0), material.shininess);
                 
         phongColor += shadow * (diffuseContribution * material.diffuseColor * light.color
-            + specularContribution * material.specularColor * light.color);
+            + specularContribution * material.specularColor * light.color).xyz;
 
     }        
     
@@ -344,16 +382,21 @@ vec3 getPhongColor(vec3 position, vec3 normal, vec3 matCol, vec4 rayDir)
 vec3 applyFog(vec3 color, float depth)
 {
     //https://iquilezles.org/www/articles/fog/fog.htm
-    vec3 fogColor = vec3(0.5,0.6,0.7);
-    return mix(color, fogColor, 1.0 - exp(-depth * 0.05)) 
-        * exp(-0.00005*depth*depth*depth);
+    float fallFactor = 1 / (100*UMaxDrawDistance);
+    float fogAmount = 1.0 - exp(-depth * 0.02);
+    vec3 fogColor = vec3(0.9,0.9,1.0);
+    return mix(color * exp(-fallFactor*depth*depth*depth), fogColor, fogAmount);     
 }
 
+//-----------------------------------------------------------------------------
+// main functions
+//-----------------------------------------------------------------------------
 vec4 traceDepth(vec4 rayDirection, float depth)
 {
-    vec3 position;    
-    // WO ZUM GEIER KOMMT DIE 2
+    vec3 position;        
+
     float coneRadiusCoeff = 2 * tan(radians(UFovY / 2)) / UImageDim.y;
+    // float coneRadiusCoeff = sqrt(2) / length(UImageDim);
 
     for(int i = 0; i < UMarchingSteps; i++)
     {                
@@ -361,8 +404,12 @@ vec4 traceDepth(vec4 rayDirection, float depth)
         float dist = distanceToScene(position);        
         float coneRadius = depth * coneRadiusCoeff;   
 
-        if (dist < coneRadius)                
-            return vec4(position, depth - (coneRadius - dist));                    
+        if (dist < coneRadius)       
+        {
+            if (UWriteColor)
+                return vec4(position, depth);
+            return vec4(position, depth - coneRadius);                    
+        }         
 
         depth += dist;
 
