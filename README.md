@@ -1,5 +1,5 @@
-A Realtime-Spheretracer developed for my bachelors thesis.
-Can render primitives as well as distance fields which can be computed from
+A realtime spheretracer developed for my bachelors thesis.
+Does render primitives as well as distance fields which can be computed from
 meshes using a compute shader.
 
 ## howto
@@ -20,6 +20,7 @@ The build will probably only work on linux machines!
 
 ## Usage
 
+execute `Spheretracer` in the build directory.
 Three different demo scenes can be selected in the imgui debug overlay.
 
 ## warning
