@@ -4,23 +4,17 @@ meshes using a compute shader.
 
 ## howto
 
-clone this repository:
-
-```sh
-git clone --recursive https://github.com/Moarqi/ba_spheretracer
-```
-
 cmake && make:
 
 ```sh
-cd ba_spheretracer && mkdir build && cd build && cmake .. && make -j<threads>
+mkdir build && cd build && cmake .. && make -j<threads>
 ```
 
 The build will probably only work on linux machines!
 
 ## Usage
 
-execute `Spheretracer` in the build directory.
+Execute `Spheretracer` in the build directory.
 Three different demo scenes can be selected in the imgui debug overlay.
 
 ## warning
