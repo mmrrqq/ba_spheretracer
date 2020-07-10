@@ -41,6 +41,7 @@ void Shader::Cleanup()
         glDeleteShader(cid_);
 
     pid_ = vid_ = fid_ = cid_ = 0;
+    locations.clear();
 }
 
 //-----------------------------------------------------------------------------

@@ -33,7 +33,6 @@ Spheremarcher::~Spheremarcher()
 void Spheremarcher::initialize()
 {
     initializeImgui();
-    initializeScene();
 
     // TODO: create VertexArray class
     glGenVertexArrays(1, &vao_);
@@ -47,19 +46,9 @@ void Spheremarcher::initialize()
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    activeScene_->SetData();
-
-    // shader_.Load("res/shaders/spheretracing.vertex", "res/shaders/spheretracing.fragment");
-    // shader_.Bind();
-    // shader_.SetBuffer(3, sizeof(Sphere) * scene_.Spheres.size(), scene_.Spheres.data());
-    // shader_.SetBuffer(4, sizeof(Torus) * scene_.Tori.size(), scene_.Tori.data());
-    // shader_.SetBuffer(5, sizeof(AreaLight) * scene_.AreaLights.size(), scene_.AreaLights.data());
-    // shader_.SetBuffer(6, sizeof(Material) * scene_.Materials.size(), scene_.Materials.data());
-    // shader_.SetUniform("UMarchingSteps", 100);
-    // shader_.SetUniform("UDrawShadows", drawShadows_);
-    // shader_.Unbind();
-
-    generateSdField("res/meshes/amo.off");
+    shader_.Load("res/shaders/spheretracing.vertex", "res/shaders/csg.fragment");
+    scene_.ReadScene("res/scenes/csg.sce");
+    setShaderData();
 }
 
 /**
@@ -76,119 +65,32 @@ void Spheremarcher::initializeImgui()
 }
 
 /**
- * @brief Sets up some data for the test scene.
- * Fills the scene_ member with the test data primitives.
+ * @brief Sets the scene data on the shader.
+ * Sets the buffer data for all scene data.
  */
-void Spheremarcher::initializeScene()
+void Spheremarcher::setShaderData()
 {
-    Material m1, m2, m3, m4;
-    m1.ambientColor = glm::vec4(0.1, 0.1, 0.1, 1);
-    m1.diffuseColor = glm::vec4(0.7, 0.7, 0.7, 1);
-    m1.specularColor = glm::vec4(0.7, 0.7, 0.7, 1);
-    m1.shininess = 10.0f;
-
-    m2.ambientColor = glm::vec4(0.1, 0.0, 0.1, 1);
-    m2.diffuseColor = glm::vec4(0.6, 0.0, 0.6, 1);
-    m2.specularColor = glm::vec4(0.7, 0.0, 0.7, 1);
-    m2.shininess = 10.0f;
-
-    m3.ambientColor = glm::vec4(0.1, 0.1, 0.0, 1);
-    m3.diffuseColor = glm::vec4(0.9, 0.9, 0.0, 1);
-    m3.specularColor = glm::vec4(0.6, 0.6, 0.0, 1);
-    m3.shininess = 10.0f;
-
-    m4.ambientColor = glm::vec4(0.01, 0.1, 0.0, 1);
-    m4.diffuseColor = glm::vec4(0.05, 0.2, 0.0, 1);
-    m4.specularColor = glm::vec4(0.05, 0.2, 0.0, 1);
-    m4.shininess = 10.0f;
-
-    scene_.Materials.push_back(m1);
-    scene_.Materials.push_back(m2);
-    scene_.Materials.push_back(m3);
-    scene_.Materials.push_back(m4);
-
-    Sphere sphere1;
-    sphere1.position = glm::vec4(0.5, 0.9, 1.2, 1);
-    sphere1.radius = 0.4f;
-    sphere1.materialId = 1;
-    Sphere sphere2;
-    sphere2.position = glm::vec4(0.5, 0.5, 0.5, 1);
-    sphere2.radius = 0.6f;
-    sphere2.materialId = 0;
-    Sphere sphere3;
-    sphere3.position = glm::vec4(1.7, 0.0, 1.5, 1);
-    sphere3.radius = 0.6f;
-    sphere3.materialId = 3;
-
-    Torus torus1;
-    torus1.position = glm::vec4(0.5, 0.5, 0.5, 1);
-    torus1.materialId = 2;
-    torus1.radius = 1;
-    torus1.tubeRadius = 0.2;
-
-    Torus torus2;
-    torus2.position = glm::vec4(0.0, 4.0, 0.0, 1);
-    torus2.materialId = 0;
-    torus2.radius = 1;
-    torus2.tubeRadius = 0.2;
-
-    // scene_.Spheres.push_back(sphere1);
-    // scene_.Spheres.push_back(sphere2);
-    // scene_.Spheres.push_back(sphere3);
-
-    // scene_.Tori.push_back(torus1);
-    // scene_.Tori.push_back(torus2);
-
-    AreaLight whiteLight;
-    whiteLight.position = glm::vec4(4, 6, 5, 1);
-    whiteLight.size = 0.01;
-    whiteLight.color = glm::vec4(0.9, 0.9, 0.9, 1);
-
-    AreaLight blueLight;
-    blueLight.position = glm::vec4(-1, 5, 0, 1);
-    blueLight.size = 0.01;
-    blueLight.color = glm::vec4(0.2, 0.3, 0.8, 1);
-
-    AreaLight redLight;
-    redLight.position = glm::vec4(4, 5, -2, 1);
-    redLight.size = 0.1;
-    redLight.color = glm::vec4(0.6, 0.2, 0.1, 1);
-
-    AreaLight yellowLight;
-    redLight.position = glm::vec4(0, 5, 0, 1);
-    redLight.size = 0.01;
-    redLight.color = glm::vec4(0.5, 0.5, 0.0, 1);
-
-    scene_.AreaLights.push_back(whiteLight);
-    // scene_.AreaLights.push_back(redLight);
-    // scene_.AreaLights.push_back(blueLight);
-    // scene_.AreaLights.push_back(yellowLight);
-}
-
-/**
- * @brief Loads a mesh and generates an SD-Field using the cs.
- * Is able to load any mesh that can be processed by the pmp-library.
- * The cs dispatch call can cause the computer to block and might time out for
- * big resolutions.
- * @param meshPath Path from working directory to the mesh file.
- */
-void Spheremarcher::generateSdField(std::string meshPath)
-{
-    pmp::SurfaceMesh mesh;
-    mesh.read(meshPath);
-    mesh.triangulate();
-
-    SDFGenerator sdfGenerator(mesh, sdfBoxSize_);
-    sdfGenerator_ = std::move(sdfGenerator);
-
-    sdfGenerator_.Dispatch();
-    SDField field(glm::vec3(sdfGenerator_.BoxSize), sdfGenerator_.GetOutputTexture());
-
-    field.Scale(sdfScaling_);
-
+    camera_.SetEye(scene_.Eye);
+    camera_.SetLookAt(scene_.LookAt);
     shader_.Bind();
-    shader_.SetUniform("USDField", &field, 2);
-    shader_.Unbind();
+    shader_.SetBuffer(3, sizeof(Sphere) * scene_.Spheres.size(), scene_.Spheres.data());
+    shader_.SetBuffer(4, sizeof(Torus) * scene_.Tori.size(), scene_.Tori.data());
+    shader_.SetBuffer(5, sizeof(AreaLight) * scene_.AreaLights.size(), scene_.AreaLights.data());
+    shader_.SetBuffer(6, sizeof(Material) * scene_.Materials.size(), scene_.Materials.data());
+    shader_.SetUniform("UDrawShadows", drawShadows_);
+    for (auto &m : scene_.Meshes)
+    {
+        pmp::SurfaceMesh mesh;
+        mesh.read(m.FileName());
+        mesh.triangulate();
+
+        SDFGenerator sdfGenerator(mesh, sdfBoxSize_);
+
+        sdfGenerator.Dispatch();
+        m.SetField(sdfGenerator.GetOutputTexture());
+        shader_.Bind();
+        shader_.SetUniform(m.UniformName(), &m, 2);
+    }
 }
 
 /**
@@ -286,6 +188,7 @@ void Spheremarcher::motion(double xpos, double ypos)
  * @brief Draw the imgui debug window.
  * Manipulates scene data and updates the shader storage if anything changed.
  * Called every frame.
+ * ARGH! so bloated, sorry for that :(
  */
 void Spheremarcher::drawImgui()
 {
@@ -298,14 +201,17 @@ void Spheremarcher::drawImgui()
         static int scene;
         const char *sceneNames[] = {"csg", "title", "test"};
         if (ImGui::ListBox("scene_select", &scene, sceneNames, IM_ARRAYSIZE(sceneNames), 3))
+        {
             shader_.Load(
                 "res/shaders/spheretracing.vertex",
                 ("res/shaders/" + (std::string)sceneNames[scene] + ".fragment").c_str());
+            scene_.ReadScene("res/scenes/" + (std::string)sceneNames[scene] + ".sce");
+            setShaderData();
+        }
 
         ImGui::SliderFloat("fov", &fovy_, 80.0, 120.0);
         ImGui::SliderFloat("normal epsilon", &normalEpsilon_, 0.0001f, 0.01f);
         ImGui::SliderFloat("draw distance", &drawDistance_, 5.0f, 50.0f);
-        // ImGui::SliderFloat3("pos", &scene_.Spheres[0].position[0], -5, 5);
         if (ImGui::Checkbox("smoothing", &smooth_))
             shader_.SetUniform("USmooth", smooth_);
 
@@ -315,9 +221,7 @@ void Spheremarcher::drawImgui()
             sdfBoxSize_ = static_cast<SDFGenerator::EBoxSize>(std::stoi(eBoxSizeNames[currentSize]));
 
         if (ImGui::Button("regenerate SDF", ImVec2(100, 20)))
-        {
-            generateSdField("res/meshes/amo.off");
-        }
+            setShaderData();
 
         if (ImGui::SliderFloat("field scaling", &sdfScaling_, 0.001, 0.2))
         {

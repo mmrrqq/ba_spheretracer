@@ -10,7 +10,7 @@ SDFGenerator::SDFGenerator()
  * out the box properly. Then loads the compute shader to be ready for
  * dispatching. 
  * @param mesh pmp::SurfaceMesh to be processed.
- * @param boxSize Enum of powers of two to set the 3D-Texture dimensions.
+ * @param boxSize Enum of powers of two to set the 3D texture dimensions.
  */
 SDFGenerator::SDFGenerator(pmp::SurfaceMesh &mesh, EBoxSize boxSize)
     : texOutput_(boxSize,

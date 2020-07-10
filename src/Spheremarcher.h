@@ -28,19 +28,15 @@ private:
     virtual void motion(double xpos, double ypos);
 
     void initializeImgui();
-    void initializeScene();
     void drawImgui();
-
-    void generateSdField(std::string meshPath);
+    void setShaderData();
 
     FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_, fourthPassBuffer_;
     Shader shader_;
     Camera camera_;
-    SDFGenerator sdfGenerator_;
+    PrimitiveScene scene_;
     SDFGenerator::EBoxSize sdfBoxSize_;
     bool mouseDown_, moving_, smooth_, drawShadows_, coneTracing_;
     unsigned int vao_, ibo_;
     float fovy_, normalEpsilon_, drawDistance_, sdfScaling_;
-    std::vector<PrimitiveScene> scenes_;
-    PrimitiveScene *activeScene_;
 };
