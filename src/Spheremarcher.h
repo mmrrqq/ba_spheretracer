@@ -1,16 +1,16 @@
 #pragma once
 
-#include "utils/Window.h"
-#include "utils/Camera.h"
-#include "utils/Shader.h"
-#include "utils/PrimitiveScene.h"
-#include "utils/SDFGenerator.h"
-#include "utils/SDField.h"
 #include "FrameBuffer.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "pmp/SurfaceMesh.h"
+#include "utils/Camera.h"
+#include "utils/PrimitiveScene.h"
+#include "utils/SDFGenerator.h"
+#include "utils/SDField.h"
+#include "utils/Shader.h"
+#include "utils/Window.h"
 
 class Spheremarcher : public Window
 {
@@ -31,7 +31,8 @@ private:
     void drawImgui();
     void setShaderData();
 
-    FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_, fourthPassBuffer_;
+    FrameBuffer firstPassBuffer_, secondPassBuffer_, thirdPassBuffer_,
+        fourthPassBuffer_;
     Shader shader_;
     Camera camera_;
     PrimitiveScene scene_;

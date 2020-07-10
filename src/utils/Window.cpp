@@ -7,10 +7,12 @@
 //
 //=============================================================================
 #include "Window.h"
+
 #include <iostream>
 //=============================================================================
 
-Window::Window(const char *title, int width, int height) : width_(width), height_(height)
+Window::Window(const char *title, int width, int height)
+    : width_(width), height_(height)
 {
     // initialize glfw window
     if (!glfwInit())
@@ -43,7 +45,8 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_ALWAYS);
 
-    // this sets a reference to the window which can be retrieved in every callback
+    // this sets a reference to the window which can be retrieved in every
+    // callback
     // https://www.glfw.org/docs/latest/group__window.html#ga3d2fc6026e690ab31a13f78bc9fd3651
     glfwSetWindowUserPointer(window_, (void *)this);
 
@@ -59,23 +62,26 @@ Window::Window(const char *title, int width, int height) : width_(width), height
     unsigned int err = glewInit();
     if (err)
     {
-        std::cerr << "Error initializing GLEW: " << glewGetErrorString(err) << std::endl;
+        std::cerr << "Error initializing GLEW: " << glewGetErrorString(err)
+                  << std::endl;
         exit(1);
     }
     err = glGetError();
     if (err)
     {
-        std::cerr << "Error initializing: " << glewGetErrorString(err) << std::endl;
+        std::cerr << "Error initializing: " << glewGetErrorString(err)
+                  << std::endl;
         exit(1);
     }
 
-    //define blending function
+    // define blending function
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // debug: print GL and GLSL version
     std::cout << "GLEW   " << glewGetString(GLEW_VERSION) << std::endl;
     std::cout << "GL     " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GLSL   " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    std::cout << "GLSL   " << glGetString(GL_SHADING_LANGUAGE_VERSION)
+              << std::endl;
 
     // set debug error https://learnopengl.com/In-Practice/Debugging
     GLint flags;
@@ -90,9 +96,7 @@ Window::Window(const char *title, int width, int height) : width_(width), height
 
 //-----------------------------------------------------------------------------
 
-Window::~Window()
-{
-}
+Window::~Window() {}
 
 //-----------------------------------------------------------------------------
 
@@ -125,14 +129,16 @@ int Window::run()
 //-----------------------------------------------------------------------------
 
 void Window::error__(GLenum source, GLenum type, GLuint id, GLenum severity,
-                     GLsizei length, const GLchar *message, const void *userParam)
+                     GLsizei length, const GLchar *message,
+                     const void *userParam)
 {
     // TODO: refine error message handling
     std::cout << message << std::endl;
     std::cout << source << std::endl;
 }
 
-void Window::keyboard__(GLFWwindow *window, int key, int scancode, int action, int mods)
+void Window::keyboard__(GLFWwindow *window, int key, int scancode, int action,
+                        int mods)
 {
     Window *windowRef = (Window *)glfwGetWindowUserPointer(window);
     windowRef->keyboard(key, scancode, action, mods);

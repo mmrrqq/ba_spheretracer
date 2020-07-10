@@ -14,14 +14,14 @@ public:
     void Bind(bool clearDepth = false);
     void Unbind();
 
-    int GetWidth() { return width_; };
-    int GetHeight() { return height_; };
+    int Width() { return width_; };
+    int Height() { return height_; };
 
     void AttachTexture(TextureSampler &texture, unsigned int attachmentType);
     unsigned int CheckStatus();
 
-    TextureSampler &GetColorTexture() { return colorTexture_; };
-    TextureSampler &GetDepthTexture() { return depthTexture_; };
+    TextureSampler &ColorTexture() { return colorTexture_; };
+    TextureSampler &DepthTexture() { return depthTexture_; };
 
 private:
     unsigned int id_, width_, height_;

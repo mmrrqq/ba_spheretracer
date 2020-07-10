@@ -26,7 +26,7 @@ public:
 
     SDField &operator=(SDField &&other)
     {
-        //ALWAYS check for self-assignment.
+        // ALWAYS check for self-assignment.
         if (this != &other)
         {
             std::swap(field_, other.field_);
@@ -41,10 +41,19 @@ public:
     inline void Bind(unsigned int slot) { field_.Bind(slot); };
     inline void SetFilename(std::string fileName) { fileName_ = fileName; };
     inline void SetPosition(glm::vec3 position) { position_ = position; };
-    inline void SetDimensions(glm::vec3 dimensions) { dimensions_ = dimensions; };
+    inline void SetDimensions(glm::vec3 dimensions)
+    {
+        dimensions_ = dimensions;
+    };
     inline void SetMaterialId(int materialId) { materialId_ = materialId; };
-    inline void SetField(TextureSampler *texture) { field_ = std::move(*texture); };
-    inline void SetUniformName(std::string uniformName) { uniformName_ = uniformName; };
+    inline void SetField(TextureSampler *texture)
+    {
+        field_ = std::move(*texture);
+    };
+    inline void SetUniformName(std::string uniformName)
+    {
+        uniformName_ = uniformName;
+    };
     inline std::string FileName() { return fileName_; };
     inline glm::vec3 Dimensions() { return dimensions_; };
     inline glm::vec3 Position() { return position_; };
@@ -57,10 +66,7 @@ private:
     int materialId_;
     glm::vec3 position_, dimensions_;
 
-    void release()
-    {
-        position_ = dimensions_ = glm::vec3(0.0);
-    };
+    void release() { position_ = dimensions_ = glm::vec3(0.0); };
 };
 
 inline std::istream &operator>>(std::istream &is, SDField &f)

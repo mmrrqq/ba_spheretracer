@@ -8,24 +8,18 @@
 //=============================================================================
 
 #include "Shader.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include <assert.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 //=============================================================================
 
-Shader::Shader()
-    : pid_(0), vid_(0), fid_(0), cid_(0)
-{
-}
+Shader::Shader() : pid_(0), vid_(0), fid_(0), cid_(0) {}
 
 //-----------------------------------------------------------------------------
 
-Shader::~Shader()
-{
-    Cleanup();
-}
+Shader::~Shader() { Cleanup(); }
 
 //-----------------------------------------------------------------------------
 
@@ -46,7 +40,8 @@ void Shader::Cleanup()
 
 //-----------------------------------------------------------------------------
 
-bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFilePath)
+bool Shader::Load(const char *vertexShaderFilePath,
+                  const char *fragmentShaderFilePath)
 {
     // cleanup existing shaders first
     Cleanup();
@@ -75,8 +70,7 @@ bool Shader::Load(const char *vertexShaderFilePath, const char *fragmentShaderFi
 
         GLchar *info = new GLchar[length + 1];
         glGetProgramInfoLog(pid_, length, NULL, info);
-        std::cerr << "Shader: Cannot link program:\n"
-                  << info << std::endl;
+        std::cerr << "Shader: Cannot link program:\n" << info << std::endl;
         delete[] info;
 
         Cleanup();
@@ -107,8 +101,7 @@ bool Shader::Load(const char *computeShaderFilePath)
 
         GLchar *info = new GLchar[length + 1];
         glGetProgramInfoLog(pid_, length, NULL, info);
-        std::cerr << "Shader: Cannot link program:\n"
-                  << info << std::endl;
+        std::cerr << "Shader: Cannot link program:\n" << info << std::endl;
         delete[] info;
     }
 }
@@ -134,7 +127,8 @@ unsigned int Shader::loadAndCompile(const char *filename, GLenum type)
     GLint id = glCreateShader(type);
     if (!id)
     {
-        std::cerr << "Shader: Cannot create " << type << " shader object for \"" << filename << "\"\n";
+        std::cerr << "Shader: Cannot create " << type << " shader object for \""
+                  << filename << "\"\n";
         return 0;
     }
 
@@ -174,10 +168,7 @@ void Shader::Bind()
 
 //-----------------------------------------------------------------------------
 
-void Shader::Unbind()
-{
-    glUseProgram(0);
-}
+void Shader::Unbind() { glUseProgram(0); }
 
 //-----------------------------------------------------------------------------
 
@@ -233,18 +224,23 @@ void Shader::SetUniform(const char *name, const glm::mat4 &mat)
     glUniformMatrix4fv(getUniformLocation(name), 1, false, &mat[0][0]);
 }
 
-void Shader::SetUniform(const std::string name, TextureSampler &texture, unsigned int slot)
+void Shader::SetUniform(const std::string name, TextureSampler &texture,
+                        unsigned int slot)
 {
     texture.Bind(slot);
     // glUniform1i(getUniformLocation(name), slot);
 }
 
-void Shader::SetUniform(const std::string name, SDField *sdField, unsigned int textureSlot)
+void Shader::SetUniform(const std::string name, SDField *sdField,
+                        unsigned int textureSlot)
 {
     sdField->Bind(textureSlot);
     glUniform1i(getUniformLocation(name + ".field"), textureSlot);
-    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0], sdField->Position()[1], sdField->Position()[2]);
-    glUniform3f(getUniformLocation(name + ".dimensions"), sdField->Dimensions()[0], sdField->Dimensions()[1], sdField->Dimensions()[2]);
+    glUniform3f(getUniformLocation(name + ".position"), sdField->Position()[0],
+                sdField->Position()[1], sdField->Position()[2]);
+    glUniform3f(getUniformLocation(name + ".dimensions"),
+                sdField->Dimensions()[0], sdField->Dimensions()[1],
+                sdField->Dimensions()[2]);
 }
 
 // TODO: to Buffer class

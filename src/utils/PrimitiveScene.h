@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "glm/glm.hpp"
 #include "SDField.h"
+#include "glm/glm.hpp"
 
 // align all structs as 16 byte for ssbo
 struct alignas(16) AreaLight
@@ -30,7 +30,7 @@ struct alignas(16) Sphere
 };
 inline std::istream &operator>>(std::istream &is, Sphere &s)
 {
-    is >> s.position[0] >> s.position[1] >> s.position[2] >> s.position[3] >> //
+    is >> s.position[0] >> s.position[1] >> s.position[2] >> s.position[3] >>
         s.radius >> s.materialId;
     return is;
 }
@@ -44,7 +44,7 @@ struct alignas(16) Torus
 };
 inline std::istream &operator>>(std::istream &is, Torus &t)
 {
-    is >> t.position[0] >> t.position[1] >> t.position[2] >> t.position[3] >> //
+    is >> t.position[0] >> t.position[1] >> t.position[2] >> t.position[3] >>
         t.radius >> t.tubeRadius >> t.materialId;
     return is;
 }
@@ -59,10 +59,12 @@ struct alignas(16) Material
 
 inline std::istream &operator>>(std::istream &is, Material &m)
 {
+    // clang-format off
     is >> m.ambientColor[0] >> m.ambientColor[1] >> m.ambientColor[2] >> m.ambientColor[3] >>   //
         m.diffuseColor[0] >> m.diffuseColor[1] >> m.diffuseColor[2] >> m.diffuseColor[3] >>     //
         m.specularColor[0] >> m.specularColor[1] >> m.specularColor[2] >> m.specularColor[3] >> //
         m.shininess;
+    // clang-format on
     return is;
 }
 

@@ -8,21 +8,12 @@ class TextureSampler
 {
 public:
     TextureSampler();
-    TextureSampler(unsigned int width,
-                   unsigned int height,
-                   unsigned int internalFormat,
-                   unsigned int format,
-                   unsigned int type,
-                   unsigned int wrap,
-                   unsigned int filter);
-    TextureSampler(unsigned int width,
-                   unsigned int height,
-                   unsigned int depth,
-                   unsigned int internalFormat,
-                   unsigned int format,
-                   unsigned int type,
-                   unsigned int wrap,
-                   unsigned int filter);
+    TextureSampler(unsigned int width, unsigned int height,
+                   unsigned int internalFormat, unsigned int format,
+                   unsigned int type, unsigned int wrap, unsigned int filter);
+    TextureSampler(unsigned int width, unsigned int height, unsigned int depth,
+                   unsigned int internalFormat, unsigned int format,
+                   unsigned int type, unsigned int wrap, unsigned int filter);
     ~TextureSampler() { release(); };
 
     TextureSampler(const TextureSampler &) = delete;
@@ -41,11 +32,11 @@ public:
 
     TextureSampler &operator=(TextureSampler &&other)
     {
-        //ALWAYS check for self-assignment.
+        // ALWAYS check for self-assignment.
         if (this != &other)
         {
             release();
-            //id_ is now 0.
+            // id_ is now 0.
             std::swap(id_, other.id_);
             std::swap(width_, other.width_);
             std::swap(height_, other.height_);
@@ -62,7 +53,7 @@ public:
 
     void SetData(void *data);
 
-    inline unsigned int GetID() { return id_; }
+    inline unsigned int ID() { return id_; }
 
 private:
     void release()
@@ -70,5 +61,6 @@ private:
         glDeleteTextures(1, &id_);
         id_ = height_ = width_ = depth_, internalFormat_, type_, format_ = 0;
     };
-    unsigned int id_, height_, width_, depth_, internalFormat_, type_, format_ = 0;
+    unsigned int id_, height_, width_, depth_, internalFormat_, type_,
+        format_ = 0;
 };

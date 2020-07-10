@@ -6,14 +6,19 @@
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/transform.hpp"
 
+/**
+ * @brief Camera class.
+ * Uses the glm lib to generate the View Matrix and to manipulate the camera
+ * coordinates.
+ */
 class Camera
 {
 public:
     Camera();
     ~Camera();
-    inline glm::vec4 GetEye() { return eye_; };
-    inline glm::vec4 GetLookAt() { return lookAt_; };
-    inline glm::mat4 GetView()
+    inline glm::vec4 Eye() { return eye_; };
+    inline glm::vec4 LookAt() { return lookAt_; };
+    inline glm::mat4 View()
     {
         return glm::lookAt(glm::vec3(eye_), glm::vec3(lookAt_), glm::vec3(up_));
     };
@@ -24,7 +29,8 @@ public:
     };
     inline void SetLookAt(glm::vec4 lookAt) { lookAt_ = lookAt; };
 
-    void Rotate(const double posX, const double posY, const int width, const int height);
+    void Rotate(const double posX, const double posY, const int width,
+                const int height);
     void Reset();
     void Move(glm::vec2 direciton);
 

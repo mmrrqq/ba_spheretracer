@@ -10,6 +10,7 @@
 //=============================================================================
 
 #include <stdlib.h>
+
 #include "GLUtils.h"
 
 //== CLASS DEFINITION =========================================================
@@ -30,8 +31,8 @@ public:
     inline void SetWidth(int width) { width_ = width; }
     inline void SetHeight(int height) { height_ = height; }
 
-    inline int GetWidth() { return width_; }
-    inline int GetHeight() { return height_; }
+    inline int Width() { return width_; }
+    inline int Height() { return height_; }
 
 protected:
     /// must overload
@@ -49,9 +50,11 @@ protected:
     GLFWwindow *window_;
 
 private:
-    static void APIENTRY error__(GLenum source, GLenum type, GLuint id, GLenum severity,
-                                 GLsizei length, const GLchar *message, const void *userParam);
-    static void keyboard__(GLFWwindow *window, int key, int scancode, int action, int mods);
+    static void APIENTRY error__(GLenum source, GLenum type, GLuint id,
+                                 GLenum severity, GLsizei length,
+                                 const GLchar *message, const void *userParam);
+    static void keyboard__(GLFWwindow *window, int key, int scancode,
+                           int action, int mods);
     static void mouse__(GLFWwindow *window, int button, int action, int mods);
     static void resize__(GLFWwindow *window, int width, int height);
     static void motion__(GLFWwindow *window, double xpos, double ypos);
