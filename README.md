@@ -7,7 +7,7 @@ meshes using a compute shader.
 clone this repository:
 
 ```sh
-git clone --recursive https://github.com/pmp-library/pmp-library.git
+git clone --recursive https://github.com/Moarqi/ba_spheretracer
 ```
 
 cmake && make:
