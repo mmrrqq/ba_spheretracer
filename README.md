@@ -4,6 +4,12 @@ meshes using a compute shader.
 
 ## howto
 
+(clone this repository - NOT PUBLIC):
+
+```sh
+git clone --recursive https://github.com/Moarqi/ba_spheretracer
+```
+
 cmake && make:
 
 ```sh
