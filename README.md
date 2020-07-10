@@ -23,6 +23,8 @@ The build will probably only work on linux machines!
 Execute `Spheretracer` in the build directory.
 Three different demo scenes can be selected in the imgui debug overlay.
 
+Use the keys WASD to move the camera. Rotate by clicking and moving the mouse.
+
 ## warning
 
 Creating the distance field can result in incomplete 3D textures if the

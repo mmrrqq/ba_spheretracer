@@ -2,9 +2,8 @@
 camera 5 1 10 1  0 0 0 1
 
 # light: position, color and size
-areaLight -1 10 -1 1  1.0 0.2 0.2 1.0  0.02
-areaLight 10 0 5 1    0.2 0.2 1.0 1.0  0.10
-areaLight 5 5 5 1     0.5 0.5 0.5 1.0  0.05
+areaLight -1 10 -1 1  0.8 0.2 0.2 1.0  0.02
+areaLight 5 5 5 1     0.8 0.8 0.8 1.0  0.05
 
 # sphere: position, radius and materialId
 sphere 0.5 0.9 1.2 1  0.4  1
